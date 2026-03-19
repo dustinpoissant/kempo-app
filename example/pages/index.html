@@ -1,0 +1,162 @@
+<div
+  class="bg-secondary tc-primary ta-center  mb"
+  style="border-bottom: 5px solid var(--c_primary); box-shadow: rgba(0, 255, 255, 0.333) 0px 0px 30px 0px;"
+>
+  <img src="/media/icon.png" alt="Kempo App Icon" style="height: 10rem" />
+  <h1>Kempo App</h1>
+  <p>Electron desktop apps with no boilerplate</p>
+</div>
+<br /><br />
+<main>
+  <div class="row -mx">
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a
+        href="#/routing"
+        class="card"
+      >
+        <h5>
+          <k-icon name="arrow_split" class="d-b mb"></k-icon>
+          Routing
+        </h5>
+        <p>Kempo App is a single-page-app with "pages" that are dynamically rendered using hash routing.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a
+        href="#/components"
+        class="card"
+      >
+        <h5>
+          <k-icon name="code_xml" class="d-b mb"></k-icon>
+          Components
+        </h5>
+        <p>Kempo App uses the Kempo UI (Lit based) component library, and a few extra "App" components.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a
+        href="#/icons"
+        class="card"
+      >
+        <h5>
+          <k-icon name="emoji_objects" class="d-b mb"></k-icon>
+          Icons
+        </h5>
+        <p>Kempo App uses locally saved svg as icons, and loads them with the <code>&lt;k-icon></code> component.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a
+        href="#/theming"
+        class="card"
+      >
+        <h5>
+          <k-icon name="format_paint" class="d-b mb"></k-icon>
+          Theming
+        </h5>
+        <p>Kempo App uses Kempo-CSS Theming.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a
+        href="#/api"
+        class="card"
+      >
+        <h5>
+          <k-icon name="api" class="d-b mb"></k-icon>
+          API
+        </h5>
+        <p>Built-in persistent settings DB, and window controls.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a
+        href="#/backend"
+        class="card"
+      >
+        <h5>
+          <k-icon name="terminal" class="d-b mb"></k-icon>
+          Backend
+        </h5>
+        <p><code>backend.js</code> allows you to run code in the Node main process.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a
+        href="#/testing"
+        class="card"
+      >
+        <h5>
+          <k-icon name="labs" class="d-b mb"></k-icon>
+          Testing
+        </h5>
+        <p>Write browser and Node tests for your components with shared Electron mocks.</p>
+      </a>
+    </div>
+  </div>
+
+  <h1>Quick Start</h1>
+
+  <h3>Install</h3>
+  <pre><code>npm install kempo-app</code></pre>
+
+  <h3>Edit the default page</h3>
+  <p>
+    The install should automatically create <code>pages/index.html</code> — if you have post install scripts disabled or it did not create the file, simply create it, this is the only file required to make the app work.
+  </p>
+
+  <h3>Run it</h3>
+  <pre><code>npx kempo-app</code></pre>
+
+  <h1>Optional Files</h1>
+  <p>Every file below is optional. The framework falls back to sensible defaults when they are absent.</p>
+
+  <h3><code>shell.html</code> — App shell</h3>
+  <p>Defines the layout injected around the page content. Include a <code>&lt;nav&gt;</code> with <code>.nav-link</code> anchors and an <code>&lt;app-page&gt;</code> where pages render. Without it, the framework renders a plain <code>&lt;app-page&gt;</code> with no nav.</p>
+  <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">nav</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"bg-alt px bb"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#/"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"nav-link"</span>&gt;</span>Home<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#/about"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"nav-link"</span>&gt;</span>About<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">nav</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-page</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex-1 p"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">app-page</span>&gt;</span></code></pre>
+
+  <h3><code>titlebar.html</code> — Custom titlebar</h3>
+  <p>The titlebar on the top of the page. Create a <code>titlebar.html</code> to add menus, icons, or controls to your titlebar.</p>
+  <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">app-titlebar</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"bg-alt bb"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">b</span>&gt;</span>My App<span class="hljs-tag">&lt;/<span class="hljs-name">b</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-theme-switcher</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"right"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"no-drag"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-theme-switcher</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">app-titlebar</span>&gt;</span></code></pre>
+
+  <h3><code>theme.css</code> — Custom theming</h3>
+  <p>Create your own theme for your app. Override CSS variables, override styles, or create custom styles.</p>
+  <pre><code class="hljs css"><span class="hljs-selector-pseudo">:root</span> {
+  <span class="hljs-attribute">--c_primary</span>: rgb(<span class="hljs-number">192</span>, <span class="hljs-number">39</span>, <span class="hljs-number">45</span>);
+}</code></pre>
+
+  <h3><code>app.js</code> — Renderer script</h3>
+  <p>Create <code>app.js</code> to import modules (including kempo-ui components) and write custom JavaScript that runs on the frontend of the app.</p>
+  <pre><code class="hljs js"><span class="hljs-keyword">import</span> <span class="hljs-string">"/modules/kempo-ui/dist/components/Card.js"</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">"/modules/kempo-ui/dist/components/Toggle.js"</span>;</code></pre>
+
+  <h3><code>backend.js</code> — Main process hook</h3>
+  <p>Create <code>backend.js</code> to run code JavaScript in Node JS (in Electron's main process). Use it for file system access, custom IPC, native menus, or any server-side logic.</p>
+  <pre><code class="hljs js"><span class="hljs-keyword">export default</span> ({ db, ipc, app }) =&gt; {
+  ipc.handle(<span class="hljs-string">"my-channel"</span>, <span class="hljs-keyword">async</span> (e, data) =&gt; {
+    <span class="hljs-keyword">return</span> db.get(<span class="hljs-string">"someKey"</span>);
+  });
+};</code></pre>
+
+  <div style="height:33vh"></div>
+</main>
+<style>
+  a.card {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    transition: border var(--animation_ms, 256ms);
+    
+    &:hover {
+      --c_border: var(--c_primary);
+      box-shadow: 0 0 3px var(--c_primary);
+    }
+  }
+</style>

@@ -1,0 +1,19 @@
+<main>
+	<h1>Settings</h1>
+
+	<h3>Notifications</h3>
+	<app-setting-bool setting="notifications">Enable Notifications</app-setting-bool>
+	<app-hide setting="notifications=false" style="margin-top:var(--spacer_h)">
+		<button id="test-notification" class="primary">Test Notification</button>
+	</app-hide>
+	
+	<h3>Theme</h3>
+	<k-theme-select style="max-width: 10rem">Theme:</k-theme-select>
+
+	<script>
+	document.getElementById("test-notification").addEventListener("click", () => {
+		window.api.notification.show({ title: "Test Notification", body: "Notifications are working!" });
+	});
+	</script>
+</main>
+<div style="height:33vh"></div>

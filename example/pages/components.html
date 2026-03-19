@@ -1,0 +1,238 @@
+<main>
+  <h1>Components</h1>
+
+  <p>
+    kempo-app is built on <a
+      href="https://dustinpoissant.github.io/kempo-ui/"
+      target="_blank"
+    >kempo-ui</a> —
+    a library of Web Components with a <code>k-</code> prefix. Import what you need in <code>app.js</code>:
+  </p>
+  <pre><code class="hljs js"><span class="hljs-keyword">import</span> <span class="hljs-string">"/modules/kempo-ui/dist/components/Card.js"</span>;<br /><span class="hljs-keyword">import</span> <span class="hljs-string">"/modules/kempo-ui/dist/components/Toggle.js"</span>;<br /><span class="hljs-keyword">import</span> <span class="hljs-string">"/modules/kempo-ui/dist/components/Tabs.js"</span>;</br><span class="hljs-comment">// ...</span></code></pre>
+  <p>See the <a
+      href="https://dustinpoissant.github.io/kempo-ui/"
+      target="_blank"
+    >kempo-ui docs →</a></p>
+
+  <h2 style="margin-top:var(--spacer)">App Components</h2>
+
+  <p>
+    The framework provides <code>&lt;app-*&gt;</code> components automatically — no imports needed.<br />
+    These handle titlebar, page routing, and conditional visibility.
+  </p>
+
+  <h3><code>&ltapp-titlebar></code> — A custom titlebar for window managment.</h3>
+  <p>The kempo-app is rendered as a frameless window, so to add support for window managment (dragging, minimize,
+    maximize, and close) kempo-app provides a custom <code>&ltapp-titlebar</code> component.</p>
+  <p>Content is placed into the titlebar via slots:</p>
+  <div class="table-wrapper mb">
+    <table>
+      <thead>
+        <tr>
+          <th>Slot</th>
+          <th>Position</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>left</code></td>
+          <td>After traffic lights (Mac) or at the start (Win/Linux)</td>
+        </tr>
+        <tr>
+          <td><em>default</em></td>
+          <td>Center — replaces the app name title</td>
+        </tr>
+        <tr>
+          <td><code>right</code></td>
+          <td>Before window controls (Win/Linux) or at the end (Mac)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The entire titlebar is draggable. Add <code>class="no-drag"</code> to interactive elements (buttons, dropdowns,
+    switchers) so they remain clickable.</p>
+
+  <h5><code>titlebar.html</code></h5>
+  <p>Place the <code>&lt;app-titlebar></code> in <code>titlebar.html</code>:</p>
+  <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">app-titlebar</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-dropdown</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"left"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"no-drag"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">k-dropdown</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">b</span>&gt;</span>My App<span class="hljs-tag">&lt;/<span class="hljs-name">b</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-theme-switcher</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"right"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"no-drag"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-theme-switcher</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">app-titlebar</span>&gt;</span></code></pre>
+
+
+  <h3><code>&lt;app-page></code> — Where the page content is rendered.</h3>
+  <p>This is the location where the page's content will be rendered when the hash router updates.</p>
+  <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">app-page</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">app-page</span>&gt;</span></code></pre>
+
+  <h3><code>&lt;app-show></code> / <code>&lt;app-hide></code> — Conditional content rendering.</h3>
+
+  <p>
+    Conditionally show or hide content based on runtime conditions.
+    <code>&lt;app-show&gt;</code> renders its children when <strong>all</strong> conditions match.
+    <code>&lt;app-hide&gt;</code> hides its children when <strong>all</strong> conditions match.
+  </p>
+
+  <div class="table-wrapper mb">
+    <table>
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>platform</code></td>
+          <td><code>mac</code>, <code>win</code>, <code>linux</code></td>
+          <td>Match OS platform</td>
+        </tr>
+        <tr>
+          <td><code>dev</code></td>
+          <td><em>(boolean)</em></td>
+          <td>Match dev mode</td>
+        </tr>
+        <tr>
+          <td><code>theme</code></td>
+          <td><code>light</code>, <code>dark</code></td>
+          <td>Match current theme (reactive)</td>
+        </tr>
+        <tr>
+          <td><code>maximized</code></td>
+          <td><em>(boolean)</em></td>
+          <td>Match window maximized state (reactive)</td>
+        </tr>
+        <tr>
+          <td><code>setting</code></td>
+          <td><code>key</code> or <code>key=value</code></td>
+          <td>Match a database setting</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h5>Examples</h5>
+
+	<p><strong>platform</strong> — show based on OS</p>
+	<div class="row" style="gap:var(--spacer_h);margin-bottom:var(--spacer_h)">
+		<app-show platform="mac"><span class="bg-alt b r px pyh">Visible on macOS</span></app-show>
+		<app-hide platform="mac"><span class="bg-alt b r px pyh">Hidden on macOS</span></app-hide>
+		<app-show platform="win"><span class="bg-alt b r px pyh">Visible on Windows</span></app-show>
+		<app-hide platform="win"><span class="bg-alt b r px pyh">Hidden on Windows</span></app-hide>
+		<app-show platform="linux"><span class="bg-alt b r px pyh">Visible on Linux</span></app-show>
+		<app-hide platform="linux"><span class="bg-alt b r px pyh">Hidden on Linux</span></app-hide>
+	</div>
+	<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">app-show</span> <span class="hljs-attr">platform</span>=<span class="hljs-string">"mac"</span>&gt;</span>Visible on macOS<span class="hljs-tag">&lt;/<span class="hljs-name">app-show</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-hide</span> <span class="hljs-attr">platform</span>=<span class="hljs-string">"mac"</span>&gt;</span>Hidden on macOS<span class="hljs-tag">&lt;/<span class="hljs-name">app-hide</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-show</span> <span class="hljs-attr">platform</span>=<span class="hljs-string">"win"</span>&gt;</span>Visible on Windows<span class="hljs-tag">&lt;/<span class="hljs-name">app-show</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-show</span> <span class="hljs-attr">platform</span>=<span class="hljs-string">"linux"</span>&gt;</span>Visible on Linux<span class="hljs-tag">&lt;/<span class="hljs-name">app-show</span>&gt;</span></code></pre>
+
+	<p><strong>dev</strong> — show based on dev mode</p>
+	<div class="row" style="gap:var(--spacer_h);margin-bottom:var(--spacer_h)">
+		<app-show dev><span class="bg-alt b r px pyh">Dev mode</span></app-show>
+		<app-hide dev><span class="bg-alt b r px pyh">Production mode</span></app-hide>
+	</div>
+	<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">app-show</span> <span class="hljs-attr">dev</span>&gt;</span>Dev mode<span class="hljs-tag">&lt;/<span class="hljs-name">app-show</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-hide</span> <span class="hljs-attr">dev</span>&gt;</span>Production mode<span class="hljs-tag">&lt;/<span class="hljs-name">app-hide</span>&gt;</span></code></pre>
+
+	<p><strong>theme</strong> — show based on current theme (reactive)</p>
+	<div class="row" style="gap:var(--spacer_h);margin-bottom:var(--spacer_h)">
+		<app-show theme="light"><span class="bg-alt b r px pyh">Light theme</span></app-show>
+		<app-show theme="dark"><span class="bg-alt b r px pyh">Dark theme</span></app-show>
+	</div>
+	<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">app-show</span> <span class="hljs-attr">theme</span>=<span class="hljs-string">"light"</span>&gt;</span>Light theme<span class="hljs-tag">&lt;/<span class="hljs-name">app-show</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-show</span> <span class="hljs-attr">theme</span>=<span class="hljs-string">"dark"</span>&gt;</span>Dark theme<span class="hljs-tag">&lt;/<span class="hljs-name">app-show</span>&gt;</span></code></pre>
+
+	<p><strong>maximized</strong> — show based on window maximized state (reactive)</p>
+	<div class="row" style="gap:var(--spacer_h);margin-bottom:var(--spacer_h)">
+		<app-show maximized><span class="bg-alt b r px pyh">Window is maximized</span></app-show>
+		<app-hide maximized><span class="bg-alt b r px pyh">Window is not maximized</span></app-hide>
+	</div>
+	<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">app-show</span> <span class="hljs-attr">maximized</span>&gt;</span>Window is maximized<span class="hljs-tag">&lt;/<span class="hljs-name">app-show</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-hide</span> <span class="hljs-attr">maximized</span>&gt;</span>Window is not maximized<span class="hljs-tag">&lt;/<span class="hljs-name">app-hide</span>&gt;</span></code></pre>
+
+	<p><strong>setting</strong> — show based on a database value (reactive)</p>
+	<div class="row" style="gap:var(--spacer_h);margin-bottom:var(--spacer_h)">
+		<app-show setting="notifications"><span class="bg-alt b r px pyh">notifications = truthy</span></app-show>
+		<app-hide setting="notifications"><span class="bg-alt b r px pyh">notifications = falsy</span></app-hide>
+		<app-show setting="theme=dark"><span class="bg-alt b r px pyh">theme = "dark"</span></app-show>
+	</div>
+	<pre><code class="hljs xml"><span class="hljs-comment">&lt;!-- truthy check --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-show</span> <span class="hljs-attr">setting</span>=<span class="hljs-string">"notifications"</span>&gt;</span>notifications is enabled<span class="hljs-tag">&lt;/<span class="hljs-name">app-show</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-hide</span> <span class="hljs-attr">setting</span>=<span class="hljs-string">"notifications"</span>&gt;</span>notifications is disabled<span class="hljs-tag">&lt;/<span class="hljs-name">app-hide</span>&gt;</span>
+<span class="hljs-comment">&lt;!-- exact value check --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-show</span> <span class="hljs-attr">setting</span>=<span class="hljs-string">"theme=dark"</span>&gt;</span>dark theme setting<span class="hljs-tag">&lt;/<span class="hljs-name">app-show</span>&gt;</span></code></pre>
+
+	<h3><code>&lt;app-setting-bool></code> / <code>&lt;app-setting-string></code> / <code>&lt;app-setting-number></code> — Persistent settings inputs.</h3>
+
+	<p>
+		These components bind a form control to a database key via the <code>setting</code> attribute.
+		The value is loaded from the database on connect and saved automatically on change.
+		Each change dispatches a <code>settingchange</code> event on <code>window</code>.
+	</p>
+
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr>
+					<th>Component</th>
+					<th>Renders</th>
+					<th>Value type</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><code>&lt;app-setting-bool&gt;</code></td>
+					<td><code>&lt;k-toggle&gt;</code></td>
+					<td>Boolean</td>
+				</tr>
+				<tr>
+					<td><code>&lt;app-setting-string&gt;</code></td>
+					<td><code>&lt;input type="text"&gt;</code></td>
+					<td>String</td>
+				</tr>
+				<tr>
+					<td><code>&lt;app-setting-number&gt;</code></td>
+					<td><code>&lt;input type="number"&gt;</code></td>
+					<td>Number</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr>
+					<th>Attribute</th>
+					<th>Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><code>setting</code></td>
+					<td>Database key to read/write</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<p>Slotted content is rendered as a label.</p>
+
+	<h5>Examples</h5>
+	<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">app-setting-bool</span> <span class="hljs-attr">setting</span>=<span class="hljs-string">"notifications"</span>&gt;</span>Enable Notifications<span class="hljs-tag">&lt;/<span class="hljs-name">app-setting-bool</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-setting-string</span> <span class="hljs-attr">setting</span>=<span class="hljs-string">"username"</span>&gt;</span>Username<span class="hljs-tag">&lt;/<span class="hljs-name">app-setting-string</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-setting-number</span> <span class="hljs-attr">setting</span>=<span class="hljs-string">"fontSize"</span>&gt;</span>Font Size<span class="hljs-tag">&lt;/<span class="hljs-name">app-setting-number</span>&gt;</span></code></pre>
+
+	<p><strong>Live demo:</strong></p>
+	<div style="display:flex; flex-direction:column; gap:var(--spacer_h); max-width:400px">
+		<app-setting-bool setting="demo-bool">Toggle setting</app-setting-bool>
+		<app-setting-string setting="demo-string">Text setting</app-setting-string>
+		<app-setting-number setting="demo-number">Number setting</app-setting-number>
+	</div>
+
+	<p style="margin-top:var(--spacer_h)"><strong>Combining with app-show / app-hide:</strong></p>
+	<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">app-setting-bool</span> <span class="hljs-attr">setting</span>=<span class="hljs-string">"notifications"</span>&gt;</span>Enable Notifications<span class="hljs-tag">&lt;/<span class="hljs-name">app-setting-bool</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">app-show</span> <span class="hljs-attr">setting</span>=<span class="hljs-string">"notifications"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Notifications are enabled!<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">app-show</span>&gt;</span></code></pre>
+</main>
+<div style="height:33vh"></div>

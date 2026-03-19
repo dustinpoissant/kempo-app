@@ -1,0 +1,39 @@
+{
+  "name": "kempo-app",
+  "version": "0.0.1",
+  "description": "A framework for building Electron apps using kempo-ui",
+  "type": "module",
+  "main": "src/main/main.js",
+  "bin": {
+    "kempo-app": "bin/kempo-app.js",
+    "kempo-interact": "scripts/interact.js",
+    "kempo-icon": "bin/kempo-icon.js",
+    "kempo-geticon": "bin/kempo-geticon.js",
+    "kempo-listicons": "bin/kempo-listicons.js"
+  },
+  "scripts": {
+    "start": "cd example && node ../bin/kempo-app.js",
+    "dev": "cd example && node ../bin/kempo-app.js --dev",
+    "interact": "node scripts/interact.js",
+    "postinstall": "node scripts/postinstall.js",
+    "test": "npx kempo-test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dustinpoissant/kempo-app.git"
+  },
+  "author": "Dustin Poissant",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dustinpoissant/kempo-app/issues"
+  },
+  "homepage": "https://github.com/dustinpoissant/kempo-app#readme",
+  "dependencies": {
+    "chrome-remote-interface": "^0.34.0",
+    "electron": "^41.0.1",
+    "kempo-ui": "^0.1.6"
+  },
+  "devDependencies": {
+    "kempo-testing-framework": "^1.4.4"
+  }
+}

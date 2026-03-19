@@ -1,0 +1,92 @@
+<main>
+	<h1>LLM Interact Tools</h1>
+
+	<p>
+		kempo-app ships a <code>kempo-interact</code> CLI that lets an LLM (or you) inspect
+		and drive the running app live via Chrome DevTools Protocol. Start the app in
+		dev mode first:
+	</p>
+	<pre><code class="hljs javascript">npm run dev</code></pre>
+	<p>This starts the app with DevTools open and CDP listening on port <strong>9222</strong>.</p>
+
+	<h3>Interact Commands</h3>
+	<p>Always run <code>structure</code> or <code>dom</code> first to understand the page before clicking.</p>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr>
+					<th>Command</th>
+					<th>What it does</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr><td><code>structure</code></td><td>Lists buttons, inputs, links, selects</td></tr>
+				<tr><td><code>dom</code></td><td>Full page HTML</td></tr>
+				<tr><td><code>screenshot [path]</code></td><td>Takes a screenshot (saves to <code>screenshot.png</code>)</td></tr>
+				<tr><td><code>navigate &lt;path&gt;</code></td><td>Navigate to a route, e.g. <code>/settings</code></td></tr>
+				<tr><td><code>click &lt;selector&gt;</code></td><td>Click a CSS selector</td></tr>
+				<tr><td><code>click-text &lt;text&gt;</code></td><td>Click the first element containing this text</td></tr>
+				<tr><td><code>type &lt;sel&gt; &lt;text&gt;</code></td><td>Type into an input</td></tr>
+				<tr><td><code>eval &lt;js&gt;</code></td><td>Evaluate JavaScript in the renderer</td></tr>
+				<tr><td><code>title</code></td><td>Get the current page title</td></tr>
+				<tr><td><code>url</code></td><td>Get the current URL</td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<h3>Example Session</h3>
+	<pre><code class="hljs javascript"># <span class="hljs-number">1.</span> <span class="hljs-title class_">Get</span> an overview <span class="hljs-keyword">of</span> the current page
+npm run interact -- structure
+
+# <span class="hljs-number">2.</span> <span class="hljs-title class_">Take</span> a screenshot
+npm run interact -- screenshot
+
+# <span class="hljs-number">3.</span> <span class="hljs-title class_">Navigate</span> to a page
+npm run interact -- navigate /settings
+
+# <span class="hljs-number">4.</span> <span class="hljs-title class_">Read</span> the database
+npm run interact -- <span class="hljs-built_in">eval</span> <span class="hljs-string">&quot;await window.api.db.get()&quot;</span>
+
+# <span class="hljs-number">5.</span> <span class="hljs-title class_">Set</span> a value
+npm run interact -- <span class="hljs-built_in">eval</span> <span class="hljs-string">&quot;await window.api.db.set(&#x27;theme&#x27;, &#x27;dark&#x27;)&quot;</span>
+
+# <span class="hljs-number">6.</span> <span class="hljs-title class_">Click</span> something
+npm run interact -- click-text <span class="hljs-string">&quot;Save&quot;</span>
+
+# <span class="hljs-number">7.</span> <span class="hljs-title class_">Check</span> the current route
+npm run interact -- <span class="hljs-built_in">eval</span> <span class="hljs-string">&quot;window.route&quot;</span></code></pre>
+
+	<h3>Creating a SKILL.md for Your App</h3>
+	<p>
+		Give your LLM full context about your app by creating a skill file at
+		<code>.github/skills/my-app.md</code>. GitHub Copilot reads skills automatically
+		and uses them when working in your project.
+	</p>
+	<pre><code class="hljs html"># My App — Copilot Skill
+
+## Project
+This is a kempo-app Electron desktop app.
+Run `npm run dev` to start it in dev mode, then use
+`npm run interact -- <span class="hljs-tag">&lt;<span class="hljs-name">cmd</span>&gt;</span>` to inspect and interact.
+
+## Pages
+- Home (#/) — dashboard overview
+- Settings (#/settings) — user preferences and theme
+
+## Interact Workflow
+Always run `structure` first, then use other commands.
+
+    npm run interact -- structure
+    npm run interact -- screenshot
+    npm run interact -- navigate /settings
+    npm run interact -- eval &quot;await window.api.db.get()&quot;
+
+## Database Schema
+- `theme` — &quot;light&quot; | &quot;dark&quot; | &quot;auto&quot;
+- `username` — string
+
+## Components Used
+k-card, k-toggle, k-theme-switcher (imported in app.js)</code></pre>
+	<p>The more context you give the LLM about your app's structure and data, the more effectively it can build and debug it.</p>
+</main>
+<div style="height:33vh"></div>

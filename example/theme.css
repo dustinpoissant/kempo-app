@@ -1,0 +1,27 @@
+:root {
+	--color-light__alt: #f5f6f7;
+	--color-light: #9feaf9;
+	--color-mid: #028399;
+	--color-mid-dark: #000885;
+	--color-dark: #1b1c26;
+	--color-dark__alt: #333333;
+	
+	--c_bg: light-dark(white, #1b1b1d);
+	--c_bg__alt: light-dark(var(--color-light__alt), var(--color-dark__alt));
+	--c_primary: var(--color-light);
+	--c_primary__hover: var(--color-mid);
+	--tc_on_primary: var(--tc_dark);
+	--c_secondary: var(--color-dark);
+	--tc_primary: var(--color-light);
+	--tc_secondary: var(--color-dark);
+	--tc_link: var(--color-mid);
+	--tc_link__hover: light-dark(var(--color-dark), var(--color-light));
+	--radius: 0.8rem;
+	--ff_body: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+	--ff_heading: var(--ff_body);
+	--c_border: rgba(200, 200, 200, 0.3);
+}
+/* Reset dropdown submenu color so chevrons are readable on the popup background */
+app-titlebar k-dropdown k-dropdown {
+	color: var(--tc);
+}

@@ -1,0 +1,81 @@
+<main>
+	<h1>Icons</h1>
+
+	<p>
+		Icons are inline SVGs loaded by <code>&lt;k-icon name="..."&gt;</code>.
+		The framework searches three directories in order — first match wins:
+	</p>
+	<ol>
+		<li><code>/icons/</code> — your project's <code>icons/</code> directory <em>(custom overrides)</em></li>
+		<li><code>/framework/icons/</code> — kempo-app built-ins (window controls)</li>
+		<li><code>/modules/kempo-ui/icons</code> — kempo-ui's bundled icon set</li>
+	</ol>
+
+	<h3>Live Preview</h3>
+	<div class="row" style="gap:var(--spacer); align-items:center">
+		<input type="text" id="icon-name-input" value="settings" style="width:200px" />
+		<k-icon id="icon-preview" name="settings" style="width:32px;height:32px"></k-icon>
+		<span id="icon-name-display" class="tc-muted">settings</span>
+	</div>
+	<p class="tc-muted">Type any icon name to preview it</p>
+
+	<h3>Finding Icons — Interactive CLI</h3>
+	<p>kempo-ui bundles the Google Material Symbols icon set. The easiest way to find and download icons is the interactive CLI:</p>
+	<pre><code class="hljs">npx kempo-icon</code></pre>
+	<p>This opens a searchable list — type to filter, select an icon, and it downloads the SVG into your <code>icons/</code> directory automatically.</p>
+
+	<h3>Finding Icons — Two-Step CLI</h3>
+	<p>For scripting or non-interactive use, search and download separately:</p>
+	<pre><code class="hljs"><span class="hljs-comment"># Search for icons by keyword (prints matching names)</span>
+npx kempo-listicons settings
+npx kempo-listicons arrow
+npx kempo-listicons home
+
+<span class="hljs-comment"># Download an icon SVG into your icons/ directory</span>
+npx kempo-geticon settings   <span class="hljs-comment"># → icons/settings.svg</span>
+npx kempo-geticon home       <span class="hljs-comment"># → icons/home.svg</span></code></pre>
+	<p>After running <code>kempo-geticon</code>, the SVG is in your <code>icons/</code> folder and immediately usable.</p>
+
+	<h3>Custom Icons</h3>
+	<p>Place any <code>.svg</code> file in your <code>icons/</code> directory:</p>
+	<pre><code class="hljs javascript">icons/
+  my-logo.<span class="hljs-property">svg</span>
+  custom-arrow.<span class="hljs-property">svg</span></code></pre>
+	<p>Then reference by filename (no extension):</p>
+	<pre><code class="hljs html"><span class="hljs-tag">&lt;<span class="hljs-name">k-icon</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;my-logo&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-icon</span>&gt;</span></code></pre>
+	<p>
+		SVGs should have a <code>viewBox</code> attribute. <code>fill</code> is set to
+		<code>currentColor</code> automatically so icons inherit the text color.
+	</p>
+	<p>
+		Placing an icon in <code>icons/</code> also <strong>overrides</strong> any same-named
+		built-in icon from kempo-app or kempo-ui.
+	</p>
+
+	<h3>Sizing &amp; Color</h3>
+	<pre><code class="hljs html"><span class="hljs-comment">&lt;!-- Size via CSS --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">k-icon</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;settings&quot;</span> <span class="hljs-attr">style</span>=<span class="hljs-string">&quot;width:24px; height:24px&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-icon</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- Color inherits from text color --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;tc-primary&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-icon</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;settings&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-icon</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></code></pre>
+
+	<script>
+	const input = document.getElementById("icon-name-input");
+	const preview = document.getElementById("icon-preview");
+	const display = document.getElementById("icon-name-display");
+	let timer;
+	input.addEventListener("input", () => {
+		clearTimeout(timer);
+		timer = setTimeout(() => {
+			const name = input.value.trim();
+			if(name){
+				preview.setAttribute("name", name);
+				display.textContent = name;
+			}
+		}, 300);
+	});
+	</script>
+</main>
+<div style="height:33vh"></div>

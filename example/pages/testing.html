@@ -1,0 +1,133 @@
+<main>
+	<h1>Testing</h1>
+
+	<p>
+		kempo-app ships shared test infrastructure so you can write browser tests for your
+		components and pages without Electron. Install
+		<code>kempo-testing-framework</code> as a dev dependency and you're ready to go.
+	</p>
+
+	<h3>Setup</h3>
+	<pre><code>npm install --save-dev kempo-testing-framework</code></pre>
+	<p>Add a test script to your <code>package.json</code>:</p>
+	<pre><code class="hljs json">{
+  <span class="hljs-attr">"scripts"</span>: {
+    <span class="hljs-attr">"test"</span>: <span class="hljs-string">"npx kempo-test"</span>
+  }
+}</code></pre>
+	<p>Create a <code>tests/</code> directory — the runner discovers test files recursively.</p>
+
+	<h3>The Test Page</h3>
+	<p>
+		kempo-app provides a ready-made test page at
+		<code>/node_modules/kempo-app/testing/test-page.html</code>.
+		It mocks the Electron environment so your components work in a plain browser:
+	</p>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th style="text-align:left;padding:6px 8px">What</th>
+					<th style="text-align:left;padding:6px 8px">Purpose</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="by"><td style="padding:6px 8px">Import map</td><td style="padding:6px 8px">Remaps <code>/modules/</code> and <code>/framework/</code> to <code>node_modules/</code> paths</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>window.api</code> mock</td><td style="padding:6px 8px">In-memory DB, no-op window controls, platform stubs</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>window.kempo</code></td><td style="padding:6px 8px">Browser-relative paths to kempo-css and icon directories</td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<h3>Writing a Browser Test</h3>
+	<p>
+		Create a <code>.browser-test.js</code> file in <code>tests/</code>. Export <code>page</code>
+		to point at the shared test page, use <code>beforeAll</code> for dynamic imports, and export
+		a default object of test functions:
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> page = <span class="hljs-string">"/node_modules/kempo-app/testing/test-page.html"</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-title function_">beforeAll</span> = <span class="hljs-keyword">async</span> () =&gt; {
+  <span class="hljs-keyword">await</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">"/modules/kempo-ui/dist/components/Card.js"</span>);
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-string">"card renders content"</span>: <span class="hljs-keyword">async</span> ({ pass, fail }) =&gt; {
+    <span class="hljs-keyword">const</span> card = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">createElement</span>(<span class="hljs-string">"k-card"</span>);
+    card.<span class="hljs-property">label</span> = <span class="hljs-string">"Test"</span>;
+    card.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">"&lt;p&gt;Hello&lt;/p&gt;"</span>;
+    <span class="hljs-variable language_">document</span>.<span class="hljs-property">body</span>.<span class="hljs-title function_">appendChild</span>(card);
+    <span class="hljs-keyword">await</span> card.<span class="hljs-property">updateComplete</span>;
+    <span class="hljs-keyword">if</span>(card.<span class="hljs-property">shadowRoot</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">"slot"</span>)) <span class="hljs-title function_">pass</span>();
+    <span class="hljs-keyword">else</span> <span class="hljs-title function_">fail</span>(<span class="hljs-string">"No slot found"</span>);
+    card.<span class="hljs-title function_">remove</span>();
+  }
+};</code></pre>
+
+	<h3>No Top-Level Imports</h3>
+	<p>
+		Test files are parsed by Node.js (to extract the <code>page</code> export) before running
+		in the browser. Top-level <code>import</code> statements with <code>/framework/</code> or
+		<code>/modules/</code> paths will fail in Node. Always use dynamic <code>import()</code>
+		inside <code>beforeAll</code>:
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// BAD — fails when Node parses the file</span>
+<span class="hljs-keyword">import</span> <span class="hljs-string">"/modules/kempo-ui/dist/components/Icon.js"</span>;
+
+<span class="hljs-comment">// GOOD — runs only in the browser</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-title function_">beforeAll</span> = <span class="hljs-keyword">async</span> () =&gt; {
+  <span class="hljs-keyword">await</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">"/modules/kempo-ui/dist/components/Icon.js"</span>);
+};</code></pre>
+
+	<h3>Lifecycle Hooks</h3>
+	<p>Tests support four lifecycle hooks, all optional:</p>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th style="text-align:left;padding:6px 8px">Hook</th>
+					<th style="text-align:left;padding:6px 8px">Runs</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="by"><td style="padding:6px 8px"><code>beforeAll</code></td><td style="padding:6px 8px">Once before all tests — import components here</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>afterAll</code></td><td style="padding:6px 8px">Once after all tests</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>beforeEach</code></td><td style="padding:6px 8px">Before each test — reset DOM/state</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>afterEach</code></td><td style="padding:6px 8px">After each test — cleanup</td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<h3>Node Tests</h3>
+	<p>
+		For logic that doesn't need a browser (pure functions, data utilities), create
+		<code>.node-test.js</code> files instead. Same test function signature, no <code>page</code>
+		export needed:
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-string">"adds numbers"</span>: ({ pass, fail }) =&gt; {
+    <span class="hljs-keyword">if</span>(<span class="hljs-number">1</span> + <span class="hljs-number">1</span> === <span class="hljs-number">2</span>) <span class="hljs-title function_">pass</span>();
+    <span class="hljs-keyword">else</span> <span class="hljs-title function_">fail</span>(<span class="hljs-string">"Math is broken"</span>);
+  }
+};</code></pre>
+
+	<h3>Running</h3>
+	<pre><code>npm test</code></pre>
+	<p>
+		The runner discovers all <code>.browser-test.js</code> and <code>.node-test.js</code> files
+		in <code>tests/</code> recursively, runs them, and prints a summary.
+	</p>
+
+	<h3>Mock API Surface</h3>
+	<p>
+		The <code>window.api</code> mock in <code>testing/mocks.js</code> matches the full
+		<code>preload.cjs</code> API. The in-memory db store is accessible via
+		<code>window.__kempoTestDbStore</code> for direct inspection in tests:
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// Seed the store before a test</span>
+<span class="hljs-variable language_">window</span>.<span class="hljs-property">__kempoTestDbStore</span>.<span class="hljs-property">username</span> = <span class="hljs-string">"alice"</span>;
+
+<span class="hljs-comment">// Read it through the API</span>
+<span class="hljs-keyword">const</span> val = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">db</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">"username"</span>); <span class="hljs-comment">// "alice"</span></code></pre>
+</main>
+<div style="height:33vh"></div>

@@ -1,0 +1,159 @@
+<main>
+	<h1>window.api</h1>
+
+	<p>
+		<code>window.api</code> is available in any page fragment or script via Electron's
+		<code>contextBridge</code>. It provides persistent settings storage, window controls,
+		and platform detection.
+	</p>
+
+	<h3>Database — window.api.db</h3>
+	<p>Settings persist to the OS user data directory as <code>settings.json</code>.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">db</span>.<span class="hljs-title function_">get</span>()              <span class="hljs-comment">// { key: value, … }</span>
+<span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">db</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">&quot;theme&quot;</span>)       <span class="hljs-comment">// &quot;dark&quot;</span>
+<span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">db</span>.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;theme&quot;</span>, <span class="hljs-string">&quot;dark&quot;</span>)
+<span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">db</span>.<span class="hljs-title function_">delete</span>(<span class="hljs-string">&quot;theme&quot;</span>)
+<span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">db</span>.<span class="hljs-title function_">has</span>(<span class="hljs-string">&quot;theme&quot;</span>)       <span class="hljs-comment">// true / false</span>
+<span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">db</span>.<span class="hljs-title function_">clear</span>()            <span class="hljs-comment">// deletes all data</span></code></pre>
+	<div class="row" style="gap:var(--spacer); align-items:center; flex-wrap:wrap">
+		<input type="text" id="db-key" placeholder="key" style="width:140px" />
+		<input type="text" id="db-value" placeholder="value" style="width:140px" />
+		<button id="db-set-btn">Set</button>
+		<button id="db-get-btn">Get All</button>
+	</div>
+	<pre id="db-output" class="bg-alt" style="padding:8px; border-radius:var(--radius); margin-top:8px; white-space:pre-wrap">—</pre>
+
+	<h3>Window Controls</h3>
+	<p>Programmatic control of the window:</p>
+	<pre><code class="hljs javascript"><span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">window</span>.<span class="hljs-title function_">minimize</span>()
+<span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">window</span>.<span class="hljs-title function_">maximize</span>()  <span class="hljs-comment">// toggles maximize / restore</span>
+<span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">window</span>.<span class="hljs-title function_">close</span>()</code></pre>
+	<div class="row" style="gap:var(--spacer_h)">
+		<button onclick="window.api.window.minimize()">Minimize</button>
+		<button onclick="window.api.window.maximize()">Toggle Maximize</button>
+	</div>
+
+	<h3>Platform Detection</h3>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> platform = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-title function_">getPlatform</span>();
+<span class="hljs-comment">// &quot;mac&quot; | &quot;win&quot; | &quot;linux&quot;</span></code></pre>
+	<p><strong>Current platform:</strong> <span id="platform-display" class="tc-primary">loading…</span></p>
+
+	<h3>Storage Location</h3>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th style="text-align:left;padding:6px 8px">Platform</th>
+					<th style="text-align:left;padding:6px 8px">Path</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="by"><td style="padding:6px 8px">Windows</td><td style="padding:6px 8px"><code>%APPDATA%\&lt;appName&gt;\settings.json</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px">macOS</td><td style="padding:6px 8px"><code>~/Library/Application Support/&lt;appName&gt;/settings.json</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px">Linux</td><td style="padding:6px 8px"><code>~/.config/&lt;appName&gt;/settings.json</code></td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<h3>Notifications — window.api.notification</h3>
+	<p>Use <code>window.api.notification</code> instead of the browser's <code>Notification</code> API. Because the renderer runs in a sandboxed context, the framework routes notifications through IPC to the main process, which uses Electron's native <code>Notification</code> class to ensure they are always delivered to the OS.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> supported = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">notification</span>.<span class="hljs-title function_">isSupported</span>();
+<span class="hljs-keyword">const</span> id = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">notification</span>.<span class="hljs-title function_">show</span>({ <span class="hljs-attr">title</span>: <span class="hljs-string">"Hello"</span>, <span class="hljs-attr">body</span>: <span class="hljs-string">"World"</span> });</code></pre>
+	<p><code>show()</code> returns a notification ID. React to user interactions by listening for CustomEvents on <code>window</code>:</p>
+	<pre><code class="hljs javascript"><span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">"notification:click"</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"clicked"</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">id</span>));
+<span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">"notification:close"</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"dismissed"</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">id</span>));
+<span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">"notification:reply"</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(e.<span class="hljs-property">detail</span>.<span class="hljs-property">id</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">reply</span>)); <span class="hljs-comment">// macOS inline reply</span></code></pre>
+	<p>All options:</p>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th style="text-align:left;padding:6px 8px">Option</th>
+					<th style="text-align:left;padding:6px 8px">Type</th>
+					<th style="text-align:left;padding:6px 8px">Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="by"><td style="padding:6px 8px"><code>title</code></td><td style="padding:6px 8px">string</td><td style="padding:6px 8px">Notification title. Defaults to the app name.</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>body</code></td><td style="padding:6px 8px">string</td><td style="padding:6px 8px">Notification body text.</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>icon</code></td><td style="padding:6px 8px">string</td><td style="padding:6px 8px">App-root-relative image path. Defaults to the app icon.</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>silent</code></td><td style="padding:6px 8px">boolean</td><td style="padding:6px 8px">Suppress the OS notification sound.</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>subtitle</code></td><td style="padding:6px 8px">string</td><td style="padding:6px 8px">Secondary line below the title. macOS only.</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>urgency</code></td><td style="padding:6px 8px"><code>"normal"</code> | <code>"critical"</code> | <code>"low"</code></td><td style="padding:6px 8px">Notification priority. Linux only.</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>timeoutType</code></td><td style="padding:6px 8px"><code>"default"</code> | <code>"never"</code></td><td style="padding:6px 8px">Controls auto-dismiss. Linux and Windows only.</td></tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="row" style="gap:var(--spacer_h)">
+		<button id="notify-btn">Send Test Notification</button>
+		<span id="notify-support" class="tc-muted" style="font-size:.875rem"></span>
+	</div>
+	<pre id="notify-output" class="bg-alt" style="padding:8px; border-radius:var(--radius); margin-top:8px; white-space:pre-wrap">Waiting for notification events…</pre>
+
+	<h3>Window Events</h3>
+	<p>The framework dispatches custom events on <code>window</code> that any script or component can listen for:</p>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th style="text-align:left;padding:6px 8px">Event</th>
+					<th style="text-align:left;padding:6px 8px">Fired when</th>
+					<th style="text-align:left;padding:6px 8px"><code>event.detail</code></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="by"><td style="padding:6px 8px"><code>settingchange</code></td><td style="padding:6px 8px"><code>window.api.db.set()</code> completes</td><td style="padding:6px 8px"><code>{ key, value }</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>routechange</code></td><td style="padding:6px 8px">Hash-based route changes</td><td style="padding:6px 8px"><code>{ path, params }</code></td></tr>
+			</tbody>
+		</table>
+	</div>
+	<pre><code class="hljs javascript"><span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&quot;settingchange&quot;</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(e.<span class="hljs-property">detail</span>.<span class="hljs-property">key</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">value</span>);
+});
+
+<span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&quot;routechange&quot;</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(e.<span class="hljs-property">detail</span>.<span class="hljs-property">path</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">params</span>);
+});</code></pre>
+	<p><strong>Live demo:</strong> Change a setting above or navigate to another page, then check the output below.</p>
+	<pre id="event-output" class="bg-alt" style="padding:8px; border-radius:var(--radius); margin-top:8px; white-space:pre-wrap">Waiting for events…</pre>
+
+	<script>
+	(async () => {
+		document.getElementById("platform-display").textContent = await window.api.getPlatform();
+
+		const supported = await window.api.notification.isSupported();
+		document.getElementById("notify-support").textContent = supported ? "Supported on this platform" : "Not supported on this platform";
+		const notifyOutput = document.getElementById("notify-output");
+		document.getElementById("notify-btn").addEventListener("click", async () => {
+			const id = await window.api.notification.show({ title: "Test Notification", body: "Notifications are working!" });
+			notifyOutput.textContent = `Sent: ${id}`;
+		});
+		window.addEventListener("notification:click", e => { notifyOutput.textContent = `click: ${e.detail.id}`; });
+		window.addEventListener("notification:close", e => { notifyOutput.textContent = `close: ${e.detail.id}`; });
+		window.addEventListener("notification:reply", e => { notifyOutput.textContent = `reply: ${e.detail.id} — "${e.detail.reply}"`; });
+
+		const output = document.getElementById("db-output");
+
+		document.getElementById("db-set-btn").addEventListener("click", async () => {
+			const key = document.getElementById("db-key").value.trim();
+			const val = document.getElementById("db-value").value.trim();
+			if(!key) return;
+			await window.api.db.set(key, val);
+			output.textContent = `Set "${key}" = "${val}"`;
+		});
+
+		document.getElementById("db-get-btn").addEventListener("click", async () => {
+			const all = await window.api.db.get();
+			output.textContent = JSON.stringify(all, null, 2);
+		});
+
+		const eventOutput = document.getElementById("event-output");
+		const logEvent = (name, detail) => {
+			eventOutput.textContent = `${name}: ${JSON.stringify(detail)}`;
+		};
+		window.addEventListener("settingchange", e => logEvent("settingchange", e.detail));
+		window.addEventListener("routechange", e => logEvent("routechange", e.detail));
+	})();
+	</script>
+</main>
+<div style="height:33vh"></div>

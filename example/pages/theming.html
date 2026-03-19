@@ -1,0 +1,47 @@
+<main>
+	<h1>Theming</h1>
+
+	<p>
+		Create <code>theme.css</code> in your project root to override kempo-css variables.
+		It loads after kempo-css, so anything you set wins. The file is optional — if it
+		doesn't exist, the framework silently ignores it.
+	</p>
+
+	<h3>Light / Dark Mode</h3>
+	<p>kempo-css handles light/dark automatically via <code>light-dark()</code>.</p>
+
+	<h3>theme.css Example</h3>
+	<pre><code class="hljs javascript"><span class="hljs-comment">/* theme.css — place in your project root */</span>
+:root {
+  --<span class="hljs-attr">c_primary</span>:       #47848F;
+  --<span class="hljs-attr">c_primary__hover</span>:#3a6b74;
+  --<span class="hljs-attr">c_input_accent</span>:  #47848F;
+  --<span class="hljs-attr">c_highlight</span>:     <span class="hljs-title function_">rgba</span>(<span class="hljs-number">71</span>, <span class="hljs-number">132</span>, <span class="hljs-number">143</span>, <span class="hljs-number">0.2</span>);
+}</code></pre>
+
+	<h3>Common CSS Variables</h3>
+	<p>Most commonly overridden variables:</p>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th style="text-align:left;padding:6px 8px">Variable</th>
+					<th style="text-align:left;padding:6px 8px">Controls</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="by"><td style="padding:6px 8px"><code>--c_primary</code></td><td style="padding:6px 8px">Buttons, links, active nav, focus rings</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>--c_primary__hover</code></td><td style="padding:6px 8px">Hover state for primary elements</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>--c_input_accent</code></td><td style="padding:6px 8px">Input focus + toggle active color</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>--c_bg</code></td><td style="padding:6px 8px">Page background</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>--c_bg__alt</code></td><td style="padding:6px 8px">Nav, sidebar, card backgrounds</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>--c_border</code></td><td style="padding:6px 8px">Borders</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>--tc</code></td><td style="padding:6px 8px">Base text color</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>--radius</code></td><td style="padding:6px 8px">Border radius</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>--spacer</code></td><td style="padding:6px 8px">Base spacing unit</td></tr>
+			</tbody>
+		</table>
+	</div>
+	<p class="tc-muted">For the full list of variables and utility classes, see the <a href="https://dustinpoissant.github.io/kempo-css/" target="_blank">kempo-css docs</a>.</p>
+</main>
+<div style="height:33vh"></div>

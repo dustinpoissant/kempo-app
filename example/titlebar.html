@@ -1,0 +1,40 @@
+<app-titlebar class="bg-secondary">
+  <k-dropdown slot="left" class="no-drag" open-direction="down right">
+    <button slot="trigger" class="no-btn pq">
+      <k-icon name="kempo"></k-icon>
+    </button>
+    <k-dropdown>
+      <button slot="trigger"><k-icon name="file"></k-icon> File</button>
+      <button data-value="new-window"><k-icon name="refresh"></k-icon> Reload Window</button>
+      <button data-value="new-window"><k-icon name="open_in_browser"></k-icon> New Window</button>
+      <button data-value="close-window"><k-icon name="close"></k-icon> Close Window</button>
+    </k-dropdown>
+    <k-dropdown>
+      <button slot="trigger"><k-icon name="help"></k-icon> Help</button>
+      <a href="https://dustinpoissant.github.io/kempo-ui/" target="_blank"><k-icon name="js"></k-icon> Kempo UI Docs</a>
+      <a href="https://dustinpoissant.github.io/kempo-css" target="_blank"><k-icon name="css"></k-icon> Kempo CSS Docs</a>
+      <a href="https://github.com/dustinpoissant/kempo-app" target="_blank"><k-icon name="github"></k-icon> Kempo App GitHub</a>
+    </k-dropdown>
+  </k-dropdown>
+  <b>Kempo App Example</b>
+  <k-theme-switcher slot="right" class="no-drag r" style="--padding: 0.25rem;"></k-theme-switcher>
+</app-titlebar>
+
+<script type="module">
+  const menu = document.querySelector('app-titlebar k-dropdown');
+
+  const devMode = await window.api.isDev();
+  if(devMode){
+    const fileMenu = menu.querySelector('k-dropdown');
+    const devBtn = document.createElement('button');
+    devBtn.setAttribute('data-value', 'devtools');
+    devBtn.innerHTML = '<k-icon name="settings"></k-icon> Dev Tools';
+    fileMenu.insertBefore(devBtn, fileMenu.querySelector('[data-value="close-window"]'));
+  }
+
+  menu.addEventListener('select', e => {
+    if(e.detail.value === 'new-window') window.api.window.new();
+    if(e.detail.value === 'close-window') window.api.window.close();
+    if(e.detail.value === 'devtools') window.api.toggleDevTools();
+  });
+</script>
