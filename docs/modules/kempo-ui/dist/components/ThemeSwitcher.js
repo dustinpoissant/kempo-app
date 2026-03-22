@@ -19,5 +19,6 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css}from"../lit-al
 		}
 		button.no-btn {
 			padding: var(--padding);
+			border-radius: var(--radius);
 		}
 	`;static setTheme(e){theme.set(e)}static getCurrentTheme(){return theme.get()}static getCalculatedCurrentTheme(){return theme.getCalculated()}}customElements.define("k-theme-switcher",ThemeSwitcher);

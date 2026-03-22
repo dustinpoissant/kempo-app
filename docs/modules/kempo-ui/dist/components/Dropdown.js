@@ -11,7 +11,7 @@ import{html,css}from"../lit-all.min.js";import ShadowComponent from"./ShadowComp
 			display: none;
 			position: fixed;
 			position-anchor: --dropdown-trigger;
-			z-index: 1000;
+			z-index: 70;
 			min-width: anchor-size(width);
 			background: var(--c_bg);
 			border: 1px solid var(--c_border);
