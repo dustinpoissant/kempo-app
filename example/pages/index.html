@@ -141,7 +141,7 @@
   <p>Create <code>backend.js</code> to run code JavaScript in Node JS (in Electron's main process). Use it for file system access, custom IPC, native menus, or any server-side logic.</p>
   <pre><code class="hljs js"><span class="hljs-keyword">export default</span> ({ db, ipc, app }) =&gt; {
   ipc.handle(<span class="hljs-string">"my-channel"</span>, <span class="hljs-keyword">async</span> (e, data) =&gt; {
-    <span class="hljs-keyword">return</span> db.get(<span class="hljs-string">"someKey"</span>);
+    <span class="hljs-keyword">return</span> db.get(<span class="hljs-string">"settings"</span>, <span class="hljs-string">"someKey"</span>);
   });
 };</code></pre>
 

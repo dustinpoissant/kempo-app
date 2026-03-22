@@ -1,0 +1,129 @@
+<main>
+	<h1>Database</h1>
+
+	<p>
+		<code>window.api.db</code> is a file-based JSON database. Each <strong>table</strong> is a separate
+		JSON file stored in the OS user data directory. No schema, no setup — just pick a table name
+		and start reading/writing.
+	</p>
+
+	<h3>API</h3>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// Get a table handle, then call methods on it</span>
+<span class="hljs-keyword">const</span> settings = <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-title function_">db</span>(<span class="hljs-string">&quot;settings&quot;</span>);
+
+<span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">get</span>()                               <span class="hljs-comment">// all keys → { key: value, … }</span>
+<span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">get</span>(<span class="hljs-string">&quot;theme&quot;</span>)                        <span class="hljs-comment">// one value → &quot;dark&quot;</span>
+<span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;theme&quot;</span>, <span class="hljs-string">&quot;dark&quot;</span>)                <span class="hljs-comment">// set a value</span>
+<span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">delete</span>(<span class="hljs-string">&quot;theme&quot;</span>)                     <span class="hljs-comment">// remove a key</span>
+<span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">has</span>(<span class="hljs-string">&quot;theme&quot;</span>)                       <span class="hljs-comment">// true / false</span>
+<span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">clear</span>()                             <span class="hljs-comment">// wipe the table</span></code></pre>
+
+	<h3>Multiple Tables</h3>
+	<p>
+		Use any table name — each one becomes its own JSON file. No need to declare tables
+		ahead of time; they're created automatically on first write.
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// &quot;settings&quot; table → settings.json</span>
+<span class="hljs-keyword">const</span> settings = <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-title function_">db</span>(<span class="hljs-string">&quot;settings&quot;</span>);
+<span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;theme&quot;</span>, <span class="hljs-string">&quot;dark&quot;</span>)
+
+<span class="hljs-comment">// &quot;contacts&quot; table → contacts.json</span>
+<span class="hljs-keyword">const</span> contacts = <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-title function_">db</span>(<span class="hljs-string">&quot;contacts&quot;</span>);
+<span class="hljs-keyword">await</span> contacts.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;alice&quot;</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">&quot;Alice&quot;</span>, <span class="hljs-attr">email</span>: <span class="hljs-string">&quot;alice@example.com&quot;</span> })
+
+<span class="hljs-comment">// &quot;cache&quot; table → cache.json</span>
+<span class="hljs-keyword">const</span> cache = <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-title function_">db</span>(<span class="hljs-string">&quot;cache&quot;</span>);
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;lastFetch&quot;</span>, <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>())
+
+<span class="hljs-comment">// Each table is independent</span>
+<span class="hljs-keyword">await</span> contacts.<span class="hljs-title function_">get</span>()             <span class="hljs-comment">// { alice: { name: &quot;Alice&quot;, … } }</span>
+<span class="hljs-keyword">await</span> cache.<span class="hljs-title function_">clear</span>()             <span class="hljs-comment">// only clears cache, contacts untouched</span></code></pre>
+
+	<h3>Values</h3>
+	<p>
+		Values can be any JSON-serializable type: strings, numbers, booleans, arrays, or nested objects.
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-title function_">db</span>(<span class="hljs-string">&quot;myData&quot;</span>).<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;prefs&quot;</span>, {
+  <span class="hljs-attr">notifications</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">favorites</span>: [<span class="hljs-string">&quot;home&quot;</span>, <span class="hljs-string">&quot;settings&quot;</span>],
+  <span class="hljs-attr">layout</span>: { <span class="hljs-attr">sidebar</span>: <span class="hljs-literal">false</span>, <span class="hljs-attr">compact</span>: <span class="hljs-literal">true</span> }
+})
+
+<span class="hljs-keyword">const</span> prefs = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-title function_">db</span>(<span class="hljs-string">&quot;myData&quot;</span>).<span class="hljs-title function_">get</span>(<span class="hljs-string">&quot;prefs&quot;</span>)
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(prefs.<span class="hljs-property">layout</span>.<span class="hljs-property">compact</span>) <span class="hljs-comment">// true</span></code></pre>
+
+	<h3>settingchange Event</h3>
+	<p>
+		Every <code>db.set()</code> call dispatches a <code>settingchange</code> CustomEvent on <code>window</code>
+		with the table, key, and value in <code>event.detail</code>:
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&quot;settingchange&quot;</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(e.<span class="hljs-property">detail</span>.<span class="hljs-property">table</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">key</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">value</span>);
+});</code></pre>
+
+	<h3>Backend Access</h3>
+	<p>
+		In <code>backend.js</code>, the <code>db</code> object has the same API — table name first:
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({ db, ipc }) =&gt; {
+  ipc.<span class="hljs-title function_">handle</span>(<span class="hljs-string">&quot;get-user&quot;</span>, <span class="hljs-function">() =&gt;</span> db.<span class="hljs-title function_">get</span>(<span class="hljs-string">&quot;users&quot;</span>, <span class="hljs-string">&quot;currentUser&quot;</span>));
+};</code></pre>
+
+	<div class="app-demo">
+		<h3>Try It</h3>
+		<div class="row" style="gap:var(--spacer); align-items:center; flex-wrap:wrap">
+			<input type="text" id="db-table" placeholder="table" value="settings" style="width:120px" />
+			<input type="text" id="db-key" placeholder="key" style="width:140px" />
+			<input type="text" id="db-value" placeholder="value" style="width:140px" />
+			<button id="db-set-btn">Set</button>
+			<button id="db-get-btn">Get All</button>
+		</div>
+		<pre id="db-output" class="bg-alt" style="padding:8px; border-radius:var(--radius); margin-top:8px; white-space:pre-wrap">—</pre>
+		<pre id="event-output" class="bg-alt" style="padding:8px; border-radius:var(--radius); margin-top:8px; white-space:pre-wrap">Waiting for settingchange events…</pre>
+	</div>
+
+	<h3>Storage Location</h3>
+	<p>Each table is stored as a separate JSON file:</p>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th style="text-align:left;padding:6px 8px">Platform</th>
+					<th style="text-align:left;padding:6px 8px">Path</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="by"><td style="padding:6px 8px">Windows</td><td style="padding:6px 8px"><code>%APPDATA%\&lt;appName&gt;\db\*.json</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px">macOS</td><td style="padding:6px 8px"><code>~/Library/Application Support/&lt;appName&gt;/db/*.json</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px">Linux</td><td style="padding:6px 8px"><code>~/.config/&lt;appName&gt;/db/*.json</code></td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<script>
+	(async () => {
+		const output = document.getElementById("db-output");
+
+		document.getElementById("db-set-btn").addEventListener("click", async () => {
+			const table = document.getElementById("db-table").value.trim() || "settings";
+			const key = document.getElementById("db-key").value.trim();
+			const val = document.getElementById("db-value").value.trim();
+			if(!key) return;
+			await window.api.db(table).set(key, val);
+			output.textContent = `Set "${table}.${key}" = "${val}"`;
+		});
+
+		document.getElementById("db-get-btn").addEventListener("click", async () => {
+			const table = document.getElementById("db-table").value.trim() || "settings";
+			const all = await window.api.db(table).get();
+			output.textContent = JSON.stringify(all, null, 2);
+		});
+
+		const eventOutput = document.getElementById("event-output");
+		window.addEventListener("settingchange", e => {
+			eventOutput.textContent = `settingchange: ${JSON.stringify(e.detail)}`;
+		});
+	})();
+	</script>
+</main>
+<div style="height:33vh"></div>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kempo App — Docs</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "/modules/": "./modules/",
+        "/framework/": "./framework/"
+      }
+    }
+  </script>
+  <script>
+    window.kempo = {
+      pathToStylesheet: 'modules/kempo-css/dist/kempo.min.css',
+      pathsToIcons: ['icons', 'framework/icons', 'modules/kempo-ui/icons']
+    };
+  </script>
+  <script>
+    /* window.api stub — framework components (app-setting-bool, app-show, app-hide) require
+       window.api to exist. Interactive demo sections are hidden in docs via .app-demo { display:none } */
+    (function(){
+      const tables = {};
+      const getTable = t => { if(!tables[t]) tables[t] = {}; return tables[t]; };
+      window.api = {
+        db: table => ({
+          get: async key => { const t = getTable(table); return key === undefined ? {...t} : t[key]; },
+          set: async (key, value) => { getTable(table)[key] = value; window.dispatchEvent(new CustomEvent("settingchange", { detail: { table, key, value } })); },
+          delete: async key => { delete getTable(table)[key]; },
+          has: async key => key in getTable(table),
+          clear: async () => { const t = getTable(table); for(const k of Object.keys(t)) delete t[k]; },
+        }),
+        window: {
+          minimize: () => {},
+          maximize: () => {},
+          close: () => {},
+          new: () => {},
+          isMaximized: async () => false,
+          onMaximizeChange: () => {},
+        },
+        getPlatform: async () => "win",
+        getAppName: async () => "Kempo App Docs",
+        isDev: async () => false,
+        toggleDevTools: () => {},
+        notification: {
+          show: async () => {},
+          isSupported: async () => true,
+        },
+        contextMenu: {
+          show: () => {},
+          onClick: () => {},
+        },
+      };
+    })();
+  </script>
+  <link rel="stylesheet" href="modules/kempo-css/dist/kempo.min.css">
+  <link rel="stylesheet" href="modules/kempo-css/dist/kempo-hljs.min.css">
+  <link rel="stylesheet" href="docs.css">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+  <nav class="bg-secondary px bb row" style="font-weight: 500; z-index: 1">
+    <a href="#/" class="nav-link row" style="gap:6px; flex-shrink:0; align-items:center">
+      <k-icon name="home"></k-icon> Home
+    </a>
+    <a href="#/routing" class="nav-link"><k-icon name="arrow_split"></k-icon> Routing</a>
+    <a href="#/components" class="nav-link"><k-icon name="code_xml"></k-icon> Components</a>
+    <a href="#/icons" class="nav-link"><k-icon name="emoji_objects"></k-icon> Icons</a>
+    <a href="#/theming" class="nav-link"><k-icon name="format_paint"></k-icon> Theming</a>
+    <a href="#/api" class="nav-link"><k-icon name="api"></k-icon> API</a>
+    <a href="#/database" class="nav-link"><k-icon name="table"></k-icon> Database</a>
+    <a href="#/backend" class="nav-link"><k-icon name="terminal"></k-icon> Backend</a>
+    <a href="#/testing" class="nav-link"><k-icon name="labs"></k-icon> Testing</a>
+    <a href="#/ai-dev" class="nav-link"><k-icon name="ai"></k-icon> AI Dev</a>
+    <div class="flex-1"></div>
+    <k-theme-switcher></k-theme-switcher>
+  </nav>
+  <div id="page-container"></div>
+  <script type="module">
+    /* Component imports */
+    import "/modules/kempo-ui/dist/components/Icon.js";
+    import "/modules/kempo-ui/dist/components/Import.js";
+    import "/modules/kempo-ui/dist/components/Card.js";
+    import "/modules/kempo-ui/dist/components/Toggle.js";
+    import "/modules/kempo-ui/dist/components/ThemeSwitcher.js";
+    import "/modules/kempo-ui/dist/components/ThemeSelect.js";
+    import "/modules/kempo-ui/dist/components/Accordion.js";
+    import "/modules/kempo-ui/dist/components/Tabs.js";
+    import "/modules/kempo-ui/dist/components/Dropdown.js";
+    import "/framework/src/renderer/components/AppPage.js";
+    import "/framework/src/renderer/components/AppShow.js";
+    import "/framework/src/renderer/components/AppHide.js";
+    import "/framework/src/renderer/components/AppSettingBool.js";
+    import "/framework/src/renderer/components/AppSettingString.js";
+    import "/framework/src/renderer/components/AppSettingNumber.js";
+
+    /* Router */
+    const container = document.getElementById("page-container");
+
+    const parseHash = hash => {
+      const raw = hash.slice(1) || "/";
+      const [pathPart, queryPart] = raw.split("?");
+      const params = Object.fromEntries(new URLSearchParams(queryPart || ""));
+      return { path: pathPart || "/", params };
+    };
+
+    const navigate = async () => {
+      const { path, params } = parseHash(window.location.hash);
+      window.route = { path, params };
+      const page = path === "/" ? "index" : path.slice(1);
+      const res = await fetch(`pages/${page}.html`);
+      if(!res.ok){ container.innerHTML = "<main><h1>Page not found</h1></main>"; return; }
+      const html = await res.text();
+      container.innerHTML = "";
+      const div = document.createElement("div");
+      div.innerHTML = html;
+      for(const old of div.querySelectorAll("script")){
+        const script = document.createElement("script");
+        for(const attr of old.attributes) script.setAttribute(attr.name, attr.value);
+        script.textContent = old.textContent;
+        old.replaceWith(script);
+      }
+      container.append(...div.childNodes);
+      document.querySelectorAll(".nav-link").forEach(link => {
+        const linkPath = link.getAttribute("href")?.replace("#", "").split("?")[0];
+        link.classList.toggle("active", linkPath === path);
+      });
+      window.dispatchEvent(new CustomEvent("routechange", { detail: window.route }));
+      container.scrollTop = 0;
+    };
+
+    window.addEventListener("hashchange", navigate);
+    navigate();
+  </script>
+</body>
+</html>

@@ -6,7 +6,7 @@ export const beforeAll = async () => {
 
 export const beforeEach = async () => {
   document.body.innerHTML = "";
-  await window.api.db.clear();
+  await window.api.db("settings").clear();
   document.documentElement.removeAttribute("data-theme");
 };
 
@@ -91,7 +91,7 @@ export default {
   },
 
   'app-hide hides when setting key=value matches': async ({ pass, fail }) => {
-    await window.api.db.set("mode", "compact");
+    await window.api.db("settings").set("mode", "compact");
     const el = document.createElement("app-hide");
     el.setAttribute("setting", "mode=compact");
     document.body.appendChild(el);

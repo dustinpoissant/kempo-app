@@ -7,7 +7,7 @@ export const beforeAll = async () => {
 
 export const beforeEach = async () => {
   document.body.innerHTML = "";
-  await window.api.db.clear();
+  await window.api.db("settings").clear();
 };
 
 export default {
@@ -23,7 +23,7 @@ export default {
   },
 
   'app-setting-bool renders a k-toggle': async ({ pass, fail }) => {
-    await window.api.db.set("boolSetting", true);
+    await window.api.db("settings").set("boolSetting", true);
     const el = document.createElement("app-setting-bool");
     el.setting = "boolSetting";
     document.body.appendChild(el);
@@ -49,7 +49,7 @@ export default {
   },
 
   'app-setting-bool loads and renders boolean value from db': async ({ pass, fail }) => {
-    await window.api.db.set("boolLoad", true);
+    await window.api.db("settings").set("boolLoad", true);
     const el = document.createElement("app-setting-bool");
     el.setting = "boolLoad";
     document.body.appendChild(el);

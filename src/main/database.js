@@ -2,66 +2,67 @@ import fs from "fs";
 import path from "path";
 import { app } from "electron";
 
-class Database {
-  #filePath;
-  #data = {};
+export default class Database {
+  #dir;
+  #tables = new Map();
 
-  constructor(filename = "settings.json") {
-    this.#filePath = path.join(app.getPath("userData"), filename);
-    this.#load();
+  constructor() {
+    this.#dir = path.join(app.getPath("userData"), "db");
+    if(!fs.existsSync(this.#dir)) fs.mkdirSync(this.#dir, { recursive: true });
   }
 
   /*
     Private Methods
   */
 
-  #load() {
+  #filePath = table => path.join(this.#dir, `${table}.json`);
+
+  #load(table) {
+    if(this.#tables.has(table)) return this.#tables.get(table);
+    const fp = this.#filePath(table);
+    let data = {};
     try {
-      if(fs.existsSync(this.#filePath)){
-        this.#data = JSON.parse(fs.readFileSync(this.#filePath, "utf-8"));
-      } else {
-        this.#save();
-      }
+      if(fs.existsSync(fp)) data = JSON.parse(fs.readFileSync(fp, "utf-8"));
     } catch {
-      this.#data = {};
-      this.#save();
+      data = {};
     }
+    this.#tables.set(table, data);
+    return data;
   }
 
-  #save() {
-    const dir = path.dirname(this.#filePath);
-    if(!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(this.#filePath, JSON.stringify(this.#data, null, 2), "utf-8");
+  #save(table) {
+    fs.writeFileSync(this.#filePath(table), JSON.stringify(this.#tables.get(table) ?? {}, null, 2), "utf-8");
   }
 
   /*
     Public Methods
   */
 
-  get = (key) => {
-    if(key === undefined) return { ...this.#data };
-    return this.#data[key];
+  get = (table, key) => {
+    const data = this.#load(table);
+    if(key === undefined) return { ...data };
+    return data[key];
   };
 
-  set = (key, value) => {
-    this.#data[key] = value;
-    this.#save();
+  set = (table, key, value) => {
+    const data = this.#load(table);
+    data[key] = value;
+    this.#save(table);
     return true;
   };
 
-  delete = (key) => {
-    delete this.#data[key];
-    this.#save();
+  delete = (table, key) => {
+    const data = this.#load(table);
+    delete data[key];
+    this.#save(table);
     return true;
   };
 
-  has = key => key in this.#data;
+  has = (table, key) => key in this.#load(table);
 
-  clear = () => {
-    this.#data = {};
-    this.#save();
+  clear = (table) => {
+    this.#tables.set(table, {});
+    this.#save(table);
     return true;
   };
 }
-
-export default Database;

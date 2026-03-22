@@ -79,7 +79,7 @@ const createWindow = (hash) => {
   const isMac = process.platform === "darwin";
 
   const win = new BrowserWindow({
-    ...(db.get("windowBounds") || { width: 1200, height: 800 }),
+    ...(db.get("settings", "windowBounds") || { width: 1200, height: 800 }),
     minWidth: 600,
     minHeight: 400,
     title: appName,
@@ -134,7 +134,7 @@ const createWindow = (hash) => {
 
   const saveBounds = () => {
     if(!win.isMaximized() && !win.isMinimized()){
-      db.set("windowBounds", win.getBounds());
+      db.set("settings", "windowBounds", win.getBounds());
     }
   };
   win.on("resize", saveBounds);
@@ -147,7 +147,7 @@ const createWindow = (hash) => {
 };
 
 app.whenReady().then(async () => {
-  db = new Database("settings.json");
+  db = new Database();
 
   /*
     Protocol Handler
@@ -169,11 +169,11 @@ app.whenReady().then(async () => {
     IPC Handlers
   */
 
-  ipcMain.handle("db:get", (e, key) => db.get(key));
-  ipcMain.handle("db:set", (e, key, value) => db.set(key, value));
-  ipcMain.handle("db:delete", (e, key) => db.delete(key));
-  ipcMain.handle("db:has", (e, key) => db.has(key));
-  ipcMain.handle("db:clear", () => db.clear());
+  ipcMain.handle("db:get", (e, table, key) => db.get(table, key));
+  ipcMain.handle("db:set", (e, table, key, value) => db.set(table, key, value));
+  ipcMain.handle("db:delete", (e, table, key) => db.delete(table, key));
+  ipcMain.handle("db:has", (e, table, key) => db.has(table, key));
+  ipcMain.handle("db:clear", (e, table) => db.clear(table));
 
   const getWindow = e => BrowserWindow.fromWebContents(e.sender);
 

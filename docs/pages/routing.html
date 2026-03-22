@@ -1,0 +1,63 @@
+<main>
+	<h1>Routing</h1>
+
+	<p>
+		kempo-app uses a <strong>hash router</strong>.
+		Hash routes map directly to files in your <code>pages/</code> directory.
+	</p>
+
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th style="text-align:left; padding:6px 8px">URL hash</th>
+					<th style="text-align:left; padding:6px 8px">File loaded</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="by"><td style="padding:6px 8px"><code>#/</code></td><td style="padding:6px 8px"><code>pages/index.html</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>#/settings</code></td><td style="padding:6px 8px"><code>pages/settings.html</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>#/any-name</code></td><td style="padding:6px 8px"><code>pages/any-name.html</code></td></tr>
+			</tbody>
+		</table>
+	</div>
+	
+	<h3>How to create a new page</h3>
+	<ol>
+		<li>
+			Create the page file in the <code>pages</code> directory.
+			<k-card label="pages/page1.html" class="mt">
+				<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Page 1<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span></code></pre>
+			</k-card>
+		</li>
+		<li>
+			Link to the page usign the hash router in another page (or shell or titlebar).
+			<k-card label="pages/page1.html" class="mt">
+				<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#/page1"</span>&gt;</span>Go to page 1<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span></code></pre>
+			</k-card>
+		</li>
+	</ol>
+	
+	
+	<h3>Detecting a page change</h3>
+	<p><code>window.route</code> is always available and updated on every navigation. It contains <code>{ path, params }</code>.</p>
+	<p style="margin-top:8px">
+		Query params are parsed automatically:
+		<code>#/routing?tab=advanced&amp;debug=true</code>
+		→ <code>window.route.params = { tab: "advanced", debug: "true" }</code>
+	</p>
+	
+	<p>Listen for the <code>routechange</code> event on <code>window</code> to react to navigation changes. The event fires after <code>window.route</code> is updated. Use this instead of the native <code>hashchange</code> event, which fires before <code>window.route</code> is updated.</p>
+	
+	<pre><code class="hljs javascript"><span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">"routechange"</span>, e =&gt; {<br />  <span class="hljs-built_in">console</span>.log(e.detail.path, e.detail.params);<br />});</code></pre>
+
+	<h3>External links</h3>
+	<p>Links with <code>target="_blank"</code> automatically open in the system's default browser instead of inside the app.</p>
+	<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"https://example.com"</span> <span class="hljs-attr">target</span>=<span class="hljs-string">"_blank"</span>&gt;</span>Open externally<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span></code></pre>
+	<p>From JavaScript, use <code>window.open()</code> — the framework intercepts it and routes it to the system browser the same way.</p>
+	<pre><code class="hljs javascript"><span class="hljs-built_in">window</span>.open(<span class="hljs-string">"https://example.com"</span>);</code></pre>
+	<p>To open a new instance of the app itself, use <code>window.api.window.new()</code>. Pass an optional hash to open at a specific route.</p>
+	<pre><code class="hljs javascript"><span class="hljs-built_in">window</span>.api.window.new();            <span class="hljs-comment">// opens at #/</span>
+<span class="hljs-built_in">window</span>.api.window.new(<span class="hljs-string">"#/settings"</span>); <span class="hljs-comment">// opens at #/settings</span></code></pre>
+</main>
+<div style="height:33vh"></div>

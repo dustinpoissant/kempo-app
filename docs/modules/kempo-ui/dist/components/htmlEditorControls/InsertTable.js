@@ -1,0 +1,15 @@
+import HtmlEditorControl from"./HtmlEditorControl.js";import{html,css}from"../../lit-all.min.js";import"../Icon.js";import Dialog from"../Dialog.js";export default class InsertTable extends HtmlEditorControl{static properties={editorMode:{type:String,state:!0}};constructor(){super()}connectedCallback(){super.connectedCallback(),this.editor&&(this.editorMode=this.editor.mode,this.editor?.addEventListener("mode-changed",()=>{this.editor&&(this.editorMode=this.editor.mode)}))}handleMouseDown=e=>{if(!this.editor)return;e.preventDefault(),e.stopPropagation();const t=this.editor.shadowRoot.getSelection()||window.getSelection();let o=null,l=null;if(t.rangeCount){let e=t.getRangeAt(0).startContainer;e.nodeType===Node.TEXT_NODE&&(e=e.parentElement),o=e.closest("table")}const n=!!o;let r=3,s=3,i=!0;if(n){const e=o.querySelector("thead"),t=o.querySelector("tbody"),n=!!e;if(l=[],n){const t=e.querySelector("tr"),o=Array.from(t.cells).map(e=>e.innerHTML);l.push(o),s=o.length}const d=t.querySelectorAll("tr");d.forEach(e=>{const t=Array.from(e.cells).map(e=>e.innerHTML);l.push(t),t.length>s&&(s=t.length)}),r=d.length,i=n,o.remove()}const d=document.createElement("input");d.type="number",d.min="1",d.max="20",d.value=r.toString(),d.style.cssText="padding: 0.5rem; border: 1px solid var(--border-color, #ccc); border-radius: 4px; font-size: 1rem;";const c=document.createElement("input");c.type="number",c.min="1",c.max="10",c.value=s.toString(),c.style.cssText="padding: 0.5rem; border: 1px solid var(--border-color, #ccc); border-radius: 4px; font-size: 1rem;";const a=document.createElement("input");a.type="checkbox",a.checked=i,a.id="table-headers-checkbox";const m=document.createElement("div");m.className="p",m.style.cssText="display: flex; flex-direction: column; gap: 1rem;",m.innerHTML='\n\t\t\t<div style="display: flex; flex-direction: column; gap: 0.5rem;">\n\t\t\t\t<label style="font-weight: bold;">Rows</label>\n\t\t\t</div>\n\t\t\t<div style="display: flex; flex-direction: column; gap: 0.5rem;">\n\t\t\t\t<label style="font-weight: bold;">Columns</label>\n\t\t\t</div>\n\t\t\t<div style="display: flex; align-items: center; gap: 0.5rem;">\n\t\t\t\t<label for="table-headers-checkbox" style="font-weight: bold;">Include Headers</label>\n\t\t\t</div>\n\t\t',m.children[0].appendChild(d),m.children[1].appendChild(c),m.children[2].insertBefore(a,m.children[2].firstChild),Dialog.create(m,{title:n?"Edit Table":"Insert Table",cancelText:"Cancel",confirmText:n?"Update Table":"Insert Table",confirmClasses:"success",confirmAction:()=>{const e=parseInt(d.value)||3,t=parseInt(c.value)||3,o=a.checked;this.editor.insertTable(e,t,o,l)}})};render(){return this.hidden="code"===this.editorMode,html`
+			<button
+				class="${this.buttonClasses}"
+				@mousedown="${this.handleMouseDown}"
+			>
+				<slot name="icon">
+					<k-icon name="table"></k-icon>
+				</slot>
+				<slot></slot>
+			</button>
+		`}static styles=[HtmlEditorControl.styles,css`
+			:host {
+				display: inline-flex;
+			}
+		`]}customElements.define("k-hec-insert-table",InsertTable);

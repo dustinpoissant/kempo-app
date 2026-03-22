@@ -1,10 +1,10 @@
-# Kempo App — Copilot Instructions
+# AGENTS.md
 
 ## Project Overview
 
 **kempo-app** is an installable npm package that provides an Electron desktop app framework built on **kempo-ui** (Lit web components) and **kempo-css**. Consumers `npm install kempo-app`, create a few files in their project root, and run `kempo-app` to launch.
 
-The framework provides: custom protocol, frameless titlebar, hash-based SPA router, flat-file JSON database, and an optional backend hook.
+The framework provides: custom protocol, frameless titlebar, hash-based SPA router, file-based JSON database, and an optional backend hook.
 
 ## Consumer Project Structure
 
@@ -43,7 +43,7 @@ src/
   main/
     main.js          Electron main process. Protocol, IPC, window, backend hook.
     preload.cjs      Exposes window.api. Must be .cjs — Electron preloads cannot use ESM.
-    database.js      Flat-file JSON database. Stores to app.getPath('userData').
+    database.js      File-based JSON database. Each table is a JSON file in app.getPath('userData')/db/.
   renderer/
     index.html       Minimal HTML shell — loads kempo-css, app.css, theme.css, app.js.
     app.js           Fetches app.html, injects shell, runs convention-based router.
@@ -106,13 +106,19 @@ npm run interact -- dom                # full DOM
 Available in any renderer script or page HTML fragment:
 
 ```js
-// Database (persisted to userData/settings.json)
-await window.api.db.get()           // get all settings
-await window.api.db.get("key")      // get one value
-await window.api.db.set("key", val) // set a value
-await window.api.db.delete("key")
-await window.api.db.has("key")
-await window.api.db.clear()
+// Database — each table is a separate JSON file
+const settings = window.api.db("settings");       // get a table handle
+await settings.get()                              // get all keys in the table
+await settings.get("key")                         // get one value
+await settings.set("key", val)                    // set a value
+await settings.delete("key")
+await settings.has("key")
+await settings.clear()
+
+// Use any table name — each becomes its own JSON file
+const myData = window.api.db("myData");
+await myData.set("key1", "value1")
+await myData.get()                                // { key1: "value1" }
 
 // Window controls
 window.api.window.minimize()
@@ -135,7 +141,7 @@ The framework dispatches custom events on `window` that any script or component 
 
 | Event | Fired when | `event.detail` |
 |-------|-----------|----------------|
-| `settingchange` | `window.api.db.set()` completes | `{ key, value }` |
+| `settingchange` | `window.api.db("table").set()` completes | `{ table, key, value }` |
 | `routechange` | Hash-based route changes | `{ path, params }` |
 | `notification:click` | User clicks a notification | `{ id }` |
 | `notification:close` | Notification is dismissed | `{ id }` |
@@ -182,7 +188,7 @@ export default ({ db, ipc, app, Menu }) => {
 };
 ```
 
-- `db` — the Database instance (get/set/delete/has/clear)
+- `db` — the Database instance (get/set/delete/has/clear — first arg is always the table name)
 - `ipc` — Electron's `ipcMain`
 - `app` — Electron's `app`
 
@@ -244,7 +250,7 @@ kempo-css automatically styles `html`, `body`, `input`, `a`, `nav>a`, headings, 
 - Pages are **HTML fragments** loaded via `<k-import>`. Any `<script>` in a fragment is executed after the HTML is rendered.
 - The titlebar uses `-webkit-app-region: drag` for dragging. Buttons inside it set `-webkit-app-region: no-drag`.
 - On macOS, the native traffic lights are used (`hiddenInset` title bar style). On Windows/Linux, custom min/max/close buttons are rendered.
-- The database file location: Windows → `%APPDATA%\kempo-app\settings.json`, macOS → `~/Library/Application Support/kempo-app/settings.json`.
+- The database stores each table as a JSON file in: Windows → `%APPDATA%\kempo-app\db\*.json`, macOS → `~/Library/Application Support/kempo-app/db/*.json`.
 - Consumer's `theme.css` is loaded after kempo-css. If the file doesn't exist, the `<link>` self-removes via onerror.
 
 ## Testing
@@ -309,6 +315,58 @@ export const beforeAll = async () => {
   await import("/modules/kempo-ui/dist/components/Icon.js");
 };
 ```
+
+## Documentation Site
+
+The `docs/` directory contains a static documentation site that reuses the same page content as the `example/` app. It runs in a regular browser (no Electron needed) using a lightweight hash router and a mock `window.api`.
+
+### Architecture
+
+- `docs/index.html` — Standalone HTML shell with import map, mock API, component imports, and inline router.
+- `docs/docs.css` — Browser-adapted layout styles (nav indicator, scrolling).
+- `docs/theme.css` — Same theme as the example app.
+- `docs/pages/` — **Generated** — copied from `example/pages/` by the build script.
+- `docs/modules/` — **Generated** — kempo-css and kempo-ui from `node_modules/`.
+- `docs/framework/` — **Generated** — framework components and icons.
+- `docs/media/` — **Generated** — media assets from `example/media/`.
+- `docs/icons/` — **Generated** — custom icons from `example/icons/`.
+
+### Rules
+
+1. **Never edit files in `docs/pages/`, `docs/modules/`, `docs/framework/`, `docs/media/`, or `docs/icons/` directly.** These are generated by the build script and will be overwritten.
+2. **Edit documentation content in `example/pages/` only.** The pages are shared — the example app and the docs site render the same HTML fragments.
+3. **Run `npm run build:docs`** after editing any page in `example/pages/` to update the docs site.
+4. The shell files (`docs/index.html`, `docs/docs.css`, `docs/theme.css`) are hand-maintained. Edit them directly when the docs site layout or styling needs to change.
+5. Generated directories (`docs/modules/`, `docs/framework/`, `docs/pages/`, `docs/media/`, `docs/icons/`) are committed to the repo so GitHub Pages can serve them. Only the shell files need hand-editing.
+
+### app-demo Convention
+
+Interactive demo sections (inputs, buttons, live outputs) are wrapped in `<div class="app-demo">` in the page HTML:
+
+```html
+<div class="app-demo">
+  <input type="text" id="some-input" />
+  <button id="some-btn">Try It</button>
+  <pre id="some-output">—</pre>
+</div>
+```
+
+- In the **Electron app**, `app-demo` has no effect — demos are visible and functional.
+- In the **docs site**, `docs/docs.css` sets `.app-demo { display: none }` — demos are hidden entirely.
+
+The docs site includes a `window.api` stub so framework components (`app-setting-bool`, `app-show`, `app-hide`) don't throw — but no interactive demo functionality is expected to work in the browser.
+
+### Build
+
+```sh
+npm run build:docs
+```
+
+This runs `scripts/build-docs.js`, which:
+- Copies `node_modules/kempo-css/dist/` and `node_modules/kempo-ui/` into `docs/modules/`
+- Copies framework components (`src/renderer/components/`, `src/renderer/utils/`) and icons (`icons/`) into `docs/framework/`
+- Copies `example/pages/` into `docs/pages/` (fixing absolute `/media/` paths to relative)
+- Copies `example/media/` and `example/icons/` into `docs/`
 
 ## Coding Style
 

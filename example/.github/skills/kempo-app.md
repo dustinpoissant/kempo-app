@@ -40,7 +40,7 @@ npm run interact -- navigate /settings                   # go to a page
 npm run interact -- click "#some-id"                     # click by selector
 npm run interact -- click-text "Save"                    # click by visible text
 npm run interact -- type "#input-id" "value"             # type into an input
-npm run interact -- eval "await window.api.db.get()"     # run JS in renderer
+npm run interact -- eval "await window.api.db('settings').get()"  # run JS in renderer
 npm run interact -- eval "window.route"                  # check current route
 ```
 
@@ -59,12 +59,13 @@ Query params: `#/settings?tab=appearance` → `window.route.params.tab === "appe
 ## window.api (Renderer)
 
 ```js
-await window.api.db.get()              // { key: value, … }
-await window.api.db.get("key")         // single value
-await window.api.db.set("key", val)
-await window.api.db.delete("key")
-await window.api.db.has("key")         // true / false
-await window.api.db.clear()
+const settings = window.api.db("settings");
+await settings.get()                     // { key: value, … }
+await settings.get("key")                // single value
+await settings.set("key", val)
+await settings.delete("key")
+await settings.has("key")                // true / false
+await settings.clear()
 
 window.api.window.minimize()
 window.api.window.maximize()           // toggles maximize/restore
@@ -81,7 +82,7 @@ export default ({ db, ipc, app, Menu }) => {
     return { result: "ok" };
   });
 
-  app.on("before-quit", () => { db.set("lastSession", Date.now()); });
+  app.on("before-quit", () => { db.set("settings", "lastSession", Date.now()); });
   app.on("open-link", url => { /* deep link handler */ });
   app.on("open-path", filePath => { /* file association handler */ });
 };

@@ -6,7 +6,7 @@ export const beforeAll = async () => {
 
 export const beforeEach = async () => {
   document.body.innerHTML = "";
-  await window.api.db.clear();
+  await window.api.db("settings").clear();
 };
 
 /*
@@ -40,7 +40,7 @@ export default {
   },
 
   'AppSetting loads value from db on connect': async ({ pass, fail }) => {
-    await window.api.db.set("testSetting", "hello");
+    await window.api.db("settings").set("testSetting", "hello");
     const el = document.createElement("app-setting-string");
     el.setting = "testSetting";
     document.body.appendChild(el);
@@ -52,7 +52,7 @@ export default {
   },
 
   'AppSetting saves value to db when value changes': async ({ pass, fail }) => {
-    await window.api.db.set("saveSetting", "old");
+    await window.api.db("settings").set("saveSetting", "old");
     const el = document.createElement("app-setting-string");
     el.setting = "saveSetting";
     document.body.appendChild(el);
@@ -62,7 +62,7 @@ export default {
     el.value = "new";
     await el.updateComplete;
     await new Promise(r => setTimeout(r, 100));
-    const stored = await window.api.db.get("saveSetting");
+    const stored = await window.api.db("settings").get("saveSetting");
     if(stored === "new") pass();
     else fail(`Expected "new", got "${stored}"`);
   },

@@ -4,19 +4,26 @@
   Matches the API surface in src/main/preload.cjs.
 */
 (function(){
-  const dbStore = {};
-  window.__kempoTestDbStore = dbStore;
+  const tables = {};
+  window.__kempoTestDbStore = tables;
+  const getTable = table => {
+    if(!tables[table]) tables[table] = {};
+    return tables[table];
+  };
   window.api = {
-    db: {
-      get: async key => key === undefined ? {...dbStore} : dbStore[key],
-      set: async (key, value) => {
-        dbStore[key] = value;
-        window.dispatchEvent(new CustomEvent("settingchange", { detail: { key, value } }));
+    db: (table) => ({
+      get: async (key) => {
+        const t = getTable(table);
+        return key === undefined ? {...t} : t[key];
       },
-      delete: async key => { delete dbStore[key]; },
-      has: async key => key in dbStore,
-      clear: async () => { for(const k of Object.keys(dbStore)) delete dbStore[k]; },
-    },
+      set: async (key, value) => {
+        getTable(table)[key] = value;
+        window.dispatchEvent(new CustomEvent("settingchange", { detail: { table, key, value } }));
+      },
+      delete: async (key) => { delete getTable(table)[key]; },
+      has: async (key) => key in getTable(table),
+      clear: async () => { const t = getTable(table); for(const k of Object.keys(t)) delete t[k]; },
+    }),
     window: {
       minimize: () => {},
       maximize: () => {},

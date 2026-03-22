@@ -16,7 +16,9 @@
     "dev": "cd example && node ../bin/kempo-app.js --dev",
     "interact": "node scripts/interact.js",
     "postinstall": "node scripts/postinstall.js",
-    "test": "npx kempo-test"
+    "test": "npx kempo-test",
+    "build:docs": "node scripts/build-docs.js",
+    "docs": "npx http-server docs -p 8080 -c-1"
   },
   "repository": {
     "type": "git",
@@ -31,9 +33,9 @@
   "dependencies": {
     "chrome-remote-interface": "^0.34.0",
     "electron": "^41.0.1",
-    "kempo-ui": "^0.1.6"
+    "kempo-ui": "^0.2.2"
   },
   "devDependencies": {
-    "kempo-testing-framework": "^1.4.4"
+    "kempo-testing-framework": "^1.4.5"
   }
 }

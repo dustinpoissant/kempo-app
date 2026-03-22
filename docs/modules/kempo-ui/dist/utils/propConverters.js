@@ -1,0 +1,1 @@
+export const boolTrueFalse={fromAttribute:t=>null===t?void 0:"true"===t.toLowerCase(),toAttribute:t=>t?"true":"false"};export const boolExists={fromAttribute:t=>null!==t,toAttribute:t=>t?"":null};

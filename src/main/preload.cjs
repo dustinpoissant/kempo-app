@@ -12,17 +12,17 @@ ipcRenderer.on("notification:reply", (e, id, reply) => {
 });
 
 contextBridge.exposeInMainWorld("api", {
-  // Database
-  db: {
-    get: (key) => ipcRenderer.invoke("db:get", key),
+  // Database — returns a table proxy: db("settings").get("key")
+  db: (table) => ({
+    get: (key) => ipcRenderer.invoke("db:get", table, key),
     set: async (key, value) => {
-      await ipcRenderer.invoke("db:set", key, value);
-      window.dispatchEvent(new CustomEvent("settingchange", { detail: { key, value } }));
+      await ipcRenderer.invoke("db:set", table, key, value);
+      window.dispatchEvent(new CustomEvent("settingchange", { detail: { table, key, value } }));
     },
-    delete: (key) => ipcRenderer.invoke("db:delete", key),
-    has: (key) => ipcRenderer.invoke("db:has", key),
-    clear: () => ipcRenderer.invoke("db:clear"),
-  },
+    delete: (key) => ipcRenderer.invoke("db:delete", table, key),
+    has: (key) => ipcRenderer.invoke("db:has", table, key),
+    clear: () => ipcRenderer.invoke("db:clear", table),
+  }),
 
   // Window controls
   window: {

@@ -316,13 +316,19 @@ kempo-css provides utility classes for layout and spacing. Avoid writing custom 
 Available in any page HTML fragment or script:
 
 ```js
-// Persistent settings (saved to userData/settings.json)
-await window.api.db.get()              // { key: value, ... }
-await window.api.db.get("theme")       // "dark"
-await window.api.db.set("theme", "dark")
-await window.api.db.delete("theme")
-await window.api.db.has("theme")       // true / false
-await window.api.db.clear()
+// Database — each table is a separate JSON file
+const settings = window.api.db("settings");       // get a table handle
+await settings.get()                              // { key: value, ... }
+await settings.get("theme")                       // "dark"
+await settings.set("theme", "dark")
+await settings.delete("theme")
+await settings.has("theme")                       // true / false
+await settings.clear()
+
+// Use any table name — each becomes its own JSON file
+const myData = window.api.db("myData");
+await myData.set("key1", "value1")
+await myData.get()                                // { key1: "value1" }
 
 // Window controls
 window.api.window.minimize()
@@ -333,9 +339,9 @@ window.api.window.close()
 const platform = await window.api.getPlatform() // "mac" | "win" | "linux"
 ```
 
-**Settings are persisted** to the OS user data directory:
-- Windows: `%APPDATA%\<appName>\settings.json`
-- macOS: `~/Library/Application Support/<appName>/settings.json`
+**Data is persisted** to the OS user data directory — each table is a separate JSON file:
+- Windows: `%APPDATA%\<appName>\db\*.json`
+- macOS: `~/Library/Application Support/<appName>/db/*.json`
 
 ---
 
@@ -441,7 +447,7 @@ npm run interact -- type "#username" "Alice"
 
 # JavaScript evaluation
 npm run interact -- eval "window.route"
-npm run interact -- eval "await window.api.db.get()"
+npm run interact -- eval "await window.api.db('settings').get()"
 npm run interact -- eval "document.title"
 
 # Info
@@ -472,7 +478,7 @@ Always run `structure` first to understand the current page before clicking.
     npm run interact -- structure
     npm run interact -- screenshot
     npm run interact -- navigate /settings
-    npm run interact -- eval "await window.api.db.get()"
+    npm run interact -- eval "await window.api.db('settings').get()"
 
 ## Database Keys
 - `theme` — "light" | "dark" | "auto"

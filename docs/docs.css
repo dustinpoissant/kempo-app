@@ -1,0 +1,22 @@
+html { scrollbar-gutter: auto; }
+body { overflow: hidden; }
+body { display: flex; flex-direction: column; height: 100vh; margin: 0; }
+#page-container { overflow: auto; flex: 1; min-height: 0; }
+.nav-link {
+	position: relative;
+	color: inherit;
+	&.active {
+		color: var(--tc_primary);
+		&::after {
+			content: "";
+			position: absolute;
+			bottom: -1px;
+			left: 0;
+			right: 0;
+			height: 2px;
+			background: var(--c_primary);
+		}
+	}
+}
+.nav-link:hover { color: var(--tc_primary); }
+.app-demo { display: none; }
