@@ -1,4 +1,3 @@
-import { css } from "/modules/kempo-ui/dist/lit-all.min.js";
 import ShadowComponent from "/modules/kempo-ui/dist/components/ShadowComponent.js";
 
 class AppSetting extends ShadowComponent {

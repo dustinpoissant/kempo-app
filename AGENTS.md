@@ -13,17 +13,17 @@ A consumer's project looks like this (no `src/` directory needed):
 ```
 my-app/
   package.json       "appName", "appIcon", "protocolName" configure the app
-  app.html           App shell fragment — nav bar, #page-container
+  shell.html         Optional — nav + <app-page> shell (default is just <app-page>)
   pages/
-    home.html        Home page fragment (loaded for #/)
+    index.html       Home page fragment (loaded for #/)
     settings.html    Settings page fragment (loaded for #/settings)
   media/             App assets — icon.png goes here
     icon.png         App icon (reference as "appIcon": "media/icon.png" in package.json)
   icons/             Optional — custom SVG icons (searched first by k-icon)
   backend.js         Optional — runs in main process, receives { db, ipc, app, Menu }
   theme.css          Optional — loaded after kempo-css for custom theming
-  titlebar.html      Optional — injected before app.html (place app-titlebar here)
-  app.js             Optional — ESM module, runs after app.html is injected
+  titlebar.html      Optional — injected before shell.html (place app-titlebar here)
+  app.js             Optional — ESM module, runs after shell.html is injected
 ```
 
 ### Consumer package.json Fields
@@ -46,7 +46,7 @@ src/
     database.js      File-based JSON database. Each table is a JSON file in app.getPath('userData')/db/.
   renderer/
     index.html       Minimal HTML shell — loads kempo-css, app.css, theme.css, app.js.
-    app.js           Fetches app.html, injects shell, runs convention-based router.
+    app.js           Fetches shell.html, injects shell, runs convention-based router.
     app.css          Framework styles — scrollbar, layout, nav indicator.
     titlebar.js      Custom frameless titlebar (mac + windows/linux).
 icons/               Framework SVG icons (window-minimize, window-maximize, etc.).
@@ -54,7 +54,7 @@ scripts/
   interact.js        CLI for interacting with the running app via CDP.
 example/              Example consumer app for testing the framework.
   package.json       Consumer config (appName, protocolName, deps)
-  app.html           Example app shell
+  shell.html         Example app shell
   pages/             Example pages
 ```
 
@@ -65,7 +65,7 @@ All files are served through a custom protocol (default `kempo-app://`). The sch
 Three path zones:
 - `/framework/` → kempo-app's `src/` directory (framework files)
 - `/modules/` → consumer's `node_modules/` (dependencies)
-- Everything else → consumer's project root (app.html, pages/, theme.css, etc.)
+- Everything else → consumer's project root (shell.html, pages/, theme.css, etc.)
 
 ## npm Scripts
 
@@ -157,7 +157,7 @@ window.addEventListener("settingchange", e => {
 
 The router is **convention-based** — no route config needed.
 
-- `#/` → loads `pages/home.html`
+- `#/` → loads `pages/index.html`
 - `#/settings` → loads `pages/settings.html`
 - `#/any-page` → loads `pages/any-page.html`
 
@@ -169,7 +169,7 @@ Query parameters are supported:
 ### Adding a New Page
 
 1. Create `pages/my-page.html` as an HTML fragment
-2. Add a nav link in `app.html`:
+2. Add a nav link in `shell.html`:
    ```html
    <a href="#/my-page" class="nav-link">My Page</a>
    ```
@@ -246,7 +246,7 @@ kempo-css automatically styles `html`, `body`, `input`, `a`, `nav>a`, headings, 
 
 ## Architecture Notes
 
-- The consumer's `app.html` is fetched at runtime and injected into `#app-shell` in index.html.
+- The consumer's `shell.html` is fetched at runtime and injected into the body of index.html.
 - Pages are **HTML fragments** loaded via `<k-import>`. Any `<script>` in a fragment is executed after the HTML is rendered.
 - The titlebar uses `-webkit-app-region: drag` for dragging. Buttons inside it set `-webkit-app-region: no-drag`.
 - On macOS, the native traffic lights are used (`hiddenInset` title bar style). On Windows/Linux, custom min/max/close buttons are rendered.
