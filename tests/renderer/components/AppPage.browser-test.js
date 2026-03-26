@@ -57,4 +57,36 @@ export default {
     if(el.src === "") pass();
     else fail(`Expected empty string, got "${el.src}"`);
   },
+
+  'app-page persistScroll defaults to true': ({ pass, fail }) => {
+    const el = document.createElement("app-page");
+    if(el.persistScroll === true) pass();
+    else fail(`Expected true, got "${el.persistScroll}"`);
+  },
+
+  'app-page persist-scroll="false" sets persistScroll to false': async ({ pass, fail }) => {
+    const el = document.createElement("app-page");
+    el.setAttribute("persist-scroll", "false");
+    document.body.appendChild(el);
+    await el.updateComplete;
+    if(el.persistScroll === false) pass();
+    else fail(`Expected false, got "${el.persistScroll}"`);
+  },
+
+  'app-page resets scroll to 0 for new src when persist-scroll is false': async ({ pass, fail }) => {
+    const el = document.createElement("app-page");
+    el.setAttribute("persist-scroll", "false");
+    el.style.overflow = "auto";
+    el.style.height = "50px";
+    el.src = "/pages/index.html";
+    document.body.appendChild(el);
+    await el.updateComplete;
+    el.scrollTop = 100;
+    el.src = "/pages/settings.html";
+    await el.updateComplete;
+    el.src = "/pages/index.html";
+    await el.updateComplete;
+    if(el.scrollTop === 0) pass();
+    else fail(`Expected scrollTop 0, got ${el.scrollTop}`);
+  },
 };

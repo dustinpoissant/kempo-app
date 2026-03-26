@@ -20,7 +20,12 @@ my-app/
   media/             App assets — icon.png goes here
     icon.png         App icon (reference as "appIcon": "media/icon.png" in package.json)
   icons/             Optional — custom SVG icons (searched first by k-icon)
-  backend.js         Optional — runs in main process, receives { db, ipc, app, Menu }
+  schema/            Optional — subdirectories define databases; .js files inside define tables
+    mydb/            Each subdirectory name becomes a database name
+      contacts.js    Each file exports { column: { type, required, default, unique } }
+  init.js            Optional — runs once on first launch (create tables, seed data)
+  update.js          Optional — runs when package.json version changes
+  backend.js         Optional — runs in main process, receives { ipc, app, Menu }
   theme.css          Optional — loaded after kempo-css for custom theming
   titlebar.html      Optional — injected before shell.html (place app-titlebar here)
   app.js             Optional — ESM module, runs after shell.html is injected
@@ -28,11 +33,28 @@ my-app/
 
 ### Consumer package.json Fields
 
-| Field | Description | Default |
-|-------|-------------|---------|
+All framework config lives in the `kempo-app` field:
+
+```json
+{
+  "kempo-app": {
+    "appName": "My App",
+    "appIcon": "media/icon.png",
+    "protocolName": "my-app",
+    "shell": "shell.html"
+  }
+}
+```
+
+| Key | Description | Default |
+|-----|-------------|---------|
 | `appName` | Display name shown in titlebar and window title | `name` field, then `"Kempo App"` |
 | `appIcon` | Path to app icon (relative to project root) | none |
 | `protocolName` | Custom protocol scheme name | `"kempo-app"` |
+| `shell` | Default shell HTML file for new windows | `"shell.html"` |
+| `titlebar` | Titlebar HTML file, `true` for default, or `false` to disable | `"titlebar.html"` |
+| `menuBar` | Show the native menu bar (File, Edit, View…). Only applies when `titlebar` is `true` | `false` |
+| `pages` | Directory containing page HTML fragments | `"pages"` |
 
 ## Framework Structure (this repo)
 
@@ -42,8 +64,9 @@ bin/
 src/
   main/
     main.js          Electron main process. Protocol, IPC, window, backend hook.
-    preload.cjs      Exposes window.api. Must be .cjs — Electron preloads cannot use ESM.
+    preload.cjs      Exposes api to the renderer. Must be .cjs — Electron preloads cannot use ESM.
     database.js      File-based JSON database. Each table is a JSON file in app.getPath('userData')/db/.
+    schema.js        Schema engine. Reads consumer's schema/ files, creates/migrates/versions SQL tables.
   renderer/
     index.html       Minimal HTML shell — loads kempo-css, app.css, theme.css, app.js.
     app.js           Fetches shell.html, injects shell, runs convention-based router.
@@ -101,13 +124,13 @@ npm run interact -- dom                # full DOM
 
 **Always run `structure` or `dom` first** to understand the page before interacting.
 
-## Renderer API (window.api)
+## API
 
-Available in any renderer script or page HTML fragment:
+`api` is a global available everywhere — renderer scripts, page fragments, `backend.js`, `init.js`, and `update.js`. The framework sets it up on both `window` (renderer) and `global` (main process) so you can use `api.*` without a prefix in any context.
 
 ```js
 // Database — each table is a separate JSON file
-const settings = window.api.db("settings");       // get a table handle
+const settings = api.jsonDB("settings");       // get a table handle
 await settings.get()                              // get all keys in the table
 await settings.get("key")                         // get one value
 await settings.set("key", val)                    // set a value
@@ -116,23 +139,30 @@ await settings.has("key")
 await settings.clear()
 
 // Use any table name — each becomes its own JSON file
-const myData = window.api.db("myData");
+const myData = api.jsonDB("myData");
 await myData.set("key1", "value1")
 await myData.get()                                // { key1: "value1" }
 
+// SQL Database — requires better-sqlite3 in consumer project
+// SELECT returns array of rows; anything else returns true; throws on error
+await api.sqlQuery("mydb", "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)")
+await api.sqlQuery("mydb", "INSERT INTO users (name) VALUES ('Alice')")  // true
+await api.sqlQuery("mydb", "SELECT * FROM users")                        // [{ id, name }, ...]
+
 // Window controls
-window.api.window.minimize()
-window.api.window.maximize()
-window.api.window.close()
-window.api.window.new()          // open a new app window
-window.api.window.new("#/page")  // open a new window at a specific route
+api.window.minimize()
+api.window.maximize()
+api.window.close()
+api.window.new()          // open a new app window
+api.window.new("#/page")  // open a new window at a specific route
+api.window.new({ hash: "#/page", shell: "editor-shell.html" }) // new window with a different shell
 
 // Notifications
-const id = await window.api.notification.show({ title, body, icon, silent, subtitle, urgency, timeoutType })
-await window.api.notification.isSupported() // true / false
+const id = await api.notification.show({ title, body, icon, silent, subtitle, urgency, timeoutType })
+await api.notification.isSupported() // true / false
 
 // Platform
-const platform = await window.api.getPlatform() // 'mac' | 'win' | 'linux'
+const platform = await api.getPlatform() // 'mac' | 'win' | 'linux'
 ```
 
 ## Window Events
@@ -141,14 +171,14 @@ The framework dispatches custom events on `window` that any script or component 
 
 | Event | Fired when | `event.detail` |
 |-------|-----------|----------------|
-| `settingchange` | `window.api.db("table").set()` completes | `{ table, key, value }` |
+| `jsondb_change:{table}` | `api.jsonDB("table").set()` completes | `{ key, value }` |
 | `routechange` | Hash-based route changes | `{ path, params }` |
 | `notification:click` | User clicks a notification | `{ id }` |
 | `notification:close` | Notification is dismissed | `{ id }` |
 | `notification:reply` | User submits inline reply (macOS) | `{ id, reply }` |
 
 ```js
-window.addEventListener("settingchange", e => {
+window.addEventListener("jsondb_change:settings", e => {
   console.log(e.detail.key, e.detail.value);
 });
 ```
@@ -176,23 +206,155 @@ Query parameters are supported:
 
 That's it — no route registration needed.
 
-## backend.js Hook
+## Lifecycle Hooks
 
-If a `backend.js` file exists in the consumer's project root, it's dynamically imported at startup. It must export a default function:
+The framework supports three optional lifecycle hooks in the consumer's project root. Each must export a default function.
+
+### init.js — First Run
+
+Runs once on the very first app launch. Use it to create database tables, seed initial data, or perform one-time setup.
 
 ```js
-export default ({ db, ipc, app, Menu }) => {
+export default ({ ipc, app, Menu }) => {
+  await api.sqlQuery("myapp", `CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT
+  )`);
+  await api.sqlQuery("myapp", `CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+  )`);
+};
+```
+
+### update.js — Version Change
+
+Runs when the app's `version` in package.json changes from the previously stored version. Receives `from` and `to` version strings in addition to the standard context.
+
+```js
+export default ({ ipc, app, Menu, from, to }) => {
+  if(from === "1.0.0"){
+    await api.sqlQuery("myapp", `ALTER TABLE users ADD COLUMN phone TEXT`);
+  }
+};
+```
+
+### Startup Sequence
+
+1. **Framework init** — JSON DB and SQL DB systems made available
+2. **init.js** — runs only on first launch, or **update.js** — runs only when version changes
+3. **Schema sync** — creates/migrates tables from `schema/` files (every startup)
+4. **backend.js** — runs every startup
+5. **Window creation** — app window opens
+
+## Schema Tables
+
+The `schema/` directory provides a no-SQL way to define and use SQLite tables. Create subdirectories
+named after your databases, then add JS files inside each one — the directory name becomes the database
+name and the file name becomes the table name and the default export describes the columns.
+
+### Schema File Format
+
+```js
+// schema/myapp/contacts.js
+export default {
+  name: { type: "text", required: true },
+  email: { type: "text", unique: true },
+  phone: { type: "text" },
+  age: { type: "integer" },
+  score: { type: "real", default: 0 },
+};
+
+export const version = 1;
+```
+
+If no column has `primary: true`, the table automatically gets an `id INTEGER PRIMARY KEY AUTOINCREMENT` column. To use a custom primary key:
+
+```js
+// schema/myapp/settings.js — text primary key, no auto-generated id
+export default {
+  key: { type: "text", primary: true },
+  value: { type: "text" },
+};
+
+export const version = 1;
+```
+
+### Column Options
+
+| Option | Description |
+|--------|-------------|
+| `type` | `"text"`, `"integer"`, `"real"`, or `"blob"` (defaults to `"text"`) |
+| `primary` | Makes this the primary key (integer PKs get AUTOINCREMENT) |
+| `required` | Adds `NOT NULL` constraint |
+| `unique` | Adds `UNIQUE` constraint |
+| `default` | Default value for the column |
+| `index` | Creates a secondary index on this column |
+
+### Schema Versioning
+
+Each schema file can export a `version` number and an `updates` array to handle migrations beyond simple column additions.
+
+```js
+// schema/myapp/contacts.js — versioned schema
+export default {
+  name: { type: "text", required: true },
+  email: { type: "text", unique: true },
+  display_name: { type: "text" },
+};
+
+export const version = 3;
+
+export const updates = [
+  // v1 → v2: just add columns (auto-migrate)
+  null,
+  // v2 → v3: rename column, then auto-migrate for new columns
+  (db) => {
+    db.exec("ALTER TABLE contacts RENAME COLUMN username TO display_name");
+    return true; // also run auto-migrate after
+  },
+];
+```
+
+**Rules:**
+- Always export `version` — defaults to `1` if omitted
+- `updates` array: `updates[0]` = v1→v2, `updates[1]` = v2→v3, etc.
+- `updates.length` should equal `version - 1`
+- Non-function entry (null, undefined) = auto-migrate only (add missing columns)
+- Function entry = called with `(db)`, if it returns `true` → also auto-migrate after
+- New tables skip all update steps and are created at the latest version
+- The framework tracks versions in an internal `_schema` table (invisible to consumers)
+
+### Auto-Migration
+
+On every startup, the framework reads `schema/` files and compares them against the database using `PRAGMA table_info()`. Missing tables are created, missing columns are added via `ALTER TABLE ADD COLUMN`. Existing columns are never removed or modified — use versioned updates or `update.js` with raw SQL for destructive changes.
+
+### Database Name
+
+The database name comes from the subdirectory name under `schema/`. For example, `schema/myapp/contacts.js`
+puts the `contacts` table in `myapp.db`. Each subdirectory can contain multiple table files, all stored
+in the same database file.
+
+## backend.js Hook
+
+If a `backend.js` file exists in the consumer's project root, it's dynamically imported at startup (after lifecycle hooks). It must export a default function:
+
+```js
+export default ({ ipc, app, Menu }) => {
   ipc.handle("my-channel", (e, data) => {
     // custom IPC handler
   });
 };
 ```
 
-- `db` — the Database instance (get/set/delete/has/clear — first arg is always the table name)
 - `ipc` — Electron's `ipcMain`
 - `app` — Electron's `app`
+- `Menu` — Electron's `Menu`
 
 ## kempo-ui Components
+
+Full kempo-ui reference: https://github.com/dustinpoissant/kempo-ui/blob/main/llm.txt
 
 All components are web components with `k-` prefix. Registered in app.js:
 - `k-card` — bordered card with optional label
@@ -246,7 +408,8 @@ kempo-css automatically styles `html`, `body`, `input`, `a`, `nav>a`, headings, 
 
 ## Architecture Notes
 
-- The consumer's `shell.html` is fetched at runtime and injected into the body of index.html.
+- `api` is set up on both `window` (renderer via `preload.cjs`) and `global` (main process via `main.js`). When adding a new API method to one, always add an identical method to the other so the same code works in both contexts.
+- The consumer's shell HTML (default `shell.html`, configurable via `kempo-app.shell` in package.json) is fetched at runtime and injected into the body of index.html. Each window can use a different shell via `api.window.new({ shell: "other-shell.html" })`.
 - Pages are **HTML fragments** loaded via `<k-import>`. Any `<script>` in a fragment is executed after the HTML is rendered.
 - The titlebar uses `-webkit-app-region: drag` for dragging. Buttons inside it set `-webkit-app-region: no-drag`.
 - On macOS, the native traffic lights are used (`hiddenInset` title bar style). On Windows/Linux, custom min/max/close buttons are rendered.
@@ -264,7 +427,7 @@ The framework ships a test page and mock utilities so that both the framework it
 3. Create a `tests/` directory
 4. Write `.browser-test.js` files (or `.node-test.js` for Node tests)
 
-Browser test files reference the shared test page, which mocks the Electron `window.api` and sets up import maps:
+Browser test files reference the shared test page, which mocks the Electron `api` global and sets up import maps:
 
 ```js
 export const page = "/node_modules/kempo-app/testing/test-page.html";
@@ -287,20 +450,20 @@ export default {
 
 ```
 testing/
-  mocks.js         Shared window.api mock (matches preload.cjs API surface)
+  mocks.js         Shared api mock (matches preload.cjs API surface)
   test-page.html   Consumer-ready test page — import maps, mocks, kempo config
 ```
 
-**`testing/mocks.js`** — Sets up `window.api` with an in-memory db store and no-op stubs for window controls, notifications, and context menu. The db store is exposed as `window.__kempoTestDbStore` for direct access in tests. Loaded as a classic `<script>` (not a module) so it runs synchronously before component imports.
+**`testing/mocks.js`** — Sets up `api` with an in-memory db store and no-op stubs for window controls, notifications, and context menu. The db store is exposed as `window.__kempoTestDbStore` for direct access in tests. Loaded as a classic `<script>` (not a module) so it runs synchronously before component imports.
 
 **`testing/test-page.html`** — Consumer test page with:
 - Import map: `/modules/` → `/node_modules/`, `/framework/` → `/node_modules/kempo-app/`
-- `window.api` mock (via `mocks.js`)
+- `api` mock (via `mocks.js`)
 - `window.kempo` config with browser-relative paths to CSS and icons
 
 ### Framework Tests vs Consumer Tests
 
-The only difference is the import map — framework tests map `/framework/` → `/` (the framework IS the project root), while consumer tests map `/framework/` → `/node_modules/kempo-app/`. Both share the same `mocks.js` for the API mock.
+The only difference is the import map — framework tests map `/framework/` → `/` (the framework IS the project root), while consumer tests map `/framework/` → `/node_modules/kempo-app/`. Both share the same `mocks.js` for the `api` mock.
 
 ### Important: No Top-Level Imports
 
@@ -318,7 +481,7 @@ export const beforeAll = async () => {
 
 ## Documentation Site
 
-The `docs/` directory contains a static documentation site that reuses the same page content as the `example/` app. It runs in a regular browser (no Electron needed) using a lightweight hash router and a mock `window.api`.
+The `docs/` directory contains a static documentation site that reuses the same page content as the `example/` app. It runs in a regular browser (no Electron needed) using a lightweight hash router and a mock `api`.
 
 ### Architecture
 
@@ -354,7 +517,7 @@ Interactive demo sections (inputs, buttons, live outputs) are wrapped in `<div c
 - In the **Electron app**, `app-demo` has no effect — demos are visible and functional.
 - In the **docs site**, `docs/docs.css` sets `.app-demo { display: none }` — demos are hidden entirely.
 
-The docs site includes a `window.api` stub so framework components (`app-setting-bool`, `app-show`, `app-hide`) don't throw — but no interactive demo functionality is expected to work in the browser.
+The docs site includes an `api` stub so framework components (`app-setting-bool`, `app-show`, `app-hide`) don't throw — but no interactive demo functionality is expected to work in the browser.
 
 ### Build
 

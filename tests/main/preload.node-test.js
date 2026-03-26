@@ -94,9 +94,9 @@ export default {
     else fail("contextMenu.onClick not found");
   },
 
-  'preload.cjs fires settingchange event on db.set': ({ pass, fail }) => {
-    if(preloadSource.includes('settingchange') && preloadSource.includes('CustomEvent')) pass();
-    else fail("settingchange event not dispatched");
+  'preload.cjs fires jsondb_change event on db.set': ({ pass, fail }) => {
+    if(preloadSource.includes('jsondb_change') && preloadSource.includes('CustomEvent')) pass();
+    else fail("jsondb_change event not dispatched");
   },
 
   'preload.cjs uses contextBridge.exposeInMainWorld': ({ pass, fail }) => {

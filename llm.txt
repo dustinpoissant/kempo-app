@@ -37,7 +37,7 @@ package.json scripts:
 
 | File | Required | Description |
 |------|----------|-------------|
-| `package.json` | yes | Configure `appName`, `appIcon`, `protocolName` |
+| `package.json` | yes | Configure app via `kempo-app` field |
 | `pages/index.html` | yes | Home page fragment, loaded for `#/` |
 | `pages/<name>.html` | no | Additional pages, loaded for `#/<name>` |
 | `shell.html` | no | Nav + `<app-page>` shell (default is just `<app-page>`) |
@@ -48,13 +48,29 @@ package.json scripts:
 | `icons/` | no | Custom SVG icons (override kempo-ui icons) |
 | `media/` | no | App assets (`icon.png`, etc.) |
 
-### package.json config fields
+### package.json config
 
-| Field | Description | Default |
-|-------|-------------|---------|
+All framework config lives in the `kempo-app` field:
+
+```json
+{
+  "kempo-app": {
+    "appName": "My App",
+    "appIcon": "media/icon.png",
+    "protocolName": "my-app",
+    "shell": "shell.html"
+  }
+}
+```
+
+| Key | Description | Default |
+|-----|-------------|---------|
 | `appName` | Window title and display name | `name` field or `"Kempo App"` |
 | `appIcon` | Path to icon (e.g. `"media/icon.png"`) | none |
 | `protocolName` | Custom protocol scheme | `"kempo-app"` |
+| `shell` | Default shell HTML file for new windows | `"shell.html"` |
+| `titlebar` | Titlebar HTML file, `true` for default, or `false` to disable | `"titlebar.html"` |
+| `pages` | Directory containing page HTML fragments | `"pages"` |
 
 ---
 
@@ -98,8 +114,9 @@ External links: use `target="_blank"` or `window.open()` — opens in system bro
 
 Open a new app window:
 ```js
-window.api.window.new();           // opens at #/
-window.api.window.new("#/settings"); // opens at specific route
+api.window.new();           // opens at #/
+api.window.new("#/settings"); // opens at specific route
+api.window.new({ hash: "#/settings", shell: "editor-shell.html" }); // different shell
 ```
 
 ---
@@ -153,17 +170,17 @@ Docs: https://dustinpoissant.github.io/kempo-app/#/components
 </app-hide>
 ```
 
-**`<app-setting-bool>`** — toggle linked to a db setting key:
+**`<app-setting-bool>`** — toggle linked to a jsonDB setting key:
 ```html
 <app-setting-bool setting="notifications">Enable Notifications</app-setting-bool>
 ```
 
-**`<app-setting-string>`** — text input linked to a db setting key:
+**`<app-setting-string>`** — text input linked to a jsonDB setting key:
 ```html
 <app-setting-string setting="username">Username</app-setting-string>
 ```
 
-**`<app-setting-number>`** — number input linked to a db setting key:
+**`<app-setting-number>`** — number input linked to a jsonDB setting key:
 ```html
 <app-setting-number setting="fontSize">Font Size</app-setting-number>
 ```
@@ -212,13 +229,13 @@ Custom icons: place `name.svg` in `icons/` directory.
 
 ---
 
-## Database (window.api.db)
+## Database (api.jsonDB)
 Docs: https://dustinpoissant.github.io/kempo-app/#/database
 
 File-based JSON database. Each table = a separate JSON file. No schema setup needed.
 
 ```js
-const settings = window.api.db("settings");
+const settings = api.jsonDB("settings");
 await settings.get()            // all keys → { key: value, … }
 await settings.get("theme")     // one value
 await settings.set("theme", "dark")
@@ -229,36 +246,50 @@ await settings.clear()          // wipe table
 
 Values can be any JSON-serializable type. Tables are auto-created on first write.
 
-Storage location: Windows `%APPDATA%\<appName>\db\*.json` | macOS `~/Library/Application Support/<appName>/db/*.json`
+Storage location: Windows `%APPDATA%\<appName>\jsonDB\*.json` | macOS `~/Library/Application Support/<appName>/jsonDB/*.json`
 
-Every `set()` fires a `settingchange` event on `window`:
+Every `set()` fires a `jsondb_change:{table}` event on `window`:
 ```js
-window.addEventListener("settingchange", e => {
-  console.log(e.detail.table, e.detail.key, e.detail.value);
+window.addEventListener('jsondb_change:settings', e => {
+  console.log(e.detail.key, e.detail.value);
 });
 ```
 
 ---
 
-## window.api
+## SQL Database (api.sqlDB)
+
+Requires `better-sqlite3` installed in consumer project. Databases stored as `.jsonDB` files in the user data directory.
+
+```js
+await api.sqlDB.exec("mydb", "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)")
+await api.sqlDB.run("mydb", "INSERT INTO users (name) VALUES (?)", ["Alice"])  // { changes, lastInsertRowid }
+await api.sqlDB.get("mydb", "SELECT * FROM users WHERE id = ?", [1])           // single row
+await api.sqlDB.all("mydb", "SELECT * FROM users")                             // all rows
+await api.sqlDB.close("mydb")                                                  // close connection
+```
+
+---
+
+## API
 Docs: https://dustinpoissant.github.io/kempo-app/#/api
 
-Available in any page fragment or script.
+`api` is a global available everywhere — renderer scripts, page fragments, `backend.js`, `init.js`, and `update.js`.
 
 ```js
 // Window controls
-window.api.window.minimize()
-window.api.window.maximize()   // toggles maximize/restore
-window.api.window.close()
-window.api.window.new()        // open new window
-window.api.window.new("#/page") // open new window at route
+api.window.minimize()
+api.window.maximize()   // toggles maximize/restore
+api.window.close()
+api.window.new()        // open new window
+api.window.new("#/page") // open new window at route
 
 // Platform detection
-const platform = await window.api.getPlatform(); // "mac" | "win" | "linux"
+const platform = await api.getPlatform(); // "mac" | "win" | "linux"
 
 // Notifications (use this instead of browser Notification API)
-const supported = await window.api.notification.isSupported();
-const id = await window.api.notification.show({
+const supported = await api.notification.isSupported();
+const id = await api.notification.show({
   title: "Hello",
   body: "World",
   icon: "media/icon.png",  // optional, defaults to app icon
@@ -340,11 +371,11 @@ Docs: https://dustinpoissant.github.io/kempo-app/#/backend
 Runs in Electron's main process. Export a default function:
 
 ```js
-export default ({ db, ipc, app, Menu }) => {
+export default ({ ipc, app, Menu }) => {
 
   // Custom IPC handler
   ipc.handle("my-channel", async (event, data) => {
-    const value = db.get("settings", "someKey"); // table name first
+    const value = await api.jsonDB("settings").get("someKey");
     return { result: "ok", value };
   });
 
@@ -381,7 +412,7 @@ npm run interact -- navigate /settings # navigate to route
 npm run interact -- click "#selector"  # click element
 npm run interact -- click-text "Save"  # click by text content
 npm run interact -- type "#input" "value"
-npm run interact -- eval "await window.api.db('settings').get()"
+npm run interact -- eval "await api.jsonDB('settings').get()"
 npm run interact -- eval "window.route"
 npm run interact -- title
 npm run interact -- url
@@ -397,8 +428,10 @@ Always run `structure` or `dom` first to understand the page before interacting.
 ```json
 {
   "name": "my-app",
-  "appName": "My App",
-  "appIcon": "media/icon.png",
+  "kempo-app": {
+    "appName": "My App",
+    "appIcon": "media/icon.png"
+  },
   "scripts": {
     "start": "kempo-app",
     "dev": "kempo-app --dev",

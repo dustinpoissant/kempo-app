@@ -45,10 +45,10 @@ npm run interact -- screenshot
 npm run interact -- navigate /settings
 
 # <span class="hljs-number">4.</span> <span class="hljs-title class_">Read</span> the database
-npm run interact -- <span class="hljs-built_in">eval</span> <span class="hljs-string">&quot;await window.api.db('settings').get()&quot;</span>
+npm run interact -- <span class="hljs-built_in">eval</span> <span class="hljs-string">&quot;await api.jsonDB('settings').get()&quot;</span>
 
 # <span class="hljs-number">5.</span> <span class="hljs-title class_">Set</span> a value
-npm run interact -- <span class="hljs-built_in">eval</span> <span class="hljs-string">&quot;await window.api.db('settings').set('theme', 'dark')&quot;</span>
+npm run interact -- <span class="hljs-built_in">eval</span> <span class="hljs-string">&quot;await api.jsonDB('settings').set('theme', 'dark')&quot;</span>
 
 # <span class="hljs-number">6.</span> <span class="hljs-title class_">Click</span> something
 npm run interact -- click-text <span class="hljs-string">&quot;Save&quot;</span>
@@ -79,7 +79,7 @@ Always run `structure` first, then use other commands.
     npm run interact -- structure
     npm run interact -- screenshot
     npm run interact -- navigate /settings
-    npm run interact -- eval &quot;await window.api.db('settings').get()&quot;
+    npm run interact -- eval &quot;await api.jsonDB('settings').get()&quot;
 
 ## Database Schema
 - `theme` — &quot;light&quot; | &quot;dark&quot; | &quot;auto&quot;

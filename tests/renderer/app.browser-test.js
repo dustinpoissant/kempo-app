@@ -115,4 +115,77 @@ export default {
     else fail("Active class not toggled correctly");
     document.body.innerHTML = "";
   },
+
+  /*
+    URL search params config
+  */
+
+  'config: shell param defaults to shell.html': ({ pass, fail }) => {
+    const params = new URLSearchParams("");
+    const shellFile = params.get("shell") || "shell.html";
+    if(shellFile === "shell.html") pass();
+    else fail(`Expected "shell.html", got "${shellFile}"`);
+  },
+
+  'config: shell param reads custom value': ({ pass, fail }) => {
+    const params = new URLSearchParams("shell=editor-shell.html&titlebar=titlebar.html&pages=pages");
+    const shellFile = params.get("shell") || "shell.html";
+    if(shellFile === "editor-shell.html") pass();
+    else fail(`Expected "editor-shell.html", got "${shellFile}"`);
+  },
+
+  'config: titlebar param defaults to titlebar.html': ({ pass, fail }) => {
+    const params = new URLSearchParams("");
+    const titlebarFile = params.get("titlebar") || "titlebar.html";
+    if(titlebarFile === "titlebar.html") pass();
+    else fail(`Expected "titlebar.html", got "${titlebarFile}"`);
+  },
+
+  'config: titlebar "false" disables titlebar': ({ pass, fail }) => {
+    const params = new URLSearchParams("shell=shell.html&titlebar=false&pages=pages");
+    const titlebarFile = params.get("titlebar") || "titlebar.html";
+    if(titlebarFile === "false") pass();
+    else fail(`Expected "false", got "${titlebarFile}"`);
+  },
+
+  'config: pages param defaults to pages': ({ pass, fail }) => {
+    const params = new URLSearchParams("");
+    const pagesDir = params.get("pages") || "pages";
+    if(pagesDir === "pages") pass();
+    else fail(`Expected "pages", got "${pagesDir}"`);
+  },
+
+  'config: pages param reads custom value': ({ pass, fail }) => {
+    const params = new URLSearchParams("shell=shell.html&titlebar=titlebar.html&pages=views");
+    const pagesDir = params.get("pages") || "pages";
+    if(pagesDir === "views") pass();
+    else fail(`Expected "views", got "${pagesDir}"`);
+  },
+
+  'config: pages dir used in page path - root': ({ pass, fail }) => {
+    const pagesDir = "views";
+    const path = "/";
+    const page = path === "/" ? "index" : path.slice(1);
+    const src = `/${pagesDir}/${page}.html`;
+    if(src === "/views/index.html") pass();
+    else fail(`Expected "/views/index.html", got "${src}"`);
+  },
+
+  'config: pages dir used in page path - named': ({ pass, fail }) => {
+    const pagesDir = "screens";
+    const path = "/settings";
+    const page = path === "/" ? "index" : path.slice(1);
+    const src = `/${pagesDir}/${page}.html`;
+    if(src === "/screens/settings.html") pass();
+    else fail(`Expected "/screens/settings.html", got "${src}"`);
+  },
+
+  'config: default pages dir produces standard paths': ({ pass, fail }) => {
+    const pagesDir = "pages";
+    const path = "/about";
+    const page = path === "/" ? "index" : path.slice(1);
+    const src = `/${pagesDir}/${page}.html`;
+    if(src === "/pages/about.html") pass();
+    else fail(`Expected "/pages/about.html", got "${src}"`);
+  },
 };

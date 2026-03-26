@@ -317,7 +317,7 @@ Available in any page HTML fragment or script:
 
 ```js
 // Database — each table is a separate JSON file
-const settings = window.api.db("settings");       // get a table handle
+const settings = window.api.jsonDB("settings");       // get a table handle
 await settings.get()                              // { key: value, ... }
 await settings.get("theme")                       // "dark"
 await settings.set("theme", "dark")
@@ -326,9 +326,16 @@ await settings.has("theme")                       // true / false
 await settings.clear()
 
 // Use any table name — each becomes its own JSON file
-const myData = window.api.db("myData");
+const myData = window.api.jsonDB("myData");
 await myData.set("key1", "value1")
 await myData.get()                                // { key1: "value1" }
+
+// SQL Database — requires better-sqlite3 in consumer project
+await window.api.sqlDB.exec("mydb", "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)")
+await window.api.sqlDB.run("mydb", "INSERT INTO users (name) VALUES (?)", ["Alice"])  // { changes, lastInsertRowid }
+await window.api.sqlDB.get("mydb", "SELECT * FROM users WHERE id = ?", [1])           // single row
+await window.api.sqlDB.all("mydb", "SELECT * FROM users")                             // all rows
+await window.api.sqlDB.close("mydb")                                                  // close connection
 
 // Window controls
 window.api.window.minimize()
@@ -339,29 +346,29 @@ window.api.window.close()
 const platform = await window.api.getPlatform() // "mac" | "win" | "linux"
 ```
 
-**Data is persisted** to the OS user data directory — each table is a separate JSON file:
-- Windows: `%APPDATA%\<appName>\db\*.json`
-- macOS: `~/Library/Application Support/<appName>/db/*.json`
+**Data is persisted** to the OS user data directory. JSON tables and SQLite databases share the same `db/` folder:
+- Windows: `%APPDATA%\<appName>\db\*.json` (JSON) / `*.db` (SQLite)
+- macOS: `~/Library/Application Support/<appName>/db/*.json` (JSON) / `*.db` (SQLite)
 
 ---
 
 ## backend.js — Main Process Hook
 
-If `backend.js` exists in your project root, it runs in Electron's main process at startup. Export a default function that receives `{ db, ipc, app }`:
+If `backend.js` exists in your project root, it runs in Electron's main process at startup. Export a default function that receives `{ ipc, app, Menu }`:
 
 ```js
-export default ({ db, ipc, app }) => {
+export default ({ ipc, app, Menu }) => {
   // Custom IPC handler — callable from renderer via window.api (add to preload)
   ipc.handle("my-channel", async (event, data) => {
-    const stored = db.get("someKey");
+    const stored = await api.jsonDB("settings").get("someKey");
     return { result: "ok", stored };
   });
 };
 ```
 
-- `db` — the settings database (same `get`/`set`/`delete`/`has`/`clear` API)
 - `ipc` — Electron's `ipcMain`
 - `app` — Electron's `app` instance
+- `Menu` — Electron's `Menu`
 
 ---
 
@@ -374,7 +381,7 @@ The framework automatically registers your `protocolName` (from `package.json`) 
 The framework normalizes the platform differences (macOS `open-url`, Windows/Linux `second-instance`, and cold-launch argv) into a single unified event. Handle it in `backend.js`:
 
 ```js
-export default ({ db, ipc, app }) => {
+export default ({ ipc, app }) => {
   app.on("open-link", url => {
     // url = "my-app://some/path?foo=bar" — works on all platforms
     const parsed = new URL(url);
@@ -406,7 +413,7 @@ To open specific file types (e.g. `.myext`) your app needs to be registered with
 The framework normalizes the platform differences (macOS `open-file` event, Windows/Linux argv) into a single unified event. Handle it in `backend.js`:
 
 ```js
-export default ({ db, ipc, app }) => {
+export default ({ ipc, app }) => {
   app.on("open-path", filePath => {
     // filePath = "/Users/alice/documents/file.myext" — works on all platforms
     console.log("Open file:", filePath);
@@ -447,7 +454,7 @@ npm run interact -- type "#username" "Alice"
 
 # JavaScript evaluation
 npm run interact -- eval "window.route"
-npm run interact -- eval "await window.api.db('settings').get()"
+npm run interact -- eval "await window.api.jsonDB('settings').get()"
 npm run interact -- eval "document.title"
 
 # Info
@@ -478,7 +485,7 @@ Always run `structure` first to understand the current page before clicking.
     npm run interact -- structure
     npm run interact -- screenshot
     npm run interact -- navigate /settings
-    npm run interact -- eval "await window.api.db('settings').get()"
+    npm run interact -- eval "await window.api.jsonDB('settings').get()"
 
 ## Database Keys
 - `theme` — "light" | "dark" | "auto"
@@ -590,7 +597,7 @@ export default {
 2. **`window.api` mock** (via `testing/mocks.js`) — in-memory database, no-op window controls, platform/appName stubs. Matches the full `preload.cjs` API surface
 3. **`window.kempo` config** — browser-relative paths to kempo-css and icon directories
 
-The mock db store is exposed as `window.__kempoTestDbStore` for direct access in tests.
+The mock jsonDB store is exposed as `window.__kempoTestDbStore` for direct access in tests.
 
 ### Important: No Top-Level Imports
 

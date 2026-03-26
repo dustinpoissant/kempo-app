@@ -1,0 +1,169 @@
+<main>
+	<h1>Contact Manager</h1>
+	<p>A complete CRUD example using the <code>DB</code> class and <code>k-table</code>.</p>
+
+	<div class="row -mx">
+		<div class="col d-span-6 t-span-12 m-span-12 px">
+			<h5>Form HTML</h5>
+			<pre><code class="hljs html" style="overflow:auto;max-height:20rem"><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&#x27;contacts-form&#x27;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&#x27;card mb&#x27;</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">label</span> <span class="hljs-attr">for</span>=<span class="hljs-string">&#x27;contact-name&#x27;</span>&gt;</span>Name:<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&#x27;contact-name&#x27;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&#x27;mb&#x27;</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">&#x27;Name&#x27;</span> /&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">label</span> <span class="hljs-attr">for</span>=<span class="hljs-string">&#x27;contact-email&#x27;</span>&gt;</span>Email:<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&#x27;contact-email&#x27;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;email&#x27;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&#x27;mb&#x27;</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">&#x27;Email&#x27;</span> /&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">label</span> <span class="hljs-attr">for</span>=<span class="hljs-string">&#x27;contact-phone&#x27;</span>&gt;</span>Phone Number:<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&#x27;contact-phone&#x27;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;tel&#x27;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&#x27;mb&#x27;</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">&#x27;Phone&#x27;</span> /&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">label</span> <span class="hljs-attr">for</span>=<span class="hljs-string">&#x27;contact-address&#x27;</span>&gt;</span>Address:<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&#x27;contact-address&#x27;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&#x27;mb&#x27;</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">&#x27;Address&#x27;</span> /&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">label</span> <span class="hljs-attr">for</span>=<span class="hljs-string">&#x27;contact-gender&#x27;</span>&gt;</span>Gender:<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">select</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&#x27;contact-gender&#x27;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&#x27;mb&#x27;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&#x27;&#x27;</span>&gt;</span>--<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&#x27;Male&#x27;</span>&gt;</span>Male<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&#x27;Female&#x27;</span>&gt;</span>Female<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">select</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">label</span> <span class="hljs-attr">for</span>=<span class="hljs-string">&#x27;contact-birthday&#x27;</span>&gt;</span>Birthday:<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&#x27;contact-birthday&#x27;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&#x27;mb&#x27;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;date&#x27;</span> /&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;submit&#x27;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&#x27;primary mb&#x27;</span>&gt;</span>Add Contact<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span></code></pre>
+			<h5>Form JavaScript</h5>
+			<pre><code class="hljs javascript" style="overflow:auto;max-height:20rem"><span class="hljs-keyword">import</span> <span class="hljs-variable constant_">DB</span> <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;/framework/src/renderer/utils/sqlDB.js&#x27;</span>;<br><span class="hljs-keyword">import</span> <span class="hljs-title class_">Toast</span> <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;/modules/kempo-ui/dist/components/Toast.js&#x27;</span>;<br><span class="hljs-keyword">const</span> contacts = <span class="hljs-keyword">new</span> <span class="hljs-title function_">DB</span>(<span class="hljs-string">&#x27;contacts&#x27;</span>).<span class="hljs-title function_">table</span>(<span class="hljs-string">&#x27;contacts&#x27;</span>);<br><span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;#contacts-form&#x27;</span>).<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;submit&#x27;</span>, <span class="hljs-keyword">async</span> e =&gt; {<br>  e.<span class="hljs-title function_">preventDefault</span>();<br>  <span class="hljs-keyword">const</span> name = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;contact-name&#x27;</span>).<span class="hljs-property">value</span>.<span class="hljs-title function_">trim</span>();<br>  <span class="hljs-keyword">if</span> (!name) <span class="hljs-keyword">return</span>;<br>  <span class="hljs-keyword">try</span> {<br>    <span class="hljs-keyword">const</span> <span class="hljs-title function_">val</span> = id =&gt; <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(id).<span class="hljs-property">value</span>.<span class="hljs-title function_">trim</span>() || <span class="hljs-literal">null</span>;<br>    <span class="hljs-keyword">await</span> contacts.<span class="hljs-title function_">create</span>({<br>      name,<br>      <span class="hljs-attr">email</span>: <span class="hljs-title function_">val</span>(<span class="hljs-string">&#x27;contact-email&#x27;</span>),<br>      <span class="hljs-attr">phone</span>: <span class="hljs-title function_">val</span>(<span class="hljs-string">&#x27;contact-phone&#x27;</span>),<br>      <span class="hljs-attr">address</span>: <span class="hljs-title function_">val</span>(<span class="hljs-string">&#x27;contact-address&#x27;</span>),<br>      <span class="hljs-attr">gender</span>: <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;contact-gender&#x27;</span>).<span class="hljs-property">value</span> || <span class="hljs-literal">null</span>,<br>      <span class="hljs-attr">birthday</span>: <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;contact-birthday&#x27;</span>).<span class="hljs-property">value</span> || <span class="hljs-literal">null</span><br>    });<br>    <span class="hljs-title class_">Toast</span>.<span class="hljs-title function_">success</span>(<span class="hljs-string">&#x27;Contact added&#x27;</span>);<br>    [<span class="hljs-string">&#x27;contact-name&#x27;</span>, <span class="hljs-string">&#x27;contact-email&#x27;</span>, <span class="hljs-string">&#x27;contact-phone&#x27;</span>, <span class="hljs-string">&#x27;contact-address&#x27;</span>, <span class="hljs-string">&#x27;contact-birthday&#x27;</span>].<span class="hljs-title function_">forEach</span>(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(id).<span class="hljs-property">value</span> = <span class="hljs-string">&#x27;&#x27;</span>);<br>    <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;contact-gender&#x27;</span>).<span class="hljs-property">value</span> = <span class="hljs-string">&#x27;&#x27;</span>;<br>    <span class="hljs-variable language_">window</span>.<span class="hljs-title function_">dispatchEvent</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Event</span>(<span class="hljs-string">&#x27;contacts:reload&#x27;</span>));<br>  } <span class="hljs-keyword">catch</span> (err) {<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(err);<br>    <span class="hljs-title class_">Toast</span>.<span class="hljs-title function_">error</span>(err.<span class="hljs-property">message</span>.<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/^Error invoking remote method &#x27;[^&#x27;]+&#x27;: /</span>, <span class="hljs-string">&#x27;&#x27;</span>));<br>  }<br>});</code></pre>
+		</div>
+		<div class="col d-span-6 t-span-12 m-span-12 px">
+			<form
+				id="contacts-form"
+				class="card mb"
+			>
+				<label for="contact-name">Name:</label>
+				<input
+					id="contact-name"
+					class="mb"
+					placeholder="Name"
+				/>
+				<label for="contact-email">Email:</label>
+				<input
+					id="contact-email"
+					type="email"
+					class="mb"
+					placeholder="Email"
+				/>
+				<label for="contact-phone">Phone Number:</label>
+				<input
+					id="contact-phone"
+					type="tel"
+					class="mb"
+					placeholder="Phone"
+				/>
+				<label for="contact-address">Address:</label>
+				<input
+					id="contact-address"
+					class="mb"
+					placeholder="Address"
+				/>
+				<label for="contact-gender">Gender:</label>
+				<select
+					id="contact-gender"
+					class="mb"
+				>
+					<option value="">--</option>
+					<option value="Male">Male</option>
+					<option value="Female">Female</option>
+				</select>
+				<label for="contact-birthday">Birthday:</label>
+				<input
+					id="contact-birthday"
+					class="mb"
+					type="date"
+				/>
+				<button
+					type="submit"
+					class="primary mb"
+				>Add Contact</button>
+			</form>
+			<script type="module">
+				import DB from '/framework/src/renderer/utils/sqlDB.js';
+				import Toast from '/modules/kempo-ui/dist/components/Toast.js';
+				const contacts = new DB('contacts').table('contacts');
+
+				document.querySelector('#contacts-form').addEventListener('submit', async e => {
+					e.preventDefault();
+					const name = document.getElementById('contact-name').value.trim();
+					if (!name) return;
+					try {
+						const val = id => document.getElementById(id).value.trim() || null;
+						await contacts.create({
+							name,
+							email: val('contact-email'),
+							phone: val('contact-phone'),
+							address: val('contact-address'),
+							gender: document.getElementById('contact-gender').value || null,
+							birthday: document.getElementById('contact-birthday').value || null
+						});
+						Toast.success('Contact added');
+						['contact-name', 'contact-email', 'contact-phone', 'contact-address', 'contact-birthday'].forEach(id => document.getElementById(id).value = '');
+						document.getElementById('contact-gender').value = '';
+						window.dispatchEvent(new Event('contacts:reload'));
+					} catch(err) {
+						console.error(err);
+						Toast.error(err.message.replace(/^Error invoking remote method '[^']+': /, ''));
+					}
+				});
+			</script>
+		</div>
+		<div class="col d-span-6 t-span-12 m-span-12 px">
+			<h5>Table HTML</h5>
+			<pre><code class="hljs xml" style="overflow:auto;max-height:20rem"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span><br />  <span class="hljs-attr">id</span>=<span class="hljs-string">"contacts-table"</span><br />  <span class="hljs-attr">request-edit</span>=<span class="hljs-string">"true"</span><br />  <span class="hljs-attr">request-delete</span>=<span class="hljs-string">"true"</span><br />  <span class="hljs-attr">enable-sorting</span>=<span class="hljs-string">"true"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tc-edit</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"after"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-tc-edit</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tc-delete-record</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"after"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-tc-delete-record</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span></code></pre>
+			
+			<h5>Table JavaScript</h5>
+			<pre><code class="hljs javascript" style="overflow:auto;max-height:20rem"><span class="hljs-keyword">import</span> DB <span class="hljs-keyword">from</span> <span class="hljs-string">'/framework/src/renderer/utils/sqlDB.js'</span>;<br /><span class="hljs-keyword">import</span> Toast <span class="hljs-keyword">from</span> <span class="hljs-string">'/modules/kempo-ui/dist/components/Toast.js'</span>;<br /><span class="hljs-keyword">const</span> contacts = <span class="hljs-keyword">new</span> DB(<span class="hljs-string">'contacts'</span>).table(<span class="hljs-string">'contacts'</span>);<br /><span class="hljs-keyword">const</span> toastErr = <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {<br />  <span class="hljs-built_in">console</span>.error(err);<br />  Toast.error(err.message.replace(<span class="hljs-regexp">/^Error invoking remote method '[^']+': /</span>, <span class="hljs-string">''</span>));<br />};<br /><span class="hljs-keyword">const</span> fields = [<br />  { <span class="hljs-attr">name</span>: <span class="hljs-string">'name'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Name'</span> },<br />  { <span class="hljs-attr">name</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Email'</span> },<br />  { <span class="hljs-attr">name</span>: <span class="hljs-string">'phone'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Phone'</span> },<br />  { <span class="hljs-attr">name</span>: <span class="hljs-string">'address'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Address'</span> },<br />  { <span class="hljs-attr">name</span>: <span class="hljs-string">'gender'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Gender'</span> },<br />  { <span class="hljs-attr">name</span>: <span class="hljs-string">'birthday'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Birthday'</span>, <span class="hljs-attr">type</span>: <span class="hljs-string">'date'</span> }<br />];<br /><span class="hljs-keyword">const</span> loadContacts = <span class="hljs-keyword">async</span> () =&gt; {<br />  <span class="hljs-keyword">const</span> records = <span class="hljs-keyword">await</span> contacts.getAll();<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'contacts-table'</span>).setData({ <span class="hljs-attr">records</span>: records.map(<span class="hljs-function"><span class="hljs-params">r</span> =&gt;</span> r.data), fields });<br />};<br /><span class="hljs-keyword">await</span> loadContacts();<br /><span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">'contacts:reload'</span>, loadContacts);<br /><br /><span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'contacts-table'</span>).addEventListener(<span class="hljs-string">'requestSave'</span>, <span class="hljs-keyword">async</span> e =&gt; {<br />  <span class="hljs-keyword">const</span> { record, newData, approve, reject } = e.detail;<br />  <span class="hljs-keyword">try</span> {<br />    <span class="hljs-keyword">await</span> contacts.update({ <span class="hljs-attr">id</span>: record.id }, newData);<br />    approve();<br />    <span class="hljs-keyword">await</span> loadContacts();<br />  } <span class="hljs-keyword">catch</span> (err) {<br />    reject();<br />    toastErr(err);<br />  }<br />});<br /><br /><span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'contacts-table'</span>).addEventListener(<span class="hljs-string">'requestDelete'</span>, <span class="hljs-keyword">async</span> e =&gt; {<br />  <span class="hljs-keyword">const</span> { records, approve, reject } = e.detail;<br />  <span class="hljs-keyword">try</span> {<br />    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> r <span class="hljs-keyword">of</span> records) <span class="hljs-keyword">await</span> contacts.deleteAll({ <span class="hljs-attr">id</span>: r.id });<br />    approve();<br />    <span class="hljs-keyword">await</span> loadContacts();<br />  } <span class="hljs-keyword">catch</span> (err) {<br />    reject();<br />    toastErr(err);<br />  }<br />});</code></pre>
+		</div>
+		<div class="col d-span-6 t-span-12 m-span-12 px">
+			<k-table
+				id="contacts-table"
+				request-edit="true"
+				request-delete="true"
+				enable-sorting="true"
+			>
+				<k-tc-edit slot="after"></k-tc-edit>
+				<k-tc-delete-record slot="after"></k-tc-delete-record>
+			</k-table>
+			<script type="module">
+				import DB from '/framework/src/renderer/utils/sqlDB.js';
+				import Toast from '/modules/kempo-ui/dist/components/Toast.js';
+				const contacts = new DB('contacts').table('contacts');
+				const toastErr = err => {
+					console.error(err);
+					Toast.error(err.message.replace(/^Error invoking remote method '[^']+': /, ''));
+				};
+				const fields = [
+					{ name: 'name', label: 'Name' },
+					{ name: 'email', label: 'Email' },
+					{ name: 'phone', label: 'Phone' },
+					{ name: 'address', label: 'Address' },
+					{ name: 'gender', label: 'Gender' },
+					{ name: 'birthday', label: 'Birthday', type: 'date' }
+				];
+				const loadContacts = async () => {
+					const records = await contacts.getAll();
+					document.getElementById('contacts-table').setData({ records: records.map(r => r.data), fields });
+				};
+				await loadContacts();
+				window.addEventListener('contacts:reload', loadContacts);
+
+				document.getElementById('contacts-table').addEventListener('requestSave', async e => {
+					const { record, newData, approve, reject } = e.detail;
+					try {
+						await contacts.update({ id: record.id }, newData);
+						approve();
+						await loadContacts();
+					} catch (err) {
+						reject();
+						toastErr(err);
+					}
+				});
+
+				document.getElementById('contacts-table').addEventListener('requestDelete', async e => {
+					const { records, approve, reject } = e.detail;
+					try {
+						for (const r of records) await contacts.deleteAll({ id: r.id });
+						approve();
+						await loadContacts();
+					} catch (err) {
+						reject();
+						toastErr(err);
+					}
+				});
+			</script>
+		</div>
+	</div>
+
+	<script
+		type="module"
+		src="/modules/kempo-ui/dist/components/tableControls/Edit.js"
+	></script>
+	<script
+		type="module"
+		src="/modules/kempo-ui/dist/components/tableControls/DeleteRecord.js"
+	></script>
+</main>
+<div style="height:33vh"></div>

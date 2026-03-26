@@ -7,30 +7,6 @@ body { overflow: hidden; }
 /* Full-height column layout for the app shell */
 body { display: flex; flex-direction: column; height: 100vh; }
 
-/* Only the page content area scrolls — titlebar and nav stay fixed */
-#page-container { overflow: auto; min-height: 0; }
-
-/* Active nav indicator */
-.nav-link {
-	position: relative;
-	color: inherit; 
-	
-	&.active {
-		color: var(--tc_primary);
-		
-		&::after {
-			content: "";
-			position: absolute;
-			bottom: -1px;
-			left: 0;
-			right: 0;
-			height: 2px;
-			background: var(--c_primary);
-		}
-	}
-}
-.nav-link:hover { color: var(--tc_primary); }
-
 app-page {
 	overflow: auto;
 }

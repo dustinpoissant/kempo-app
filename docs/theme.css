@@ -5,6 +5,7 @@
 	--color-mid-dark: #000885;
 	--color-dark: #1b1c26;
 	--color-dark__alt: #333333;
+	
 	--c_bg: light-dark(white, #1b1b1d);
 	--c_bg__alt: light-dark(var(--color-light__alt), var(--color-dark__alt));
 	--c_primary: var(--color-light);
@@ -19,4 +20,37 @@
 	--ff_body: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 	--ff_heading: var(--ff_body);
 	--c_border: rgba(200, 200, 200, 0.3);
+}
+/* Active nav indicator */
+.nav-link {
+	position: relative;
+	color: inherit;
+	&.active {
+		color: var(--tc_primary);
+		&::after {
+			content: "";
+			position: absolute;
+			bottom: -1px;
+			left: 0;
+			right: 0;
+			height: 2px;
+			background: var(--c_primary);
+		}
+	}
+}
+.nav-link:hover { color: var(--tc_primary); }
+/* Card links */
+a.card {
+	display: block;
+	color: inherit;
+	text-decoration: none;
+	transition: border var(--animation_ms, 256ms);
+	&:hover {
+		--c_border: var(--c_primary);
+		box-shadow: 0 0 3px var(--c_primary);
+	}
+}
+/* Reset dropdown submenu color so chevrons are readable on the popup background */
+app-titlebar k-dropdown k-dropdown {
+	color: var(--tc);
 }

@@ -1,0 +1,241 @@
+<main>
+	<h1>SQL Database</h1>
+
+	<p>
+		Import the <code>DB</code> class from the framework to access a SQL database powered by
+		<a
+			href="https://github.com/WiseLibs/better-sqlite3"
+			target="_blank"
+		>better-sqlite3</a>.
+		Each database name becomes a separate <code>.db</code> file. <code>DB</code> works in both
+		the renderer process and <code>backend.js</code> — it auto-detects its environment.
+	</p>
+	<div class="app-demo">
+		<button class="primary mb" onclick="api.window.new({ hash: '#/database/contacts', shell: 'shell_empty.html'})">View Contact Manager Example</button>
+	</div>
+
+	<h3>Install</h3>
+	<p>better-sqlite3 is an optional dependency — install it in your project if you need a relational database:</p>
+	<pre><code class="hljs bash">npm install better-sqlite3</code></pre>
+	<p class="tc-muted">If not installed, calling <code>db.query()</code> or any table method will throw an error.</p>
+
+	<h3>Quick Start</h3>
+
+	<h5>Create the Schema</h5>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// schema/mydb/users.js</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {<br>  <span class="hljs-attr">name</span>: {<br>    <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;text&#x27;</span>,<br>    <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span><br>  },<br>  <span class="hljs-attr">email</span>: {<br>    <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;text&#x27;</span>,<br>    <span class="hljs-attr">unique</span>: <span class="hljs-literal">true</span><br>  },<br>}</code></pre>
+	<p
+		class="tc-muted"
+		style="margin-top:4px"
+	>See <a href="#/database/schema">Schema</a> for full schema documentation.</p>
+
+	<h5>Import and use the DB Class</h5>
+
+	<p>In a page script or <code>backend.js</code>, import and use <code>DB</code> the same way:</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> DB <span class="hljs-keyword">from</span> <span class="hljs-string">'/framework/src/renderer/utils/sqlDB.js'</span><br /><br /><span class="hljs-keyword">const</span> db = <span class="hljs-keyword">new</span> DB(<span class="hljs-string">'mydb'</span>); <span class="hljs-comment">// Initiate the database named "mydb"</span><br /><span class="hljs-keyword">const</span> users = db.table(<span class="hljs-string">'users'</span>); <span class="hljs-comment">// Initiate the users table</span><br /><br /><span class="hljs-comment">// Create a record</span><br /><span class="hljs-keyword">const</span> record = <span class="hljs-keyword">await</span> users.create({<br />  <span class="hljs-attr">name</span>: <span class="hljs-string">'Alice'</span>,<br />  <span class="hljs-attr">email</span>: <span class="hljs-string">'alice@example.com'</span><br />})<br />record.data <span class="hljs-comment">// { id: 1, name: 'Alice', email: 'alice@example.com' }</span><br /><br /><span class="hljs-comment">// Get all records</span><br /><span class="hljs-keyword">const</span> all = <span class="hljs-keyword">await</span> users.getAll()<br />all[<span class="hljs-number">0</span>].data <span class="hljs-comment">// { id: 1, name: 'Alice', ... }</span><br /><br /><span class="hljs-comment">// first match, or null</span><br /><span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> users.get({<span class="hljs-attr">id</span>: <span class="hljs-number">1</span>}); <br /><br /><span class="hljs-comment">// last by insertion order, or null</span><br /><span class="hljs-keyword">const</span> last = <span class="hljs-keyword">await</span> users.getLast();<br /><br /><span class="hljs-comment">// Update and delete via record</span><br /><span class="hljs-keyword">await</span> user.update({<span class="hljs-attr">name</span>: <span class="hljs-string">'Alicia'</span>});<br /><span class="hljs-keyword">await</span> user.delete();<br /></code></pre>
+
+
+	<h3>DB Class</h3>
+	<p>
+		Create a <code>DB</code> instance for each database. Use <code>db.query(sql)</code> for advanced
+		SQL operations like joins, aggregations, and subqueries — anything beyond basic CRUD. For
+		creating, filtering, updating, and deleting records, use the <code>Table</code> and
+		<code>Record</code> classes below.
+	</p>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr>
+					<th>Method</th>
+					<th>Arguments</th>
+					<th>Returns</th>
+					<th>Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><code>new DB(name)</code></td>
+					<td>Database name</td>
+					<td><code>DB</code> instance</td>
+					<td>Opens (or creates) a <code>.db</code> file for the given name</td>
+				</tr>
+				<tr>
+					<td><code>db.query(sql)</code></td>
+					<td>SQL string</td>
+					<td>Array (SELECT) or <code>true</code></td>
+					<td>Run raw SQL for advanced queries (joins, aggregations, etc.)</td>
+				</tr>
+				<tr>
+					<td><code>db.table(name)</code></td>
+					<td>Table name</td>
+					<td><code>Table</code> instance</td>
+					<td>Get a <code>Table</code> for CRUD operations on a named table</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<h3>Table</h3>
+	<p>
+		<code>db.table(name)</code> returns a <code>Table</code> instance. Methods that return a
+		single row return a <code>Record</code> (or <code>null</code>); methods that return multiple
+		rows return an array of <code>Record</code>s.
+	</p>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr>
+					<th>Method</th>
+					<th>Arguments</th>
+					<th>Returns</th>
+					<th>Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr">
+					<td><code>create(data)</code></td>
+					<td>Object with column values</td>
+					<td><code>Record</code></td>
+					<td>Insert a new row and return it as a <code>Record</code></td>
+					</tr>
+					<tr">
+						<td><code>get(filter?)</code></td>
+						<td>Optional filter object</td>
+						<td><code>Record</code> or <code>null</code></td>
+						<td>Return the first matching row, or <code>null</code></td>
+						</tr>
+						<tr">
+							<td><code>getLast(filter?)</code></td>
+							<td>Optional filter object</td>
+							<td><code>Record</code> or <code>null</code></td>
+							<td>Return the last row matching the filter (by insertion order), or <code>null</code>
+							</td>
+							</tr>
+							<tr">
+								<td><code>getAll(filter?)</code></td>
+								<td>Optional filter object</td>
+								<td>Array of <code>Record</code></td>
+								<td>Return all matching rows as an array of <code>Record</code>s</td>
+								</tr>
+								<tr">
+									<td><code>update(filter, data)</code></td>
+									<td>Filter, update data</td>
+									<td><code>true</code></td>
+									<td>Update the first matching row</td>
+									</tr>
+									<tr">
+										<td><code>updateAll(filter, data)</code></td>
+										<td>Filter, update data</td>
+										<td><code>true</code></td>
+										<td>Update all matching rows</td>
+										</tr>
+										<tr">
+											<td><code>delete(filter)</code></td>
+											<td>Filter object</td>
+											<td><code>true</code></td>
+											<td>Delete the first matching row</td>
+											</tr>
+											<tr">
+												<td><code>deleteAll(filter)</code></td>
+												<td>Filter object</td>
+												<td><code>true</code></td>
+												<td>Delete all matching rows</td>
+												</tr>
+			</tbody>
+		</table>
+	</div>
+	<p
+		class="tc-muted"
+		style="margin-top:4px"
+	>
+		<code>get()</code> and <code>getLast()</code> order by SQLite's internal <code>rowid</code>,
+		which reflects insertion order — not any column you define. So <code>get()</code> returns
+		the first-inserted matching row and <code>getLast()</code> returns the last-inserted, regardless
+		of your schema's primary key.
+	</p>
+
+	<h3>Record</h3>
+	<p>
+		<code>Record</code>s are returned by table methods. Access the row via <code>record.data</code>;
+		call <code>update</code> or <code>delete</code> directly on the record.
+	</p>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th>Member</th>
+					<th>Arguments</th>
+					<th>Returns</th>
+					<th>Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><code>record.data</code></td>
+					<td>—</td>
+					<td>Object</td>
+					<td>The row's current column values as a plain object</td>
+				</tr>
+				<tr>
+					<td><code>record.update(data)</code></td>
+					<td>Object with updated column values</td>
+					<td><code>true</code></td>
+					<td>Update the row in the database and sync <code>record.data</code></td>
+				</tr>
+				<tr>
+					<td><code>record.delete()</code></td>
+					<td>—</td>
+					<td><code>true</code></td>
+					<td>Remove the row from the database</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<h3>Backend Access</h3>
+	<p>
+		<code>DB</code> works identically in <code>backend.js</code> — import it the same way and
+		use the same API. No IPC handlers needed.
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">import</span> <span class="hljs-variable constant_">DB</span> <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;/framework/src/renderer/utils/sqlDB.js&#x27;</span>;<br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-title function_">async</span> ({<br>  ipc<br>}) =&gt; {<br>  <span class="hljs-keyword">const</span> users = <span class="hljs-keyword">new</span> <span class="hljs-title function_">DB</span>(<span class="hljs-string">&#x27;myapp&#x27;</span>).<span class="hljs-title function_">table</span>(<span class="hljs-string">&#x27;users&#x27;</span>);<br>  ipc.<span class="hljs-title function_">handle</span>(<span class="hljs-string">&#x27;get-user&#x27;</span>, <span class="hljs-title function_">async</span> (e, id) =&gt; {<br>    <span class="hljs-keyword">const</span> record = <span class="hljs-keyword">await</span> users.<span class="hljs-title function_">get</span>({<br>      id<br>    });<br>    <span class="hljs-keyword">return</span> record?.<span class="hljs-property">data</span> ?? <span class="hljs-literal">null</span>;<br>  });<br>};</code></pre>
+
+
+
+	<h3>Storage Location</h3>
+	<p>Each database is stored as a separate <code>.db</code> file:</p>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th>Platform</th>
+					<th>Path</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Windows</td>
+					<td><code>%APPDATA%\&lt;appName&gt;\db\*.db</code></td>
+				</tr>
+				<tr>
+					<td>macOS</td>
+					<td><code>~/Library/Application Support/&lt;appName&gt;/db/*.db</code></td>
+				</tr>
+				<tr>
+					<td>Linux</td>
+					<td><code>~/.config/&lt;appName&gt;/db/*.db</code></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<p class="tc-muted">
+		SQLite uses WAL (Write-Ahead Logging) journal mode for better concurrent read performance.
+		Connections are cached and automatically closed when the app quits.
+	</p>
+
+	<h3>Schema Tables</h3>
+	<p>Add
+		If you'd rather define tables as files and skip writing SQL entirely, see
+		<a href="#/database/schema">Schema Tables</a> — a layer on top of <code>sqlDB</code>
+		that gives you auto-migration and a CRUD API with no SQL needed.
+	</p>
+</main>
+<div style="height:33vh"></div>

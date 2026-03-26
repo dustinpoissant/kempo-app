@@ -40,7 +40,7 @@ npm run interact -- navigate /settings                   # go to a page
 npm run interact -- click "#some-id"                     # click by selector
 npm run interact -- click-text "Save"                    # click by visible text
 npm run interact -- type "#input-id" "value"             # type into an input
-npm run interact -- eval "await window.api.db('settings').get()"  # run JS in renderer
+npm run interact -- eval "await window.api.jsonDB('settings').get()"  # run JS in renderer
 npm run interact -- eval "window.route"                  # check current route
 ```
 
@@ -59,7 +59,7 @@ Query params: `#/settings?tab=appearance` → `window.route.params.tab === "appe
 ## window.api (Renderer)
 
 ```js
-const settings = window.api.db("settings");
+const settings = window.api.jsonDB("settings");
 await settings.get()                     // { key: value, … }
 await settings.get("key")                // single value
 await settings.set("key", val)
@@ -77,12 +77,12 @@ const platform = await window.api.getPlatform(); // "mac" | "win" | "linux"
 ## backend.js (Main Process)
 
 ```js
-export default ({ db, ipc, app, Menu }) => {
+export default ({ ipc, app, Menu }) => {
   ipc.handle("my-channel", async (event, data) => {
     return { result: "ok" };
   });
 
-  app.on("before-quit", () => { db.set("settings", "lastSession", Date.now()); });
+  app.on("before-quit", () => { api.jsonDB("settings").set("lastSession", Date.now()); });
   app.on("open-link", url => { /* deep link handler */ });
   app.on("open-path", filePath => { /* file association handler */ });
 };

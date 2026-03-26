@@ -3,15 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "appName": "Example App",
-  "appIcon": "media/icon.png",
-  "protocolName": "example-app",
+  "kempo-app": {
+    "appName": "Example App",
+    "appIcon": "media/icon.png",
+    "protocolName": "example-app"
+  },
   "scripts": {
     "start": "kempo-app",
     "dev": "kempo-app --dev",
     "interact": "kempo-interact"
   },
   "dependencies": {
+    "better-sqlite3": "^12.8.0",
     "kempo-app": "file:..",
     "kempo-ui": "^0.1.6"
   }

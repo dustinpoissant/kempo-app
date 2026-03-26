@@ -6,7 +6,7 @@ export const beforeAll = async () => {
 
 export const beforeEach = async () => {
   document.body.innerHTML = "";
-  await window.api.db("settings").clear();
+  await window.api.jsonDB("settings").clear();
 };
 
 export default {
@@ -22,7 +22,7 @@ export default {
   },
 
   'app-setting-string renders a text input': async ({ pass, fail }) => {
-    await window.api.db("settings").set("strSetting", "hello");
+    await window.api.jsonDB("settings").set("strSetting", "hello");
     const el = document.createElement("app-setting-string");
     el.setting = "strSetting";
     document.body.appendChild(el);
@@ -48,7 +48,7 @@ export default {
   },
 
   'app-setting-string loads string value from db': async ({ pass, fail }) => {
-    await window.api.db("settings").set("strLoad", "world");
+    await window.api.jsonDB("settings").set("strLoad", "world");
     const el = document.createElement("app-setting-string");
     el.setting = "strLoad";
     document.body.appendChild(el);
@@ -71,7 +71,7 @@ export default {
   },
 
   'app-setting-string updates value on input change': async ({ pass, fail }) => {
-    await window.api.db("settings").set("strChange", "old");
+    await window.api.jsonDB("settings").set("strChange", "old");
     const el = document.createElement("app-setting-string");
     el.setting = "strChange";
     document.body.appendChild(el);
@@ -88,7 +88,7 @@ export default {
   },
 
   'app-setting-string saves to db on change': async ({ pass, fail }) => {
-    await window.api.db("settings").set("strSave", "original");
+    await window.api.jsonDB("settings").set("strSave", "original");
     const el = document.createElement("app-setting-string");
     el.setting = "strSave";
     document.body.appendChild(el);
@@ -100,7 +100,7 @@ export default {
     input.dispatchEvent(new Event("change"));
     await el.updateComplete;
     await new Promise(r => setTimeout(r, 100));
-    const stored = await window.api.db("settings").get("strSave");
+    const stored = await window.api.jsonDB("settings").get("strSave");
     if(stored === "updated") pass();
     else fail(`Expected "updated" in db, got "${stored}"`);
   },

@@ -12,24 +12,28 @@ ipcRenderer.on("notification:reply", (e, id, reply) => {
 });
 
 contextBridge.exposeInMainWorld("api", {
-  // Database — returns a table proxy: db("settings").get("key")
-  db: (table) => ({
+  // JSON Database — returns a table proxy: jsonDB("settings").get("key")
+  jsonDB: (table) => ({
     get: (key) => ipcRenderer.invoke("db:get", table, key),
     set: async (key, value) => {
       await ipcRenderer.invoke("db:set", table, key, value);
-      window.dispatchEvent(new CustomEvent("settingchange", { detail: { table, key, value } }));
+      window.dispatchEvent(new CustomEvent(`jsondb_change:${table}`, { detail: { key, value } }));
     },
     delete: (key) => ipcRenderer.invoke("db:delete", table, key),
     has: (key) => ipcRenderer.invoke("db:has", table, key),
     clear: () => ipcRenderer.invoke("db:clear", table),
   }),
 
+  // SQL — requires better-sqlite3 in consumer project
+  // SELECT returns array of rows; anything else returns true; throws on error
+  sqlQuery: (dbName, sql) => ipcRenderer.invoke("sqlDB:query", dbName, sql),
+
   // Window controls
   window: {
     minimize: () => ipcRenderer.send("window:minimize"),
     maximize: () => ipcRenderer.send("window:maximize"),
     close: () => ipcRenderer.send("window:close"),
-    new: (hash) => ipcRenderer.send("window:new", hash),
+    new: (options) => ipcRenderer.send("window:new", typeof options === "string" ? { hash: options } : options),
     isMaximized: () => ipcRenderer.invoke("window:isMaximized"),
     onMaximizeChange: (cb) => ipcRenderer.on("window:maximize-change", (e, val) => cb(val)),
   },

@@ -2,38 +2,96 @@
 	<h1>Backend</h1>
 
 	<p>
-		If <code>backend.js</code> exists in your project root, it runs in Electron's
-		<strong>main process</strong> at startup. This gives you access to Node.js APIs,
-		the file system, native modules, and Electron's IPC system.
+		The framework supports three optional files in your project root that run in Electron's
+		<strong>main process</strong>. Each must <code>export default</code> a function.
 	</p>
 
-	<h3>backend.js Template</h3>
-	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({ db, ipc, app, <span class="hljs-title class_">Menu</span> }) =&gt; {
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr>
+					<th>File</th>
+					<th>When it runs</th>
+					<th>Context</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><code>backend.js</code></td>
+					<td>Every startup</td>
+					<td><code>{ ipc, app, Menu }</code></td>
+				</tr>
+				<tr>
+					<td><code>init.js</code></td>
+					<td>Once on first launch</td>
+					<td><code>{ ipc, app, Menu }</code></td>
+				</tr>
+				<tr>
+					<td><code>update.js</code></td>
+					<td>When <code>version</code> in package.json changes</td>
+					<td><code>{ ipc, app, Menu, from, to }</code></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	
+	<h3>Startup Sequence</h3>
+	<ol>
+		<li><strong>Framework init</strong> — JSON DB and SQL DB systems made available — runs every startup</li>
+		<li><strong>init.js</strong> — runs only on first launch, or <strong>update.js</strong> — runs only when version changes</li>
+		<li><strong>Schema sync</strong> — creates/migrates tables from <code>schema/</code> files — runs every startup</li>
+		<li><strong>backend.js</strong> — runs every startup</li>
+		<li><strong>Window creation</strong> — app window opens</li>
+	</ol>
 
-  <span class="hljs-comment">// Custom IPC handler — call from renderer via ipcRenderer</span>
-  ipc.<span class="hljs-title function_">handle</span>(<span class="hljs-string">&quot;my-channel&quot;</span>, <span class="hljs-title function_">async</span> (event, data) =&gt; {
-    <span class="hljs-keyword">const</span> value = db.<span class="hljs-title function_">get</span>(<span class="hljs-string">&quot;settings&quot;</span>, <span class="hljs-string">&quot;someKey&quot;</span>);
-    <span class="hljs-keyword">return</span> { <span class="hljs-attr">result</span>: <span class="hljs-string">&quot;ok&quot;</span>, value };
-  });
-
-};</code></pre>
+	<h3>backend.js</h3>
+	<p>Runs every startup. Use it for custom IPC handlers, native menus, deep link handling, or any server-side logic.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({<br>  ipc,<br>  app,<br>  <span class="hljs-title class_">Menu</span><br>}) =&gt; {<br>  <span class="hljs-comment">// Custom IPC handler - call from renderer via ipcRenderer</span><br>  ipc.<span class="hljs-title function_">handle</span>(<span class="hljs-string">&#x27;my-channel&#x27;</span>, <span class="hljs-title function_">async</span> (event, data) =&gt; {<br>    <span class="hljs-keyword">const</span> value = <span class="hljs-keyword">await</span> api.<span class="hljs-title function_">jsonDB</span>(<span class="hljs-string">&#x27;settings&#x27;</span>).<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;someKey&#x27;</span>);<br>    <span class="hljs-keyword">return</span> {<br>      <span class="hljs-attr">result</span>: <span class="hljs-string">&#x27;ok&#x27;</span>,<br>      value<br>    };<br>  });<br>};</code></pre>
 	<p>The function receives:</p>
 	<div class="table-wrapper mb">
 		<table>
 			<thead>
 				<tr class="bg-alt">
-					<th style="text-align:left;padding:6px 8px">Argument</th>
-					<th style="text-align:left;padding:6px 8px">What it is</th>
+					<th>Argument</th>
+					<th>What it is</th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr class="by"><td style="padding:6px 8px"><code>db</code></td><td style="padding:6px 8px">The <a href="#/database">database</a> instance (table name is always the first argument)</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>ipc</code></td><td style="padding:6px 8px">Electron's <code>ipcMain</code></td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>app</code></td><td style="padding:6px 8px">Electron's <code>app</code> instance</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>Menu</code></td><td style="padding:6px 8px">Electron's <code>Menu</code> class — for building native menus</td></tr>
+				<tr>
+					<td><code>ipc</code></td>
+					<td>Electron's <code>ipcMain</code></td>
+				</tr>
+				<tr>
+					<td><code>app</code></td>
+					<td>Electron's <code>app</code> instance</td>
+				</tr>
+				<tr>
+					<td><code>Menu</code></td>
+					<td>Electron's <code>Menu</code> class — for building native menus</td>
+				</tr>
 			</tbody>
 		</table>
 	</div>
+
+	<h3>init.js</h3>
+	<p>
+		Runs once on the very first app launch. Use it to create database tables, seed initial data,
+		or perform one-time setup. Receives the same <code>{ ipc, app, Menu }</code> context.
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({<br>  ipc,<br>  app,<br>  <span class="hljs-title class_">Menu</span><br>}) =&gt; {<br>  api.<span class="hljs-title function_">sqlQuery</span>(<span class="hljs-string">&#x27;myapp&#x27;</span>, <span class="hljs-string">&#x27;CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT)&#x27;</span>);<br>};</code></pre>
+
+	<h3>update.js</h3>
+	<p>Runs when the <code>version</code> in your package.json changes from the previously stored version. Receives
+		<code>from</code> and <code>to</code> version strings in addition to the standard context:</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({<br>  <span class="hljs-keyword">from</span>,<br>  to<br>}) =&gt; {<br>  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">from</span> === <span class="hljs-string">&#x27;1.0.0&#x27;</span>) {<br>    api.<span class="hljs-title function_">sqlQuery</span>(<span class="hljs-string">&#x27;myapp&#x27;</span>, <span class="hljs-string">&#x27;ALTER TABLE users ADD COLUMN phone TEXT&#x27;</span>);<br>  }<br>};</code></pre>
+
+	<h3>API</h3>
+	<p>
+		The global <code>api</code> object is available in all three backend files with the same
+		surface as the renderer — <code>jsonDB</code>, <code>sqlQuery</code>, <code>window</code>,
+		<code>notification</code>, and more.
+		See the <a href="#/api">API page</a> for the full reference.
+	</p>
 
 	<h3>Deep Links — app.on('open-link')</h3>
 	<p>
@@ -41,29 +99,14 @@
 		Clicking a <code>my-app://</code> link anywhere opens your app and fires <code>open-link</code>
 		— on all platforms, no per-platform branching needed:
 	</p>
-	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({ db, ipc, app }) =&gt; {
-
-  app.<span class="hljs-title function_">on</span>(<span class="hljs-string">&quot;open-link&quot;</span>, <span class="hljs-function"><span class="hljs-params">url</span> =&gt;</span> {
-    <span class="hljs-comment">// url = &quot;my-app://some/path?foo=bar&quot;</span>
-    <span class="hljs-keyword">const</span> parsed = <span class="hljs-keyword">new</span> <span class="hljs-title function_">URL</span>(url);
-    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(parsed.<span class="hljs-property">pathname</span>, parsed.<span class="hljs-property">searchParams</span>);
-  });
-
-};</code></pre>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({<br>  ipc,<br>  app<br>}) =&gt; {<br>  app.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;open-link&#x27;</span>, <span class="hljs-function"><span class="hljs-params">url</span> =&gt;</span> {<br>    <span class="hljs-comment">// url = &#x27;my-app://some/path?foo=bar&#x27;</span><br>    <span class="hljs-keyword">const</span> parsed = <span class="hljs-keyword">new</span> <span class="hljs-title function_">URL</span>(url);<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(parsed.<span class="hljs-property">pathname</span>, parsed.<span class="hljs-property">searchParams</span>);<br>  });<br>};</code></pre>
 
 	<h3>File Associations — app.on('open-path')</h3>
 	<p>
 		Register file type associations at install time via electron-builder, then handle
 		them in <code>backend.js</code>. Works on all platforms with a single event:
 	</p>
-	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({ db, ipc, app }) =&gt; {
-
-  app.<span class="hljs-title function_">on</span>(<span class="hljs-string">&quot;open-path&quot;</span>, <span class="hljs-function"><span class="hljs-params">filePath</span> =&gt;</span> {
-    <span class="hljs-comment">// filePath = &quot;/Users/alice/docs/file.myext&quot;</span>
-    ipc.<span class="hljs-title function_">emit</span>(<span class="hljs-string">&quot;file-opened&quot;</span>, filePath);
-  });
-
-};</code></pre>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({<br>  ipc,<br>  app<br>}) =&gt; {<br>  app.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;open-path&#x27;</span>, <span class="hljs-function"><span class="hljs-params">filePath</span> =&gt;</span> {<br>    <span class="hljs-comment">// filePath = &#x27;/Users/alice/docs/file.myext&#x27;</span><br>    ipc.<span class="hljs-title function_">emit</span>(<span class="hljs-string">&#x27;file-opened&#x27;</span>, filePath);<br>  });<br>};</code></pre>
 	<p>Register the file type in your electron-builder config:</p>
 	<pre><code class="hljs json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">&quot;fileAssociations&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">{</span>
@@ -115,20 +158,16 @@
   <span class="hljs-title class_">Menu</span>.<span class="hljs-title function_">setApplicationMenu</span>(menu);
 
 };</code></pre>
-	<p>See Electron's <a href="https://www.electronjs.org/docs/latest/api/menu" target="_blank">Menu</a> and <a href="https://www.electronjs.org/docs/latest/api/menu-item" target="_blank">MenuItem</a> docs for all available roles and options.</p>
+	<p>See Electron's <a
+			href="https://www.electronjs.org/docs/latest/api/menu"
+			target="_blank"
+		>Menu</a> and <a
+			href="https://www.electronjs.org/docs/latest/api/menu-item"
+			target="_blank"
+		>MenuItem</a> docs for all available roles and options.</p>
 
-	<h3>App Lifecycle</h3>
-	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({ db, ipc, app }) =&gt; {
-
-  app.<span class="hljs-title function_">on</span>(<span class="hljs-string">&quot;before-quit&quot;</span>, <span class="hljs-function">() =&gt;</span> {
-    <span class="hljs-comment">// cleanup before exit</span>
-    db.<span class="hljs-title function_">set</span>(<span class="hljs-string">&quot;settings&quot;</span>, <span class="hljs-string">&quot;lastSession&quot;</span>, <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>());
-  });
-
-  app.<span class="hljs-title function_">on</span>(<span class="hljs-string">&quot;open-link&quot;</span>, <span class="hljs-function"><span class="hljs-params">url</span> =&gt;</span> { <span class="hljs-comment">/* … */</span> });
-  app.<span class="hljs-title function_">on</span>(<span class="hljs-string">&quot;open-path&quot;</span>, <span class="hljs-function"><span class="hljs-params">filePath</span> =&gt;</span> { <span class="hljs-comment">/* … */</span> });
-
-};</code></pre>
+	<h3>Quit &amp; Cleanup</h3>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({<br>  ipc,<br>  app<br>}) =&gt; {<br>  app.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;before-quit&#x27;</span>, <span class="hljs-function">() =&gt;</span> {<br>    <span class="hljs-comment">// cleanup before exit</span><br>    api.<span class="hljs-title function_">jsonDB</span>(<span class="hljs-string">&#x27;settings&#x27;</span>).<span class="hljs-title function_">set</span>(<span class="hljs-string">&#x27;lastSession&#x27;</span>, <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>());<br>  });<br>  app.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;open-link&#x27;</span>, <span class="hljs-function"><span class="hljs-params">url</span> =&gt;</span> {<br>    <span class="hljs-comment">/* ... */</span> });<br>  app.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;open-path&#x27;</span>, <span class="hljs-function"><span class="hljs-params">filePath</span> =&gt;</span> {<br>    <span class="hljs-comment">/* ... */</span> });<br>};</code></pre>
 
 	<h3>Context Menu</h3>
 	<p>
@@ -136,20 +175,26 @@
 		Cut/Copy/Paste on editable inputs, Copy on selected text, and Inspect Element in dev mode.
 		No setup needed.
 	</p>
-	<p>To add extra items for a specific element, call <code>window.api.contextMenu.show(items)</code> in its <code>contextmenu</code> handler. Register a global click handler once with <code>window.api.contextMenu.onClick(cb)</code>:</p>
+	<p>To add extra items for a specific element, call <code>api.contextMenu.show(items)</code> in its
+		<code>contextmenu</code> handler. Register a global click handler once with
+		<code>api.contextMenu.onClick(cb)</code>:</p>
 	<pre><code class="hljs javascript"><span class="hljs-comment">// Register click handler once (e.g. in app.html script)</span>
-window.api.contextMenu.onClick(id =&gt; {
+api.contextMenu.onClick(id =&gt; {
   <span class="hljs-keyword">if</span>(id === <span class="hljs-string">&quot;delete&quot;</span>) handleDelete();
   <span class="hljs-keyword">if</span>(id === <span class="hljs-string">&quot;rename&quot;</span>) handleRename();
 });
 
 <span class="hljs-comment">// Add items for a specific element</span>
 document.getElementById(<span class="hljs-string">&quot;my-item&quot;</span>).addEventListener(<span class="hljs-string">&quot;contextmenu&quot;</span>, () =&gt; {
-  window.api.contextMenu.show([
+  api.contextMenu.show([
     { id: <span class="hljs-string">&quot;rename&quot;</span>, label: <span class="hljs-string">&quot;Rename&quot;</span> },
     { id: <span class="hljs-string">&quot;delete&quot;</span>, label: <span class="hljs-string">&quot;Delete&quot;</span> },
   ]);
 });</code></pre>
-	<p>Extra items appear <strong>above</strong> the framework defaults. Each item object supports any <a href="https://www.electronjs.org/docs/latest/api/menu-item" target="_blank">Electron MenuItem</a> field except <code>click</code> (use <code>onClick</code> instead).</p>
+	<p>Extra items appear <strong>above</strong> the framework defaults. Each item object supports any <a
+			href="https://www.electronjs.org/docs/latest/api/menu-item"
+			target="_blank"
+		>Electron MenuItem</a> field except <code>click</code> (use <code>onClick</code> instead).</p>
+
 </main>
 <div style="height:33vh"></div>

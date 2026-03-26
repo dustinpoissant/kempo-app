@@ -19,19 +19,26 @@
     };
   </script>
   <script>
-    /* window.api stub — framework components (app-setting-bool, app-show, app-hide) require
-       window.api to exist. Interactive demo sections are hidden in docs via .app-demo { display:none } */
+    /* api stub — framework components (app-setting-bool, app-show, app-hide) require
+       api to exist. Interactive demo sections are hidden in docs via .app-demo { display:none } */
     (function(){
       const tables = {};
       const getTable = t => { if(!tables[t]) tables[t] = {}; return tables[t]; };
       window.api = {
-        db: table => ({
+        jsonDB: table => ({
           get: async key => { const t = getTable(table); return key === undefined ? {...t} : t[key]; },
-          set: async (key, value) => { getTable(table)[key] = value; window.dispatchEvent(new CustomEvent("settingchange", { detail: { table, key, value } })); },
+          set: async (key, value) => { getTable(table)[key] = value; window.dispatchEvent(new CustomEvent(`jsondb_change:${table}`, { detail: { key, value } })); },
           delete: async key => { delete getTable(table)[key]; },
           has: async key => key in getTable(table),
           clear: async () => { const t = getTable(table); for(const k of Object.keys(t)) delete t[k]; },
         }),
+        sqlDB: {
+          run: async () => { throw new Error('sqlDB not available in docs'); },
+          get: async () => { throw new Error('sqlDB not available in docs'); },
+          all: async () => { throw new Error('sqlDB not available in docs'); },
+          exec: async () => { throw new Error('sqlDB not available in docs'); },
+          close: async () => { throw new Error('sqlDB not available in docs'); },
+        },
         window: {
           minimize: () => {},
           maximize: () => {},
@@ -65,6 +72,7 @@
     <a href="#/" class="nav-link row" style="gap:6px; flex-shrink:0; align-items:center">
       <k-icon name="home"></k-icon> Home
     </a>
+    <a href="#/config" class="nav-link"><k-icon name="tune"></k-icon> Config</a>
     <a href="#/routing" class="nav-link"><k-icon name="arrow_split"></k-icon> Routing</a>
     <a href="#/components" class="nav-link"><k-icon name="code_xml"></k-icon> Components</a>
     <a href="#/icons" class="nav-link"><k-icon name="emoji_objects"></k-icon> Icons</a>
@@ -106,29 +114,19 @@
       return { path: pathPart || "/", params };
     };
 
+    const appPage = document.createElement("app-page");
+    container.appendChild(appPage);
+
     const navigate = async () => {
       const { path, params } = parseHash(window.location.hash);
       window.route = { path, params };
       const page = path === "/" ? "index" : path.slice(1);
-      const res = await fetch(`pages/${page}.html`);
-      if(!res.ok){ container.innerHTML = "<main><h1>Page not found</h1></main>"; return; }
-      const html = await res.text();
-      container.innerHTML = "";
-      const div = document.createElement("div");
-      div.innerHTML = html;
-      for(const old of div.querySelectorAll("script")){
-        const script = document.createElement("script");
-        for(const attr of old.attributes) script.setAttribute(attr.name, attr.value);
-        script.textContent = old.textContent;
-        old.replaceWith(script);
-      }
-      container.append(...div.childNodes);
+      appPage.src = `pages/${page}.html`;
       document.querySelectorAll(".nav-link").forEach(link => {
         const linkPath = link.getAttribute("href")?.replace("#", "").split("?")[0];
-        link.classList.toggle("active", linkPath === path);
+        link.classList.toggle("active", linkPath === "/" ? path === "/" : path === linkPath || path.startsWith(linkPath + "/"));
       });
       window.dispatchEvent(new CustomEvent("routechange", { detail: window.route }));
-      container.scrollTop = 0;
     };
 
     window.addEventListener("hashchange", navigate);

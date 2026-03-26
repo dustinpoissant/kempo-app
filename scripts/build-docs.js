@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { cpSync, mkdirSync, rmSync, existsSync, readdirSync, readFileSync, writeFileSync } from "fs";
+import { cpSync, mkdirSync, rmSync, existsSync, readdirSync, readFileSync, writeFileSync, statSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -45,6 +45,7 @@ copyDir(join(root, "icons"), join(docs, "framework", "icons"));
 
 copyDir(join(example, "media"), join(docs, "media"));
 copyDir(join(example, "icons"), join(docs, "icons"));
+cpSync(join(example, "theme.css"), join(docs, "theme.css"));
 
 /*
   Copy pages, fixing absolute paths so they resolve relative to the docs root.
@@ -53,11 +54,21 @@ copyDir(join(example, "icons"), join(docs, "icons"));
 */
 
 mkdirSync(join(docs, "pages"), { recursive: true });
-for(const file of readdirSync(join(example, "pages"))){
-  let content = readFileSync(join(example, "pages", file), "utf-8");
-  content = content.replaceAll('="/media/', '="media/');
-  content = content.replaceAll("='/media/", "='media/");
-  writeFileSync(join(docs, "pages", file), content);
-}
+const copyPages = (srcDir, destDir) => {
+  mkdirSync(destDir, { recursive: true });
+  for(const entry of readdirSync(srcDir)){
+    const srcPath = join(srcDir, entry);
+    const destPath = join(destDir, entry);
+    if(statSync(srcPath).isDirectory()){
+      copyPages(srcPath, destPath);
+    } else {
+      let content = readFileSync(srcPath, "utf-8");
+      content = content.replaceAll('="/media/', '="media/');
+      content = content.replaceAll("='/media/", "='media/");
+      writeFileSync(destPath, content);
+    }
+  }
+};
+copyPages(join(example, "pages"), join(docs, "pages"));
 
 console.log("docs built successfully");

@@ -134,37 +134,37 @@ export default {
   },
 
   'evaluate: setting with key=value checks stored value': async ({ pass, fail }) => {
-    await window.api.db("settings").set("color", "blue");
+    await window.api.jsonDB("settings").set("color", "blue");
     const el = { platform: "", dev: null, theme: "", maximized: null, setting: "color=blue" };
     const result = await window.__evaluate(el);
-    await window.api.db("settings").delete("color");
+    await window.api.jsonDB("settings").delete("color");
     if(result === true) pass();
     else fail(`Expected true, got ${result}`);
   },
 
   'evaluate: setting with key=value fails on mismatch': async ({ pass, fail }) => {
-    await window.api.db("settings").set("color", "red");
+    await window.api.jsonDB("settings").set("color", "red");
     const el = { platform: "", dev: null, theme: "", maximized: null, setting: "color=blue" };
     const result = await window.__evaluate(el);
-    await window.api.db("settings").delete("color");
+    await window.api.jsonDB("settings").delete("color");
     if(result === false) pass();
     else fail(`Expected false, got ${result}`);
   },
 
   'evaluate: setting with just key checks truthiness': async ({ pass, fail }) => {
-    await window.api.db("settings").set("enabled", true);
+    await window.api.jsonDB("settings").set("enabled", true);
     const el = { platform: "", dev: null, theme: "", maximized: null, setting: "enabled" };
     const result = await window.__evaluate(el);
-    await window.api.db("settings").delete("enabled");
+    await window.api.jsonDB("settings").delete("enabled");
     if(result === true) pass();
     else fail(`Expected true, got ${result}`);
   },
 
   'evaluate: setting with falsy value returns false': async ({ pass, fail }) => {
-    await window.api.db("settings").set("enabled", false);
+    await window.api.jsonDB("settings").set("enabled", false);
     const el = { platform: "", dev: null, theme: "", maximized: null, setting: "enabled" };
     const result = await window.__evaluate(el);
-    await window.api.db("settings").delete("enabled");
+    await window.api.jsonDB("settings").delete("enabled");
     if(result === false) pass();
     else fail(`Expected false, got ${result}`);
   },

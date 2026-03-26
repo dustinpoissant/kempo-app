@@ -1,0 +1,105 @@
+<main>
+	<h1>Schema Tables</h1>
+
+	<p>
+		Schema tables let you define SQLite tables as files — no SQL needed. Create subdirectories
+		under <code>schema/</code> named after your databases, then add <code>.js</code> files inside
+		each one — the directory name becomes the database name and the file name becomes the table name.
+		The framework automatically creates tables on first startup and adds new columns when you update
+		the schema.
+	</p>
+
+	<h3>Defining a Schema</h3>
+	<p>
+		Create a <code>schema/</code> directory in your project root. Inside it, create a subdirectory
+		named after your database. Each <code>.js</code> file inside the subdirectory defines one table —
+		the file name becomes the table name and the default export describes the columns.
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// schema/myapp/contacts.js</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {<br>  <span class="hljs-attr">name</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;text&quot;</span>, <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span> },<br>  <span class="hljs-attr">email</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;text&quot;</span>, <span class="hljs-attr">unique</span>: <span class="hljs-literal">true</span> },<br>  <span class="hljs-attr">phone</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;text&quot;</span> },<br>  <span class="hljs-attr">age</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;integer&quot;</span> },<br>  <span class="hljs-attr">score</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;real&quot;</span>, <span class="hljs-attr">default</span>: <span class="hljs-number">0</span> },<br>};<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> version = <span class="hljs-number">1</span>;</code></pre>
+	<p>
+		If no column has <code>primary: true</code>, the table automatically gets an
+		<code>id INTEGER PRIMARY KEY AUTOINCREMENT</code> column. To use a custom primary key:
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// schema/myapp/settings.js - text primary key, no auto-generated id</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {<br>  <span class="hljs-attr">key</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;text&quot;</span>, <span class="hljs-attr">primary</span>: <span class="hljs-literal">true</span> },<br>  <span class="hljs-attr">value</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;text&quot;</span> },<br>};<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> version = <span class="hljs-number">1</span>;</code></pre>
+
+	<h3>Column Options</h3>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th style="text-align:left;padding:6px 8px">Option</th>
+					<th style="text-align:left;padding:6px 8px">Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="by">
+					<td style="padding:6px 8px"><code>type</code></td>
+					<td style="padding:6px 8px"><code>"text"</code>, <code>"integer"</code>, <code>"real"</code>, or
+						<code>"blob"</code> (defaults to <code>"text"</code>)</td>
+				</tr>
+				<tr class="by">
+					<td style="padding:6px 8px"><code>primary</code></td>
+					<td style="padding:6px 8px">Makes this the primary key (integer PKs get AUTOINCREMENT)</td>
+				</tr>
+				<tr class="by">
+					<td style="padding:6px 8px"><code>required</code></td>
+					<td style="padding:6px 8px">Adds <code>NOT NULL</code> constraint</td>
+				</tr>
+				<tr class="by">
+					<td style="padding:6px 8px"><code>unique</code></td>
+					<td style="padding:6px 8px">Adds <code>UNIQUE</code> constraint</td>
+				</tr>
+				<tr class="by">
+					<td style="padding:6px 8px"><code>default</code></td>
+					<td style="padding:6px 8px">Default value for the column</td>
+				</tr>
+				<tr class="by">
+					<td style="padding:6px 8px"><code>index</code></td>
+					<td style="padding:6px 8px">Creates a secondary index on this column</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<h3>Auto-Migration</h3>
+	<p>
+		On every startup, the framework reads <code>schema/</code> files and compares them against the
+		database using <code>PRAGMA table_info()</code>. Missing tables are created, missing columns are
+		added via <code>ALTER TABLE ADD COLUMN</code>. Existing columns are never removed or modified.
+	</p>
+	<p>
+		To add a column, just add it to the schema file. On next startup, it appears in the database
+		without losing existing data:
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// Add phone and age to the existing schema file</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {<br>  <span class="hljs-attr">name</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;text&quot;</span>, <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span> },<br>  <span class="hljs-attr">email</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;text&quot;</span> },<br>  <span class="hljs-attr">phone</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;text&quot;</span> },          <span class="hljs-comment">// new column</span><br>  <span class="hljs-attr">age</span>: { <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;integer&quot;</span> },        <span class="hljs-comment">// new column</span><br>};<br><span class="hljs-comment">// On next startup, phone and age are automatically added.</span><br><span class="hljs-comment">// Existing rows get NULL for the new columns.</span></code></pre>
+	<p class="tc-muted">
+		For destructive changes (removing columns, changing types), use versioned updates or
+		<code>update.js</code> with raw SQL.
+	</p>
+
+	<h3>Schema Versioning</h3>
+	<p>
+		Every schema file should export a <code>version</code> number. The framework tracks this version
+		internally and uses it to run the correct migration steps when the version changes. If omitted,
+		<code>version</code> defaults to <code>1</code>.
+	</p>
+	<p>
+		When you need to make changes beyond simple column additions (renaming, transforming data,
+		dropping columns), bump <code>version</code> and add a corresponding entry to <code>updates</code>.
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// schema/myapp/contacts.js → versioned schema</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {<br>  <span class="hljs-attr">name</span>: {<br>    <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;text&quot;</span>,<br>    <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span><br>  },<br>  <span class="hljs-attr">email</span>: {<br>    <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;text&quot;</span>,<br>    <span class="hljs-attr">unique</span>: <span class="hljs-literal">true</span><br>  },<br>  <span class="hljs-attr">display_name</span>: {<br>    <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;text&quot;</span><br>  },<br>};<br><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> version = <span class="hljs-number">3</span>;<br><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> updates = [<br>  <span class="hljs-comment">// v1 → v2: just add columns (auto-migrate)</span><br>  <span class="hljs-literal">null</span>,<br>  <span class="hljs-comment">// v2 → v3: rename column, then auto-migrate for new columns</span><br>  <span class="hljs-function">(<span class="hljs-params">db</span>) =&gt;</span> {<br>    db.<span class="hljs-title function_">exec</span>(<span class="hljs-string">&quot;ALTER TABLE contacts RENAME COLUMN username TO display_name&quot;</span>);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>; <span class="hljs-comment">// also run auto-migrate after</span><br>  },<br>];</code></pre>
+
+	<h5>Rules</h5>
+	<ul>
+		<li>Always export <code>version</code> — defaults to <code>1</code> if omitted</li>
+		<li><code>updates</code> array: <code>updates[0]</code> = v1→v2, <code>updates[1]</code> = v2→v3, etc.</li>
+		<li><code>updates.length</code> should equal <code>version - 1</code></li>
+		<li>Non-function entry (<code>null</code>, <code>undefined</code>) = auto-migrate only (add missing columns)</li>
+		<li>Function entry = called with <code>(db)</code>, if it returns <code>true</code> → also auto-migrate after</li>
+		<li>New tables skip all update steps and are created at the latest version</li>
+		<li>The framework tracks versions in an internal <code>_schema</code> table (invisible to consumers)</li>
+	</ul>
+
+
+</main>
+<div style="height:33vh"></div>

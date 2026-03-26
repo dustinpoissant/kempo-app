@@ -6,7 +6,7 @@ export const beforeAll = async () => {
 
 export const beforeEach = async () => {
   document.body.innerHTML = "";
-  await window.api.db("settings").clear();
+  await window.api.jsonDB("settings").clear();
 };
 
 export default {
@@ -22,7 +22,7 @@ export default {
   },
 
   'app-setting-number renders a number input': async ({ pass, fail }) => {
-    await window.api.db("settings").set("numSetting", 42);
+    await window.api.jsonDB("settings").set("numSetting", 42);
     const el = document.createElement("app-setting-number");
     el.setting = "numSetting";
     document.body.appendChild(el);
@@ -48,7 +48,7 @@ export default {
   },
 
   'app-setting-number loads number value from db': async ({ pass, fail }) => {
-    await window.api.db("settings").set("numLoad", 100);
+    await window.api.jsonDB("settings").set("numLoad", 100);
     const el = document.createElement("app-setting-number");
     el.setting = "numLoad";
     document.body.appendChild(el);
@@ -71,7 +71,7 @@ export default {
   },
 
   'app-setting-number converts input to Number on change': async ({ pass, fail }) => {
-    await window.api.db("settings").set("numConvert", 0);
+    await window.api.jsonDB("settings").set("numConvert", 0);
     const el = document.createElement("app-setting-number");
     el.setting = "numConvert";
     document.body.appendChild(el);

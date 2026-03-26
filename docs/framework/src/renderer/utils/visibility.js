@@ -22,7 +22,7 @@ export const evaluate = async (el) => {
   if(maximized !== null) checks.push((await window.api.window.isMaximized()) === maximized);
   if(setting){
     const [key, val] = setting.split("=");
-    const stored = await window.api.db("settings").get(key);
+    const stored = await window.api.jsonDB("settings").get(key);
     checks.push(val !== undefined ? String(stored) === val : !!stored);
   }
   return checks.length ? checks.every(Boolean) : false;

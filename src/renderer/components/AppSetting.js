@@ -1,6 +1,9 @@
 import ShadowComponent from "/modules/kempo-ui/dist/components/ShadowComponent.js";
+import { css } from "/modules/kempo-ui/dist/lit-all.min.js";
 
 class AppSetting extends ShadowComponent {
+  static styles = css`:host { display: flex; justify-content: space-between; align-items: center; }`;
+
   static properties = {
     setting: { type: String },
     value: {},
@@ -21,13 +24,13 @@ class AppSetting extends ShadowComponent {
 
   async connectedCallback() {
     super.connectedCallback();
-    this.value = await window.api.db("settings").get(this.setting);
+    this.value = await window.api.jsonDB("settings").get(this.setting);
     this.#loaded = true;
   }
 
   updated(changed) {
     if(this.#loaded && changed.has("value")){
-      window.api.db("settings").set(this.setting, this.value);
+      window.api.jsonDB("settings").set(this.setting, this.value);
     }
   }
 }

@@ -47,7 +47,7 @@
 		→ <code>window.route.params = { tab: "advanced", debug: "true" }</code>
 	</p>
 	
-	<p>Listen for the <code>routechange</code> event on <code>window</code> to react to navigation changes. The event fires after <code>window.route</code> is updated. Use this instead of the native <code>hashchange</code> event, which fires before <code>window.route</code> is updated.</p>
+	<p>Listen for the <code>routechange</code> event on <code>window</code> to react to navigation changes. The event fires after <code>window.route</code> is updated with <code>{ path, params }</code>, which is also available in <code>event.detail</code>. Use this instead of the native <code>hashchange</code> event, which fires before <code>window.route</code> is updated.</p>
 	
 	<pre><code class="hljs javascript"><span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">"routechange"</span>, e =&gt; {<br />  <span class="hljs-built_in">console</span>.log(e.detail.path, e.detail.params);<br />});</code></pre>
 
@@ -56,8 +56,7 @@
 	<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"https://example.com"</span> <span class="hljs-attr">target</span>=<span class="hljs-string">"_blank"</span>&gt;</span>Open externally<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span></code></pre>
 	<p>From JavaScript, use <code>window.open()</code> — the framework intercepts it and routes it to the system browser the same way.</p>
 	<pre><code class="hljs javascript"><span class="hljs-built_in">window</span>.open(<span class="hljs-string">"https://example.com"</span>);</code></pre>
-	<p>To open a new instance of the app itself, use <code>window.api.window.new()</code>. Pass an optional hash to open at a specific route.</p>
-	<pre><code class="hljs javascript"><span class="hljs-built_in">window</span>.api.window.new();            <span class="hljs-comment">// opens at #/</span>
-<span class="hljs-built_in">window</span>.api.window.new(<span class="hljs-string">"#/settings"</span>); <span class="hljs-comment">// opens at #/settings</span></code></pre>
+	<p>To open a new instance of the app itself, use <code>api.window.new()</code>. Pass an optional hash to open at a specific route.</p>
+	<pre><code class="hljs javascript">api.<span class="hljs-property">window</span>.<span class="hljs-title function_">new</span>(); <span class="hljs-comment">// opens at #/</span><br>api.<span class="hljs-property">window</span>.<span class="hljs-title function_">new</span>(<span class="hljs-string">&#x27;#/settings&#x27;</span>); <span class="hljs-comment">// opens at #/settings</span></code></pre>
 </main>
 <div style="height:33vh"></div>

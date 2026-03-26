@@ -1,35 +1,108 @@
 <main>
-	<h1>window.api</h1>
+	<h1>API</h1>
 
 	<p>
-		<code>window.api</code> is available in any page fragment or script via Electron's
-		<code>contextBridge</code>. It provides window controls, platform detection, notifications,
-		and a <a href="#/database">file-based database</a>.
+		<code>api</code> is a global available everywhere — renderer scripts, page fragments,
+		<code>backend.js</code>, <code>init.js</code>, and <code>update.js</code>. The framework
+		sets it up on both <code>window</code> (renderer) and <code>global</code> (main process)
+		so you can use <code>api.*</code> without a prefix in any context.
 	</p>
 
-	<h3>Window Controls</h3>
-	<p>Programmatic control of the window:</p>
-	<pre><code class="hljs javascript"><span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">window</span>.<span class="hljs-title function_">minimize</span>()
-<span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">window</span>.<span class="hljs-title function_">maximize</span>()  <span class="hljs-comment">// toggles maximize / restore</span>
-<span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">window</span>.<span class="hljs-title function_">close</span>()</code></pre>
-	<div class="app-demo row" style="gap:var(--spacer_h)">
-		<button onclick="window.api.window.minimize()">Minimize</button>
-		<button onclick="window.api.window.maximize()">Toggle Maximize</button>
+	<h3>Overview</h3>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th style="text-align:left;padding:6px 8px">Method</th>
+					<th style="text-align:left;padding:6px 8px">Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="by"><td style="padding:6px 8px" colspan="2"><strong>Database</strong> — <a href="#/database">full docs</a></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.jsonDB(table)</code></td><td style="padding:6px 8px">Get a <a href="#/database/jsondb">JSON DB</a> table handle — <code>.get()</code>, <code>.set()</code>, <code>.delete()</code>, <code>.has()</code>, <code>.clear()</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.sqlQuery(db, sql)</code></td><td style="padding:6px 8px">Run a <a href="#/database/sqldb">SQL query</a> — SELECT returns rows, everything else returns <code>true</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px" colspan="2"><strong>Window</strong></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.window.minimize()</code></td><td style="padding:6px 8px">Minimize the window</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.window.maximize()</code></td><td style="padding:6px 8px">Toggle maximize / restore</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.window.close()</code></td><td style="padding:6px 8px">Close the window</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.window.new(options?)</code></td><td style="padding:6px 8px">Open a new window — string route or <code>{ hash, shell, titlebar }</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px" colspan="2"><strong>Notifications</strong></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.notification.show(opts)</code></td><td style="padding:6px 8px">Show a native OS notification — returns the notification ID</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.notification.isSupported()</code></td><td style="padding:6px 8px">Check if notifications are supported on this platform</td></tr>
+				<tr class="by"><td style="padding:6px 8px" colspan="2"><strong>Utilities</strong></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.getPlatform()</code></td><td style="padding:6px 8px">Returns <code>"mac"</code>, <code>"win"</code>, or <code>"linux"</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.getAppName()</code></td><td style="padding:6px 8px">Returns the configured app name</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.isDev()</code></td><td style="padding:6px 8px">Returns <code>true</code> if running with <code>--dev</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.toggleDevTools()</code></td><td style="padding:6px 8px">Toggle the Chrome DevTools panel</td></tr>
+			</tbody>
+		</table>
 	</div>
 
-	<h3>Platform Detection</h3>
-	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> platform = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-title function_">getPlatform</span>();
-<span class="hljs-comment">// &quot;mac&quot; | &quot;win&quot; | &quot;linux&quot;</span></code></pre>
-	<p class="app-demo"><strong>Current platform:</strong> <span id="platform-display" class="tc-primary">loading…</span></p>
+	<h3>Database</h3>
+	<p>See the <a href="#/database">Database docs</a> for full details.</p>
 
-	<h3>Notifications — window.api.notification</h3>
-	<p>Use <code>window.api.notification</code> instead of the browser's <code>Notification</code> API. Because the renderer runs in a sandboxed context, the framework routes notifications through IPC to the main process, which uses Electron's native <code>Notification</code> class to ensure they are always delivered to the OS.</p>
-	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> supported = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">notification</span>.<span class="hljs-title function_">isSupported</span>();
-<span class="hljs-keyword">const</span> id = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">window</span>.<span class="hljs-property">api</span>.<span class="hljs-property">notification</span>.<span class="hljs-title function_">show</span>({ <span class="hljs-attr">title</span>: <span class="hljs-string">"Hello"</span>, <span class="hljs-attr">body</span>: <span class="hljs-string">"World"</span> });</code></pre>
-	<p><code>show()</code> returns a notification ID. React to user interactions by listening for CustomEvents on <code>window</code>:</p>
-	<pre><code class="hljs javascript"><span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">"notification:click"</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"clicked"</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">id</span>));
-<span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">"notification:close"</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"dismissed"</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">id</span>));
-<span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">"notification:reply"</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(e.<span class="hljs-property">detail</span>.<span class="hljs-property">id</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">reply</span>)); <span class="hljs-comment">// macOS inline reply</span></code></pre>
+	<h5>api.jsonDB(table)</h5>
+	<p>
+		Returns a table handle for the file-based JSON database. Each table is stored as a separate
+		JSON file. The handle provides <code>.get()</code>, <code>.set()</code>, <code>.delete()</code>,
+		<code>.has()</code>, and <code>.clear()</code> methods — all async.
+		See <a href="#/database/jsondb">JSON DB docs</a>.
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> settings = api.<span class="hljs-title function_">jsonDB</span>(<span class="hljs-string">&#x27;settings&#x27;</span>);<br><span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">get</span>() <span class="hljs-comment">// all keys</span><br><span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;theme&#x27;</span>) <span class="hljs-comment">// one value</span><br><span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">set</span>(<span class="hljs-string">&#x27;theme&#x27;</span>, <span class="hljs-string">&#x27;dark&#x27;</span>)<br><span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">delete</span>(<span class="hljs-string">&#x27;theme&#x27;</span>)<br><span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">has</span>(<span class="hljs-string">&#x27;theme&#x27;</span>) <span class="hljs-comment">// true / false</span><br><span class="hljs-keyword">await</span> settings.<span class="hljs-title function_">clear</span>()</code></pre>
+
+	<h5>api.sqlQuery(db, sql)</h5>
+	<p>
+		Run a raw SQL query against a named SQLite database. Requires <code>better-sqlite3</code>
+		in the consumer project. <code>SELECT</code> returns an array of row objects; everything
+		else returns <code>true</code>. Throws on error.
+		See <a href="#/database/sqldb">SQL DB docs</a>.
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-title function_">sqlQuery</span>(<span class="hljs-string">&#x27;mydb&#x27;</span>, <span class="hljs-string">&#x27;CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)&#x27;</span>)<br><span class="hljs-keyword">await</span> api.<span class="hljs-title function_">sqlQuery</span>(<span class="hljs-string">&#x27;mydb&#x27;</span>, <span class="hljs-string">&quot;INSERT INTO users (name) VALUES (&#x27;Alice&#x27;)&quot;</span>) <span class="hljs-comment">// true</span><br><span class="hljs-keyword">await</span> api.<span class="hljs-title function_">sqlQuery</span>(<span class="hljs-string">&#x27;mydb&#x27;</span>, <span class="hljs-string">&#x27;SELECT * FROM users&#x27;</span>) <span class="hljs-comment">// [{ id, name }, ...]</span></code></pre>
+
+	<h3>Window</h3>
+
+	<h5>api.window.minimize()</h5>
+	<p>Minimize the current window to the taskbar / dock.</p>
+	<pre><code class="hljs javascript">api.<span class="hljs-property">window</span>.<span class="hljs-title function_">minimize</span>();</code></pre>
+
+	<h5>api.window.maximize()</h5>
+	<p>Toggle between maximized and restored window state.</p>
+	<pre><code class="hljs javascript">api.<span class="hljs-property">window</span>.<span class="hljs-title function_">maximize</span>(); <span class="hljs-comment">// toggles maximize / restore</span></code></pre>
+
+	<h5>api.window.close()</h5>
+	<p>Close the current window. If it is the last window, the app quits (on Windows/Linux).</p>
+	<pre><code class="hljs javascript">api.<span class="hljs-property">window</span>.<span class="hljs-title function_">close</span>();</code></pre>
+
+	<div class="app-demo row" style="gap:var(--spacer_h)">
+		<button onclick="api.window.minimize()">Minimize</button>
+		<button onclick="api.window.maximize()">Toggle Maximize</button>
+	</div>
+
+	<h5>api.window.new(options?)</h5>
+	<p>
+		Open a new app window. Pass nothing for defaults, a hash string for a specific route,
+		or an options object to customize the shell, titlebar, or pages directory for that window.
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// Open a new window (uses default shell)</span><br>api.<span class="hljs-property">window</span>.<span class="hljs-title function_">new</span>();<br><span class="hljs-comment">// Open at a specific route</span><br>api.<span class="hljs-property">window</span>.<span class="hljs-title function_">new</span>(<span class="hljs-string">&#x27;#/settings&#x27;</span>);<br><span class="hljs-comment">// Open with a different shell</span><br>api.<span class="hljs-property">window</span>.<span class="hljs-title function_">new</span>({<br>  <span class="hljs-attr">hash</span>: <span class="hljs-string">&#x27;#/editor&#x27;</span>,<br>  <span class="hljs-attr">shell</span>: <span class="hljs-string">&#x27;editor-shell.html&#x27;</span><br>});<br><span class="hljs-comment">// Open with no titlebar</span><br>api.<span class="hljs-property">window</span>.<span class="hljs-title function_">new</span>({<br>  <span class="hljs-attr">hash</span>: <span class="hljs-string">&#x27;#/viewer&#x27;</span>,<br>  <span class="hljs-attr">titlebar</span>: <span class="hljs-literal">false</span><br>});</code></pre>
+	<p>
+		The shell file is an HTML fragment that must contain an <code>&lt;app-page&gt;</code>
+		element for the router to render pages into.
+	</p>
+
+	<h3>Notifications</h3>
+	<p>
+		Use <code>api.notification</code> instead of the browser's <code>Notification</code> API.
+		Because the renderer runs in a sandboxed context, the framework routes notifications
+		through IPC to the main process, which uses Electron's native <code>Notification</code>
+		class to ensure they are always delivered to the OS.
+	</p>
+
+	<h5>api.notification.show(opts)</h5>
+	<p>
+		Show a native OS notification. Returns a notification ID that can be used to identify
+		which notification the user interacted with.
+	</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> id = <span class="hljs-keyword">await</span> api.<span class="hljs-property">notification</span>.<span class="hljs-title function_">show</span>({<br>  <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;Download Complete&#x27;</span>,<br>  <span class="hljs-attr">body</span>: <span class="hljs-string">&#x27;report.pdf has been saved.&#x27;</span>,<br>  <span class="hljs-attr">icon</span>: <span class="hljs-string">&#x27;media/icon.png&#x27;</span><br>});</code></pre>
 	<p>All options:</p>
 	<div class="table-wrapper mb">
 		<table>
@@ -51,16 +124,8 @@
 			</tbody>
 		</table>
 	</div>
-	<div class="app-demo">
-		<div class="row" style="gap:var(--spacer_h)">
-			<button id="notify-btn">Send Test Notification</button>
-			<span id="notify-support" class="tc-muted" style="font-size:.875rem"></span>
-		</div>
-		<pre id="notify-output" class="bg-alt" style="padding:8px; border-radius:var(--radius); margin-top:8px; white-space:pre-wrap">Waiting for notification events…</pre>
-	</div>
-
-	<h3>Window Events</h3>
-	<p>The framework dispatches custom events on <code>window</code> that any script or component can listen for:</p>
+	<p>React to user interactions by listening for events on <code>window</code>:</p>
+	<pre><code class="hljs javascript"><span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;notification:click&#x27;</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> {<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;clicked&#x27;</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">id</span>);<br>});<br><span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;notification:close&#x27;</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> {<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;dismissed&#x27;</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">id</span>);<br>});<br><span class="hljs-comment">// macOS inline reply</span><br><span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;notification:reply&#x27;</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> {<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(e.<span class="hljs-property">detail</span>.<span class="hljs-property">id</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">reply</span>);<br>});</code></pre>
 	<div class="table-wrapper mb">
 		<table>
 			<thead>
@@ -71,44 +136,58 @@
 				</tr>
 			</thead>
 			<tbody>
-		<tr class="by"><td style="padding:6px 8px"><code>settingchange</code></td><td style="padding:6px 8px"><code>window.api.db("table").set()</code> completes</td><td style="padding:6px 8px"><code>{ table, key, value }</code></td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>routechange</code></td><td style="padding:6px 8px">Hash-based route changes</td><td style="padding:6px 8px"><code>{ path, params }</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>notification:click</code></td><td style="padding:6px 8px">User clicks the notification</td><td style="padding:6px 8px"><code>{ id }</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>notification:close</code></td><td style="padding:6px 8px">Notification is dismissed</td><td style="padding:6px 8px"><code>{ id }</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>notification:reply</code></td><td style="padding:6px 8px">User submits inline reply (macOS)</td><td style="padding:6px 8px"><code>{ id, reply }</code></td></tr>
 			</tbody>
 		</table>
 	</div>
-	<pre><code class="hljs javascript"><span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&quot;settingchange&quot;</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> {
-  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(e.<span class="hljs-property">detail</span>.<span class="hljs-property">table</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">key</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">value</span>);
-});
-
-<span class="hljs-variable language_">window</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&quot;routechange&quot;</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> {
-  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(e.<span class="hljs-property">detail</span>.<span class="hljs-property">path</span>, e.<span class="hljs-property">detail</span>.<span class="hljs-property">params</span>);
-});</code></pre>
 	<div class="app-demo">
-		<p><strong>Live demo:</strong> Change a setting above or navigate to another page, then check the output below.</p>
-		<pre id="event-output" class="bg-alt" style="padding:8px; border-radius:var(--radius); margin-top:8px; white-space:pre-wrap">Waiting for events…</pre>
+		<div class="row" style="gap:var(--spacer_h)">
+			<button id="notify-btn">Send Test Notification</button>
+			<span id="notify-support" class="tc-muted" style="font-size:.875rem"></span>
+		</div>
+		<pre id="notify-output" class="bg-alt" style="padding:8px; border-radius:var(--radius); margin-top:8px; white-space:pre-wrap">Waiting for notification events…</pre>
 	</div>
+
+	<h5>api.notification.isSupported()</h5>
+	<p>Returns <code>true</code> if the current platform supports notifications.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> supported = <span class="hljs-keyword">await</span> api.<span class="hljs-property">notification</span>.<span class="hljs-title function_">isSupported</span>();<br><span class="hljs-keyword">if</span> (supported) {<br>  api.<span class="hljs-property">notification</span>.<span class="hljs-title function_">show</span>({<br>    <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;Hello&#x27;</span><br>  });<br>}</code></pre>
+
+	<h3>Utilities</h3>
+
+	<h5>api.getPlatform()</h5>
+	<p>Returns the current OS: <code>"mac"</code>, <code>"win"</code>, or <code>"linux"</code>. Useful for platform-specific UI or behavior.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> platform = <span class="hljs-keyword">await</span> api.<span class="hljs-title function_">getPlatform</span>();<br><span class="hljs-comment">// &#x27;mac&#x27; | &#x27;win&#x27; | &#x27;linux&#x27;</span><br><span class="hljs-keyword">if</span> (platform === <span class="hljs-string">&#x27;mac&#x27;</span>) {<br>  <span class="hljs-comment">// macOS-specific behavior</span><br>}</code></pre>
+	<p class="app-demo"><strong>Current platform:</strong> <span id="platform-display" class="tc-primary">loading…</span></p>
+
+	<h5>api.getAppName()</h5>
+	<p>Returns the app's display name as configured in <a href="#/config"><code>kempo-app.appName</code></a>.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> name = <span class="hljs-keyword">await</span> api.<span class="hljs-title function_">getAppName</span>();<br><span class="hljs-variable language_">document</span>.<span class="hljs-property">title</span> = name;</code></pre>
+
+	<h5>api.isDev()</h5>
+	<p>Returns <code>true</code> when the app was started with <code>--dev</code> flag. Useful for showing debug UI or logging.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">if</span> (<span class="hljs-keyword">await</span> api.<span class="hljs-title function_">isDev</span>()) {<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;Running in dev mode&#x27;</span>);<br>}</code></pre>
+
+	<h5>api.toggleDevTools()</h5>
+	<p>Toggle the Chrome DevTools panel for the current window.</p>
+	<pre><code class="hljs javascript">api.<span class="hljs-title function_">toggleDevTools</span>();</code></pre>
 
 	<script>
 	(async () => {
-		document.getElementById("platform-display").textContent = await window.api.getPlatform();
+		document.getElementById("platform-display").textContent = await api.getPlatform();
 
-		const supported = await window.api.notification.isSupported();
+		const supported = await api.notification.isSupported();
 		document.getElementById("notify-support").textContent = supported ? "Supported on this platform" : "Not supported on this platform";
 		const notifyOutput = document.getElementById("notify-output");
 		document.getElementById("notify-btn").addEventListener("click", async () => {
-			const id = await window.api.notification.show({ title: "Test Notification", body: "Notifications are working!" });
+			const id = await api.notification.show({ title: "Test Notification", body: "Notifications are working!" });
 			notifyOutput.textContent = `Sent: ${id}`;
 		});
 		window.addEventListener("notification:click", e => { notifyOutput.textContent = `click: ${e.detail.id}`; });
 		window.addEventListener("notification:close", e => { notifyOutput.textContent = `close: ${e.detail.id}`; });
 		window.addEventListener("notification:reply", e => { notifyOutput.textContent = `reply: ${e.detail.id} — "${e.detail.reply}"`; });
 
-		const eventOutput = document.getElementById("event-output");
-		const logEvent = (name, detail) => {
-			eventOutput.textContent = `${name}: ${JSON.stringify(detail)}`;
-		};
-		window.addEventListener("settingchange", e => logEvent("settingchange", e.detail));
-		window.addEventListener("routechange", e => logEvent("routechange", e.detail));
 	})();
 	</script>
 </main>

@@ -1,16 +1,19 @@
 <link rel="stylesheet" href="/modules/kempo-css/dist/kempo-hljs.min.css">
 
-<nav class="bg-secondary px bb row" style="font-weight: 500; z-index: 1">
+<style>nav:focus-within { z-index: 10; }</style>
+
+<nav class="bg-secondary px bb row" style="font-weight: 500">
   <a href="#/" class="nav-link row" style="gap:6px; flex-shrink:0; align-items:center">
     <k-icon name="home"></k-icon> Home
   </a>
+  <a href="#/config" class="nav-link"><k-icon name="tune"></k-icon> Config</a>
   <a href="#/routing" class="nav-link"><k-icon name="arrow_split"></k-icon> Routing</a>
-  <a href="#/components" class="nav-link"><k-icon name="code_xml"></k-icon> Components</a>
-  <a href="#/icons" class="nav-link"><k-icon name="emoji_objects"></k-icon> Icons</a>
-  <a href="#/theming" class="nav-link"><k-icon name="format_paint"></k-icon> Theming</a>
   <a href="#/api" class="nav-link"><k-icon name="api"></k-icon> API</a>
   <a href="#/database" class="nav-link"><k-icon name="table"></k-icon> Database</a>
   <a href="#/backend" class="nav-link"><k-icon name="terminal"></k-icon> Backend</a>
+  <a href="#/components" class="nav-link"><k-icon name="code_xml"></k-icon> Components</a>
+  <a href="#/icons" class="nav-link"><k-icon name="emoji_objects"></k-icon> Icons</a>
+  <a href="#/theming" class="nav-link"><k-icon name="format_paint"></k-icon> Theming</a>
   <a href="#/testing" class="nav-link"><k-icon name="labs"></k-icon> Testing</a>
   <a href="#/ai-dev" class="nav-link"><k-icon name="ai"></k-icon> AI Dev</a>
 	<div class="flex-1"></div>

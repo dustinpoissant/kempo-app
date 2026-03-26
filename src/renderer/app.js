@@ -19,6 +19,10 @@ document.documentElement.dataset.platform = platform;
   App Shell
 */
 
+const shellFile = new URLSearchParams(window.location.search).get("shell") || "shell.html";
+const titlebarFile = new URLSearchParams(window.location.search).get("titlebar") || "titlebar.html";
+const pagesDir = new URLSearchParams(window.location.search).get("pages") || "pages";
+
 const inject = async (url, fallback) => {
   let res = await fetch(url);
   if(!res.ok && fallback) res = await fetch(fallback);
@@ -34,8 +38,8 @@ const inject = async (url, fallback) => {
   document.body.append(...div.childNodes);
 };
 
-await inject("/titlebar.html", "/framework/src/renderer/defaults/titlebar.html");
-await inject("/shell.html", "/framework/src/renderer/defaults/shell.html");
+if(titlebarFile !== "false") await inject(`/${titlebarFile}`, "/framework/src/renderer/defaults/titlebar.html");
+await inject(`/${shellFile}`, "/framework/src/renderer/defaults/shell.html");
 try { await import("/app.js"); } catch {}
 
 document.title = await window.api.getAppName();
@@ -57,11 +61,7 @@ const navigate = () => {
   const { path, params } = parseHash(window.location.hash);
   window.route = { path, params };
   const page = path === "/" ? "index" : path.slice(1);
-  pageContainer.setAttribute("src", `/pages/${page}.html`);
-  document.querySelectorAll(".nav-link").forEach(link => {
-    const linkPath = link.getAttribute("href")?.replace("#", "").split("?")[0];
-    link.classList.toggle("active", linkPath === path);
-  });
+  pageContainer.setAttribute("src", `/${pagesDir}/${page}.html`);
   window.dispatchEvent(new CustomEvent("routechange", { detail: window.route }));
 };
 

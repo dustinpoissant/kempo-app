@@ -1,10 +1,12 @@
 import { app, BrowserWindow, ipcMain, protocol, net, shell, Menu, Notification } from "electron";
 import path from "path";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { pathToFileURL } from "url";
 import { createRequire } from "module";
 import { randomUUID } from "crypto";
 import Database from "./database.js";
+import syncSchemas, { primaryKey } from "./schema.js";
+import { getSqlDB, query, sqlDBs } from "./sqlQuery.js";
 
 const isDev = process.argv.includes("--dev");
 const appRoot = process.env.KEMPO_APP_ROOT || process.cwd();
@@ -12,11 +14,17 @@ const frameworkRoot = path.join(import.meta.dirname, "..", "..");
 const appRequire = createRequire(path.join(appRoot, "package.json"));
 
 const pkg = JSON.parse(readFileSync(path.join(appRoot, "package.json"), "utf-8"));
-const schemeName = pkg.protocolName || "kempo-app";
-const appName = pkg.appName || pkg.name || "Kempo App";
-const appIcon = pkg.appIcon ? path.join(appRoot, pkg.appIcon) : undefined;
+const kempoConfig = pkg["kempo-app"] || {};
+const schemeName = kempoConfig.protocolName || "kempo-app";
+const appName = kempoConfig.appName || pkg.name || "Kempo App";
+const appIcon = kempoConfig.appIcon ? path.join(appRoot, kempoConfig.appIcon) : undefined;
+const defaultShell = kempoConfig.shell || "shell.html";
+const defaultTitlebar = kempoConfig.titlebar === false ? "false" : kempoConfig.titlebar === true || kempoConfig.titlebar === undefined ? "titlebar.html" : kempoConfig.titlebar;
+const defaultPages = kempoConfig.pages || "pages";
+const defaultMenuBar = kempoConfig.menuBar === true;
 
 let db;
+let schemaMap = {};
 const pendingContextItems = new Map();
 
 /*
@@ -75,7 +83,10 @@ const resolvePath = pathname => {
   Window
 */
 
-const createWindow = (hash) => {
+const createWindow = (options = {}) => {
+  if(typeof options === "string") options = { hash: options };
+  const { hash, shell: shellFile = defaultShell, titlebar = defaultTitlebar, pages = defaultPages, menuBar = defaultMenuBar } = options;
+  const nativeFrame = titlebar === true;
   const isMac = process.platform === "darwin";
 
   const win = new BrowserWindow({
@@ -84,9 +95,10 @@ const createWindow = (hash) => {
     minHeight: 400,
     title: appName,
     icon: appIcon,
-    frame: false,
-    titleBarStyle: isMac ? "hiddenInset" : "default",
-    trafficLightPosition: isMac ? { x: 12, y: 12 } : undefined,
+    frame: nativeFrame,
+    autoHideMenuBar: nativeFrame && !menuBar,
+    titleBarStyle: !nativeFrame && isMac ? "hiddenInset" : "default",
+    trafficLightPosition: !nativeFrame && isMac ? { x: 12, y: 12 } : undefined,
     webPreferences: {
       preload: path.join(import.meta.dirname, "preload.cjs"),
       contextIsolation: true,
@@ -94,8 +106,9 @@ const createWindow = (hash) => {
     },
   });
 
+  const searchParams = new URLSearchParams({ shell: shellFile, titlebar: nativeFrame ? "false" : titlebar, pages });
   const hashStr = hash ? `#${hash.replace(/^#/, "")}` : "";
-  win.loadURL(`${schemeName}://app/framework/src/renderer/index.html${hashStr}`);
+  win.loadURL(`${schemeName}://app/framework/src/renderer/index.html?${searchParams}${hashStr}`);
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
@@ -175,6 +188,23 @@ app.whenReady().then(async () => {
   ipcMain.handle("db:has", (e, table, key) => db.has(table, key));
   ipcMain.handle("db:clear", (e, table) => db.clear(table));
 
+  /*
+    SQL Database
+  */
+
+  ipcMain.handle("sqlDB:query", (e, dbName, sql) => query(dbName, sql));
+
+  app.on("before-quit", () => {
+    for(const instance of sqlDBs.values()) instance.close();
+    sqlDBs.clear();
+  });
+
+  /*
+    Schema CRUD
+  */
+
+
+
   const getWindow = e => BrowserWindow.fromWebContents(e.sender);
 
   ipcMain.on("window:minimize", e => getWindow(e)?.minimize());
@@ -184,7 +214,7 @@ app.whenReady().then(async () => {
     else win?.maximize();
   });
   ipcMain.on("window:close", e => getWindow(e)?.close());
-  ipcMain.on("window:new", (e, hash) => createWindow(hash));
+  ipcMain.on("window:new", (e, options) => createWindow(options));
 
   ipcMain.handle("platform", () => ({ darwin: "mac", win32: "win" })[process.platform] ?? process.platform);
   ipcMain.handle("window:isMaximized", e => getWindow(e)?.isMaximized() ?? false);
@@ -216,6 +246,109 @@ app.whenReady().then(async () => {
   });
 
   /*
+    Global API — mirrors renderer api so the same code works in both contexts.
+    When adding a new method here, always add an identical one to preload.cjs.
+  */
+
+  const platformName = ({ darwin: "mac", win32: "win" })[process.platform] ?? process.platform;
+
+  global.api = {
+    jsonDB: (table) => ({
+      get: async (key) => db.get(table, key),
+      set: async (key, value) => db.set(table, key, value),
+      delete: async (key) => db.delete(table, key),
+      has: async (key) => db.has(table, key),
+      clear: async () => db.clear(table),
+    }),
+    sqlQuery: async (dbName, sql) => query(dbName, sql),
+    window: {
+      minimize: () => BrowserWindow.getFocusedWindow()?.minimize(),
+      maximize: () => {
+        const win = BrowserWindow.getFocusedWindow();
+        if(win?.isMaximized()) win.unmaximize();
+        else win?.maximize();
+      },
+      close: () => BrowserWindow.getFocusedWindow()?.close(),
+      new: (options) => createWindow(typeof options === "string" ? { hash: options } : options),
+      isMaximized: async () => BrowserWindow.getFocusedWindow()?.isMaximized() ?? false,
+      onMaximizeChange: () => {},
+    },
+    getPlatform: async () => platformName,
+    getAppName: async () => appName,
+    isDev: async () => isDev,
+    toggleDevTools: () => BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools(),
+    notification: {
+      show: async (options) => {
+        if(!Notification.isSupported()) return null;
+        const id = randomUUID();
+        const icon = options?.icon ? resolvePath(options.icon) : appIcon;
+        const n = new Notification({
+          title: String(options?.title ?? appName),
+          body: String(options?.body ?? ""),
+          icon,
+          silent: options?.silent,
+          subtitle: options?.subtitle,
+          urgency: options?.urgency,
+          timeoutType: options?.timeoutType,
+        });
+        n.show();
+        return id;
+      },
+      isSupported: async () => Notification.isSupported(),
+    },
+    contextMenu: {
+      show: () => {},
+      onClick: () => {},
+    },
+  };
+
+  /*
+    Lifecycle Hooks
+  */
+
+  const versionFile = path.join(app.getPath("userData"), ".version");
+  const currentVersion = pkg.version || "0.0.0";
+  const storedVersion = existsSync(versionFile) ? readFileSync(versionFile, "utf-8").trim() : null;
+  const hookContext = { ipc: ipcMain, app, Menu };
+
+  if(!storedVersion){
+    const initPath = path.join(appRoot, "init.js");
+    if(existsSync(initPath)){
+      try {
+        const { default: init } = await import(pathToFileURL(initPath).href);
+        if(typeof init === "function") await init(hookContext);
+      } catch(e){
+        console.error("init.js:", e);
+      }
+    }
+  } else if(storedVersion !== currentVersion){
+    const updatePath = path.join(appRoot, "update.js");
+    if(existsSync(updatePath)){
+      try {
+        const { default: update } = await import(pathToFileURL(updatePath).href);
+        if(typeof update === "function") await update({ ...hookContext, from: storedVersion, to: currentVersion });
+      } catch(e){
+        console.error("update.js:", e);
+      }
+    }
+  }
+
+  writeFileSync(versionFile, currentVersion);
+
+  /*
+    Schema Sync
+  */
+
+  const schemaDir = path.join(appRoot, "schema");
+  if(existsSync(schemaDir)){
+    try {
+      schemaMap = await syncSchemas(getSqlDB, schemaDir);
+    } catch(e){
+      console.error("schema sync:", e);
+    }
+  }
+
+  /*
     Backend Hook
   */
 
@@ -223,7 +356,7 @@ app.whenReady().then(async () => {
   if(existsSync(backendPath)){
     try {
       const { default: setup } = await import(pathToFileURL(backendPath).href);
-      if(typeof setup === "function") setup({ db, ipc: ipcMain, app, Menu });
+      if(typeof setup === "function") setup(hookContext);
     } catch(e) {
       console.error("backend.js:", e);
     }

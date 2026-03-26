@@ -10,10 +10,16 @@
 <main>
   <div class="row -mx">
     <div class="col d-span-4 t-span-6 m-span-12 px">
-      <a
-        href="#/routing"
-        class="card"
-      >
+      <a href="#/config" class="card">
+        <h5>
+          <k-icon name="tune" class="d-b mb"></k-icon>
+          Config
+        </h5>
+        <p>Configure your app's name, icon, protocol, and framework settings in package.json.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a href="#/routing" class="card">
         <h5>
           <k-icon name="arrow_split" class="d-b mb"></k-icon>
           Routing
@@ -22,58 +28,34 @@
       </a>
     </div>
     <div class="col d-span-4 t-span-6 m-span-12 px">
-      <a
-        href="#/components"
-        class="card"
-      >
-        <h5>
-          <k-icon name="code_xml" class="d-b mb"></k-icon>
-          Components
-        </h5>
-        <p>Kempo App uses the Kempo UI (Lit based) component library, and a few extra "App" components.</p>
-      </a>
-    </div>
-    <div class="col d-span-4 t-span-6 m-span-12 px">
-      <a
-        href="#/icons"
-        class="card"
-      >
-        <h5>
-          <k-icon name="emoji_objects" class="d-b mb"></k-icon>
-          Icons
-        </h5>
-        <p>Kempo App uses locally saved svg as icons, and loads them with the <code>&lt;k-icon></code> component.</p>
-      </a>
-    </div>
-    <div class="col d-span-4 t-span-6 m-span-12 px">
-      <a
-        href="#/theming"
-        class="card"
-      >
-        <h5>
-          <k-icon name="format_paint" class="d-b mb"></k-icon>
-          Theming
-        </h5>
-        <p>Kempo App uses Kempo-CSS Theming.</p>
-      </a>
-    </div>
-    <div class="col d-span-4 t-span-6 m-span-12 px">
-      <a
-        href="#/api"
-        class="card"
-      >
+      <a href="#/api" class="card">
         <h5>
           <k-icon name="api" class="d-b mb"></k-icon>
           API
         </h5>
-        <p>Built-in persistent settings DB, and window controls.</p>
+        <p>Built-in persistent settings jsonDB, and window controls.</p>
       </a>
     </div>
     <div class="col d-span-4 t-span-6 m-span-12 px">
-      <a
-        href="#/backend"
-        class="card"
-      >
+      <a href="#/database/jsondb" class="card">
+        <h5>
+          <k-icon name="table" class="d-b mb"></k-icon>
+          JSON Database
+        </h5>
+        <p>File-based key/value store. Each table is a separate JSON file. No setup required.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a href="#/database/sqldb" class="card">
+        <h5>
+          <k-icon name="database" class="d-b mb"></k-icon>
+          SQL Database
+        </h5>
+        <p>Full SQL database powered by better-sqlite3 for complex queries and relational data.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a href="#/backend" class="card">
         <h5>
           <k-icon name="terminal" class="d-b mb"></k-icon>
           Backend
@@ -82,10 +64,43 @@
       </a>
     </div>
     <div class="col d-span-4 t-span-6 m-span-12 px">
-      <a
-        href="#/testing"
-        class="card"
-      >
+      <a href="#/ai-dev" class="card">
+        <h5>
+          <k-icon name="ai" class="d-b mb"></k-icon>
+          AI Dev
+        </h5>
+        <p>Set up your project for AI-assisted development with AGENTS.md.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a href="#/components" class="card">
+        <h5>
+          <k-icon name="code_xml" class="d-b mb"></k-icon>
+          Components
+        </h5>
+        <p>Kempo App uses the Kempo UI (Lit based) component library, and a few extra "App" components.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a href="#/icons" class="card">
+        <h5>
+          <k-icon name="emoji_objects" class="d-b mb"></k-icon>
+          Icons
+        </h5>
+        <p>Kempo App uses locally saved svg as icons, and loads them with the <code>&lt;k-icon></code> component.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a href="#/theming" class="card">
+        <h5>
+          <k-icon name="format_paint" class="d-b mb"></k-icon>
+          Theming
+        </h5>
+        <p>Kempo App uses Kempo-CSS Theming.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a href="#/testing" class="card">
         <h5>
           <k-icon name="labs" class="d-b mb"></k-icon>
           Testing
@@ -93,6 +108,16 @@
         <p>Write browser and Node tests for your components with shared Electron mocks.</p>
       </a>
     </div>
+    <div class="col d-span-4 t-span-6 m-span-12 px">
+      <a href="#/ai-dev" class="card">
+        <h5>
+          <k-icon name="ai" class="d-b mb"></k-icon>
+          AI Dev
+        </h5>
+        <p>Learn how to make LLM interact with kempo-app while developing your app.</p>
+      </a>
+    </div>
+    <div class="col d-span-4 t-span-6 m-span-12"></div>
   </div>
 
   <h1>Quick Start</h1>
@@ -139,24 +164,7 @@
 
   <h3><code>backend.js</code> — Main process hook</h3>
   <p>Create <code>backend.js</code> to run code JavaScript in Node JS (in Electron's main process). Use it for file system access, custom IPC, native menus, or any server-side logic.</p>
-  <pre><code class="hljs js"><span class="hljs-keyword">export default</span> ({ db, ipc, app }) =&gt; {
-  ipc.handle(<span class="hljs-string">"my-channel"</span>, <span class="hljs-keyword">async</span> (e, data) =&gt; {
-    <span class="hljs-keyword">return</span> db.get(<span class="hljs-string">"settings"</span>, <span class="hljs-string">"someKey"</span>);
-  });
-};</code></pre>
+  <pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-title function_">default</span> ({<br>  ipc,<br>  app,<br>  <span class="hljs-title class_">Menu</span><br>}) =&gt; {<br>  ipc.<span class="hljs-title function_">handle</span>(<span class="hljs-string">&#x27;my-channel&#x27;</span>, <span class="hljs-title function_">async</span> (e, data) =&gt; {<br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> api.<span class="hljs-title function_">jsonDB</span>(<span class="hljs-string">&#x27;settings&#x27;</span>).<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;someKey&#x27;</span>);<br>  });<br>};</code></pre>
 
   <div style="height:33vh"></div>
 </main>
-<style>
-  a.card {
-    display: block;
-    color: inherit;
-    text-decoration: none;
-    transition: border var(--animation_ms, 256ms);
-    
-    &:hover {
-      --c_border: var(--c_primary);
-      box-shadow: 0 0 3px var(--c_primary);
-    }
-  }
-</style>

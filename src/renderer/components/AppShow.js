@@ -20,7 +20,7 @@ class AppShow extends ShadowComponent {
     if(this.maximized !== null) window.api.window.onMaximizeChange(async () => { this.hidden = !(await evaluate(this)); });
     if(this.theme) new MutationObserver(async () => { this.hidden = !(await evaluate(this)); })
       .observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    if(this.setting) window.addEventListener("settingchange", async () => { this.hidden = !(await evaluate(this)); });
+    if(this.setting) window.addEventListener("jsondb_change:settings", async () => { this.hidden = !(await evaluate(this)); });
   }
 
   static styles = sharedStyles;
