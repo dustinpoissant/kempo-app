@@ -15,7 +15,6 @@
     "start": "cd example && node ../bin/kempo-app.js",
     "dev": "cd example && node ../bin/kempo-app.js --dev",
     "interact": "node scripts/interact.js",
-    "postinstall": "node scripts/postinstall.js",
     "test": "npx kempo-test",
     "build:docs": "node scripts/build-docs.js",
     "docs": "npx http-server docs -p 8080 -c-1"

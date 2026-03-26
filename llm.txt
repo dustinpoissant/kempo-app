@@ -10,7 +10,7 @@ This project uses kempo-ui (components) and kempo-css (styles/utilities). Before
 - kempo-ui: https://raw.githubusercontent.com/dustinpoissant/kempo-ui/refs/heads/main/llm.txt
 - kempo-css: https://raw.githubusercontent.com/dustinpoissant/kempo-css/refs/heads/main/llms.txt
 
-NEVER create a custom component if kempo-ui already has one. NEVER write a custom CSS class or inline style for something kempo-css already covers. Always check both files first.
+NEVER create a custom component if kempo-ui already has one. NEVER write custom CSS for something kempo-css covers. Always check both files first.
 
 ## Install & Run
 
@@ -18,18 +18,26 @@ NEVER create a custom component if kempo-ui already has one. NEVER write a custo
 npm install kempo-app
 ```
 
+Create `pages/index.html` — the only required file:
+
+```html
+<h1>Hello World</h1>
+```
+
+```sh
+npx kempo-app       # run the app
+npx kempo-app --dev # run with DevTools + CDP on port 9222
+```
+
 package.json scripts:
 ```json
 "scripts": {
   "start": "kempo-app",
   "dev": "kempo-app --dev",
-  "interact": "kempo-interact"
+  "interact": "kempo-interact",
+  "test": "npx kempo-test"
 }
 ```
-
-`npm start` — run the app
-
-`npm run dev` — run with DevTools + CDP on port 9222 (for LLM interaction)
 
 ---
 
@@ -40,13 +48,16 @@ package.json scripts:
 | `package.json` | yes | Configure app via `kempo-app` field |
 | `pages/index.html` | yes | Home page fragment, loaded for `#/` |
 | `pages/<name>.html` | no | Additional pages, loaded for `#/<name>` |
-| `shell.html` | no | Nav + `<app-page>` shell (default is just `<app-page>`) |
-| `app.js` | no | ESM module, runs after shell; import kempo-ui components here |
+| `shell.html` | no | Nav + `<app-page>` shell (default is bare `<app-page>`) |
 | `titlebar.html` | no | Place `<app-titlebar>` here |
+| `app.js` | no | ESM module — import kempo-ui components, run startup logic |
 | `theme.css` | no | CSS variable overrides, loaded after kempo-css |
-| `backend.js` | no | Runs in Electron main process |
-| `icons/` | no | Custom SVG icons (override kempo-ui icons) |
-| `media/` | no | App assets (`icon.png`, etc.) |
+| `backend.js` | no | Runs in Electron main process every startup |
+| `init.js` | no | Runs once on first launch |
+| `update.js` | no | Runs when package.json version changes |
+| `icons/` | no | Custom SVG icons (override built-in icons) |
+| `media/` | no | App assets (icon.png, etc.) |
+| `schema/` | no | SQL table definitions — auto-created and auto-migrated |
 
 ### package.json config
 
@@ -58,38 +69,41 @@ All framework config lives in the `kempo-app` field:
     "appName": "My App",
     "appIcon": "media/icon.png",
     "protocolName": "my-app",
-    "shell": "shell.html"
+    "shell": "shell.html",
+    "titlebar": "titlebar.html",
+    "pages": "pages"
   }
 }
 ```
 
-| Key | Description | Default |
-|-----|-------------|---------|
-| `appName` | Window title and display name | `name` field or `"Kempo App"` |
-| `appIcon` | Path to icon (e.g. `"media/icon.png"`) | none |
-| `protocolName` | Custom protocol scheme | `"kempo-app"` |
-| `shell` | Default shell HTML file for new windows | `"shell.html"` |
-| `titlebar` | Titlebar HTML file, `true` for default, or `false` to disable | `"titlebar.html"` |
-| `pages` | Directory containing page HTML fragments | `"pages"` |
+| Key | Default | Description |
+|-----|---------|-------------|
+| `appName` | `name` field or `"Kempo App"` | Window title and display name |
+| `appIcon` | none | Path to icon relative to project root |
+| `protocolName` | `"kempo-app"` | Custom protocol scheme, registered with OS |
+| `shell` | `"shell.html"` | Default shell HTML for new windows |
+| `titlebar` | `"titlebar.html"` | Titlebar HTML, `true` for default, `false` to disable |
+| `pages` | `"pages"` | Directory containing page HTML fragments |
 
 ---
 
 ## shell.html
 
-Optional. The app shell — include your nav and `<app-page>` where page content renders. If omitted, the default shell is simply `<app-page></app-page>`, so you only need this file if you want a nav or other persistent UI.
+The app shell — defines persistent UI around page content. Must contain `<app-page>` for the router.
 
 ```html
-<nav>
-  <a href="#/">Home</a>
-  <a href="#/settings">Settings</a>
+<nav class="bg-alt px bb">
+  <a href="#/" class="nav-link">Home</a>
+  <a href="#/settings" class="nav-link">Settings</a>
 </nav>
-<app-page></app-page>
+<app-page class="flex-1 p"></app-page>
 ```
+
+If omitted, the default shell is just `<app-page></app-page>`.
 
 ---
 
 ## Routing
-Docs: https://dustinpoissant.github.io/kempo-app/#/routing
 
 Hash routes map directly to `pages/` files. No config needed.
 
@@ -97,11 +111,12 @@ Hash routes map directly to `pages/` files. No config needed.
 |------|------|
 | `#/` | `pages/index.html` |
 | `#/settings` | `pages/settings.html` |
-| `#/foo-bar` | `pages/foo-bar.html` |
+| `#/any-name` | `pages/any-name.html` |
+| `#/sub/path` | `pages/sub/path.html` |
 
 Query params: `#/settings?tab=theme` → `window.route.params.tab === "theme"`
 
-`window.route` is always available with `{ path, params }`.
+`window.route` is always available: `{ path, params }`.
 
 Listen for navigation:
 ```js
@@ -110,13 +125,14 @@ window.addEventListener("routechange", e => {
 });
 ```
 
-External links: use `target="_blank"` or `window.open()` — opens in system browser automatically.
+External links: `target="_blank"` or `window.open()` → opens in system browser.
 
-Open a new app window:
+New app window:
 ```js
-api.window.new();           // opens at #/
-api.window.new("#/settings"); // opens at specific route
-api.window.new({ hash: "#/settings", shell: "editor-shell.html" }); // different shell
+api.window.new();                    // default shell at #/
+api.window.new("#/settings");        // specific route
+api.window.new({ hash: "#/editor", shell: "editor-shell.html" }); // different shell
+api.window.new({ hash: "#/viewer", titlebar: false });             // no titlebar
 ```
 
 ---
@@ -126,7 +142,7 @@ api.window.new({ hash: "#/settings", shell: "editor-shell.html" }); // different
 Pages are HTML fragments (no `<html>/<head>/<body>`). Any `<script>` in a fragment runs after it renders.
 
 ```html
-<!-- pages/home.html -->
+<!-- pages/index.html -->
 <h1>Home</h1>
 <button id="btn">Click me</button>
 <script>
@@ -134,105 +150,17 @@ document.getElementById("btn").addEventListener("click", () => alert("clicked"))
 </script>
 ```
 
----
-
-## Components
-Docs: https://dustinpoissant.github.io/kempo-app/#/components
-
-### App Components (auto-imported, no import needed)
-
-**`<app-page>`** — where page content renders (place in shell.html)
-
-**`<app-titlebar>`** — frameless window titlebar with drag support. Slots: `left`, default (center), `right`. Add `class="no-drag"` to interactive elements inside.
-
-```html
-<!-- titlebar.html -->
-<app-titlebar>
-  <b>My App</b>
-  <k-theme-switcher slot="right" class="no-drag"></k-theme-switcher>
-</app-titlebar>
-```
-
-**`<app-show>`** / **`<app-hide>`** — conditional rendering by platform, theme, setting value, dev mode, or maximized state.
-
-| Attribute | Values |
-|-----------|--------|
-| `platform` | `mac`, `win`, `linux` |
-| `theme` | `light`, `dark` |
-| `dev` | boolean |
-| `maximized` | boolean |
-| `setting` | `"table.key=value"` (e.g. `notifications=true`) |
-
-```html
-<app-show platform="win"><p>Windows only</p></app-show>
-<app-hide setting="notifications=false">
-  <button>Send Notification</button>
-</app-hide>
-```
-
-**`<app-setting-bool>`** — toggle linked to a jsonDB setting key:
-```html
-<app-setting-bool setting="notifications">Enable Notifications</app-setting-bool>
-```
-
-**`<app-setting-string>`** — text input linked to a jsonDB setting key:
-```html
-<app-setting-string setting="username">Username</app-setting-string>
-```
-
-**`<app-setting-number>`** — number input linked to a jsonDB setting key:
-```html
-<app-setting-number setting="fontSize">Font Size</app-setting-number>
-```
-
-### kempo-ui Components
-kempo-ui llm.txt: https://raw.githubusercontent.com/dustinpoissant/kempo-ui/refs/heads/main/llm.txt
-
-Import in `app.js`:
-```js
-import "/modules/kempo-ui/dist/components/Card.js";
-import "/modules/kempo-ui/dist/components/Toggle.js";
-import "/modules/kempo-ui/dist/components/Tabs.js";
-import "/modules/kempo-ui/dist/components/Accordion.js";
-import "/modules/kempo-ui/dist/components/Dropdown.js";
-import "/modules/kempo-ui/dist/components/ThemeSwitcher.js";
-import "/modules/kempo-ui/dist/components/ThemeSelect.js";
-import "/modules/kempo-ui/dist/components/Dialog.js";
-import "/modules/kempo-ui/dist/components/Spinner.js";
-import "/modules/kempo-ui/dist/components/Toast.js";
-import "/modules/kempo-ui/dist/components/Table.js";
-```
-
-Key components: `k-card`, `k-toggle`, `k-icon`, `k-tabs`, `k-accordion`, `k-dropdown`, `k-dialog`, `k-theme-switcher`, `k-theme-select`
-
-
+Use `<script type="module">` for imports within page scripts.
 
 ---
 
-## Icons
-Docs: https://dustinpoissant.github.io/kempo-app/#/icons
+## API
 
-```html
-<k-icon name="settings"></k-icon>
-<k-icon name="home" style="width:24px; height:24px"></k-icon>
-```
+`api` is a global available everywhere — renderer scripts, page fragments, `backend.js`, `init.js`, `update.js`. Set up on both `window` (renderer) and `global` (main process).
 
-Search order (first match wins): `icons/`  → `node_modules/kempo-app/icons` → `node_modules/kempo-ui/icons`
+### Database — api.jsonDB
 
-Find and download icons via CLI:
-```sh
-npx kempo-listicons arrow   # search by keyword
-npx kempo-geticon settings  # download → icons/settings.svg
-```
-
-Custom icons: place `name.svg` in `icons/` directory.
-
----
-
-## Database (api.jsonDB)
-Docs: https://dustinpoissant.github.io/kempo-app/#/database
-
-File-based JSON database. Each table = a separate JSON file. No schema setup needed.
+File-based JSON key/value store. Each table = a separate JSON file. No setup needed.
 
 ```js
 const settings = api.jsonDB("settings");
@@ -244,181 +172,467 @@ await settings.has("theme")     // true / false
 await settings.clear()          // wipe table
 ```
 
-Values can be any JSON-serializable type. Tables are auto-created on first write.
+Tables auto-created on first write. Values can be any JSON-serializable type.
 
-Storage location: Windows `%APPDATA%\<appName>\jsonDB\*.json` | macOS `~/Library/Application Support/<appName>/jsonDB/*.json`
-
-Every `set()` fires a `jsondb_change:{table}` event on `window`:
+Every `set()` fires `jsondb_change:{table}` on `window`:
 ```js
-window.addEventListener('jsondb_change:settings', e => {
+window.addEventListener("jsondb_change:settings", e => {
   console.log(e.detail.key, e.detail.value);
 });
 ```
 
----
+### Database — SQL (DB class)
 
-## SQL Database (api.sqlDB)
-
-Requires `better-sqlite3` installed in consumer project. Databases stored as `.jsonDB` files in the user data directory.
+Full SQL database via better-sqlite3. Requires `npm install better-sqlite3`.
 
 ```js
-await api.sqlDB.exec("mydb", "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)")
-await api.sqlDB.run("mydb", "INSERT INTO users (name) VALUES (?)", ["Alice"])  // { changes, lastInsertRowid }
-await api.sqlDB.get("mydb", "SELECT * FROM users WHERE id = ?", [1])           // single row
-await api.sqlDB.all("mydb", "SELECT * FROM users")                             // all rows
-await api.sqlDB.close("mydb")                                                  // close connection
+import DB from "/framework/src/renderer/utils/sqlDB.js";
+
+const db = new DB("mydb");
+const users = db.table("users");
+
+// Create
+const record = await users.create({ name: "Alice", email: "alice@example.com" });
+record.data // { id: 1, name: "Alice", email: "alice@example.com" }
+
+// Read
+const all = await users.getAll();           // Record[]
+const user = await users.get({ id: 1 });    // Record or null
+const last = await users.getLast();          // Record or null
+const filtered = await users.getAll({ name: "Alice" }); // Record[]
+
+// Update & Delete via Record
+await user.update({ name: "Alicia" });
+await user.delete();
+
+// Bulk operations via Table
+await users.update({ name: "Alice" }, { name: "Alicia" });  // first match
+await users.updateAll({ active: 0 }, { active: 1 });        // all matches
+await users.delete({ id: 5 });      // first match
+await users.deleteAll({ active: 0 }); // all matches
+
+// Raw SQL
+await db.query("SELECT * FROM users WHERE age > 21"); // rows array
+await db.query("DROP TABLE temp");                     // true
 ```
 
----
+Record objects: `record.data` (row object), `record.update(data)`, `record.delete()`.
 
-## API
-Docs: https://dustinpoissant.github.io/kempo-app/#/api
+DB class works identically in `backend.js` — same import, same API.
 
-`api` is a global available everywhere — renderer scripts, page fragments, `backend.js`, `init.js`, and `update.js`.
+### Database — Raw SQL (api.sqlQuery)
+
+**Advanced usage only** — for complex queries the DB class can't express (joins, subqueries, aggregations). If it can be done with `DB`/`Table`/`Record`, use those instead. Use `schema/` files for creating and altering tables whenever reasonably possible — they handle versioning and migrations automatically.
 
 ```js
-// Window controls
+await api.sqlQuery("mydb", "SELECT u.name, COUNT(o.id) as orders FROM users u JOIN orders o ON o.user_id = u.id GROUP BY u.id");
+```
+
+SELECT returns array of rows; everything else returns `true`; throws on error.
+
+### Storage Location
+
+| Platform | Path |
+|----------|------|
+| Windows | `%APPDATA%\<appName>\db\` |
+| macOS | `~/Library/Application Support/<appName>/db/` |
+| Linux | `~/.config/<appName>/db/` |
+
+JSON tables = `*.json`, SQL databases = `*.db`.
+
+### Window Controls
+
+```js
 api.window.minimize()
 api.window.maximize()   // toggles maximize/restore
 api.window.close()
-api.window.new()        // open new window
-api.window.new("#/page") // open new window at route
+api.window.new()
+api.window.new("#/page")
+api.window.new({ hash: "#/page", shell: "other-shell.html", titlebar: false })
+```
 
-// Platform detection
-const platform = await api.getPlatform(); // "mac" | "win" | "linux"
+### Notifications
 
-// Notifications (use this instead of browser Notification API)
-const supported = await api.notification.isSupported();
+Use `api.notification` instead of browser `Notification` API (sandboxed context routes through IPC to main process).
+
+```js
 const id = await api.notification.show({
-  title: "Hello",
-  body: "World",
-  icon: "media/icon.png",  // optional, defaults to app icon
-  silent: false,           // optional
-  // subtitle (macOS), urgency (linux), timeoutType (linux/win)
+  title: "Download Complete",
+  body: "report.pdf has been saved.",
+  icon: "media/icon.png",    // optional, defaults to app icon
+  silent: false,              // optional
+  subtitle: "...",            // macOS only
+  urgency: "normal",         // Linux only: "normal" | "critical" | "low"
+  timeoutType: "default"     // Linux/Windows: "default" | "never"
 });
 
-// Notification events
+const supported = await api.notification.isSupported();
+```
+
+Notification events on `window`:
+```js
 window.addEventListener("notification:click", e => console.log(e.detail.id));
 window.addEventListener("notification:close", e => console.log(e.detail.id));
 window.addEventListener("notification:reply", e => console.log(e.detail.id, e.detail.reply)); // macOS
 ```
 
+### Utilities
+
+```js
+await api.getPlatform()    // "mac" | "win" | "linux"
+await api.getAppName()     // configured app name
+await api.isDev()          // true if --dev flag
+api.toggleDevTools()       // toggle Chrome DevTools
+```
+
+---
+
+## Schema Tables
+
+Define SQL tables as files — no SQL needed. Auto-created on first startup, auto-migrated when schema changes.
+
+Directory structure:
+```
+schema/
+  mydb/           ← database name
+    contacts.js   ← table name
+    settings.js
+```
+
+Schema file format:
+```js
+// schema/mydb/contacts.js
+export default {
+  name: { type: "text", required: true },
+  email: { type: "text", unique: true },
+  phone: { type: "text" },
+  age: { type: "integer" },
+  score: { type: "real", default: 0 },
+};
+export const version = 1;
+```
+
+If no column has `primary: true`, the table auto-gets `id INTEGER PRIMARY KEY AUTOINCREMENT`.
+
+Custom primary key:
+```js
+export default {
+  key: { type: "text", primary: true },
+  value: { type: "text" },
+};
+export const version = 1;
+```
+
+Column options:
+
+| Option | Description |
+|--------|-------------|
+| `type` | `"text"`, `"integer"`, `"real"`, `"blob"` (default: `"text"`) |
+| `primary` | Makes this the primary key (integer PKs get AUTOINCREMENT) |
+| `required` | Adds NOT NULL |
+| `unique` | Adds UNIQUE |
+| `default` | Default value |
+| `index` | Creates secondary index |
+
+### Auto-Migration
+
+On every startup, the framework compares schema files against the database. Missing tables are created, missing columns added via ALTER TABLE. Existing columns are never removed or modified.
+
+### Versioning
+
+For changes beyond adding columns (rename, transform, drop), bump `version` and add `updates`:
+
+```js
+export default {
+  name: { type: "text", required: true },
+  email: { type: "text", unique: true },
+  display_name: { type: "text" },
+};
+export const version = 3;
+export const updates = [
+  null,           // v1→v2: auto-migrate only
+  (db) => {       // v2→v3: custom migration
+    db.exec("ALTER TABLE contacts RENAME COLUMN username TO display_name");
+    return true;  // also run auto-migrate after
+  },
+];
+```
+
+Rules:
+- `updates[0]` = v1→v2, `updates[1]` = v2→v3, etc.
+- `updates.length` should equal `version - 1`
+- `null` entry = auto-migrate only
+- Function entry called with `(db)`, return `true` to also auto-migrate after
+- New tables skip all updates, created at latest version
+
+---
+
+## Components
+
+### App Components (auto-imported, no import needed)
+
+**`<app-page>`** — router render target. Place in `shell.html`.
+
+**`<app-titlebar>`** — frameless window titlebar with drag support. Slots: `left`, default (center), `right`. Add `class="no-drag"` to interactive elements.
+
+```html
+<app-titlebar>
+  <b>My App</b>
+  <k-theme-switcher slot="right" class="no-drag"></k-theme-switcher>
+</app-titlebar>
+```
+
+**`<app-show>` / `<app-hide>`** — conditional rendering. All conditions must match.
+
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `platform` | `mac`, `win`, `linux` | Match OS |
+| `dev` | boolean | Match dev mode |
+| `theme` | `light`, `dark` | Match current theme (reactive) |
+| `maximized` | boolean | Match window state (reactive) |
+| `setting` | `key` or `key=value` | Match jsonDB settings value (reactive) |
+
+```html
+<app-show platform="win">Windows only</app-show>
+<app-hide dev>Production only</app-hide>
+<app-show setting="notifications">Notifications enabled</app-show>
+<app-show setting="theme=dark">Dark theme active</app-show>
+```
+
+**`<app-setting-bool>`** — toggle bound to jsonDB setting:
+```html
+<app-setting-bool setting="notifications">Enable Notifications</app-setting-bool>
+```
+
+**`<app-setting-string>`** — text input bound to jsonDB setting:
+```html
+<app-setting-string setting="username">Username</app-setting-string>
+```
+
+**`<app-setting-number>`** — number input bound to jsonDB setting:
+```html
+<app-setting-number setting="fontSize">Font Size</app-setting-number>
+```
+
+All setting components auto-load from the database on connect and save on change. Slotted content is the label.
+
+### kempo-ui Components
+
+Import in `app.js`:
+```js
+import "/modules/kempo-ui/dist/components/Card.js";
+import "/modules/kempo-ui/dist/components/Toggle.js";
+import "/modules/kempo-ui/dist/components/ThemeSwitcher.js";
+import "/modules/kempo-ui/dist/components/ThemeSelect.js";
+import "/modules/kempo-ui/dist/components/Tabs.js";
+import "/modules/kempo-ui/dist/components/Accordion.js";
+import "/modules/kempo-ui/dist/components/Dropdown.js";
+import "/modules/kempo-ui/dist/components/Dialog.js";
+import "/modules/kempo-ui/dist/components/Spinner.js";
+import "/modules/kempo-ui/dist/components/Toast.js";
+import "/modules/kempo-ui/dist/components/Table.js";
+```
+
+Full kempo-ui reference: https://raw.githubusercontent.com/dustinpoissant/kempo-ui/refs/heads/main/llm.txt
+
+---
+
+## Icons
+
+```html
+<k-icon name="settings"></k-icon>
+<k-icon name="home" style="width:24px; height:24px"></k-icon>
+```
+
+Search order (first match wins): `icons/` → `node_modules/kempo-app/icons/` → `node_modules/kempo-ui/icons/`
+
+Find and download icons:
+```sh
+npx kempo-icon             # interactive search + download
+npx kempo-listicons arrow  # search by keyword
+npx kempo-geticon settings # download → icons/settings.svg
+```
+
+Custom icons: place `name.svg` in `icons/` directory. SVGs should have a `viewBox` attribute. Fill is set to `currentColor` automatically. Same-named files override built-in icons.
+
 ---
 
 ## Theming
-Docs: https://dustinpoissant.github.io/kempo-app/#/theming
 
-Create `theme.css` in project root to override kempo-css variables. Light/dark handled automatically via `light-dark()`. Hover, active, and inverse variants are **auto-calculated** from base colors using `oklch` — do not set them manually.
+Create `theme.css` in project root. Loaded after kempo-css, so overrides win. Light/dark handled automatically via `light-dark()`.
 
 ```css
-/* theme.css */
 :root {
-  --c_primary:   rgb(71, 132, 143);
-  --c_secondary: rgb(153, 51, 255);
-  --c_bg:        light-dark(rgb(249,249,249), rgb(51,51,51));
-  --c_border:    light-dark(rgb(220,220,220), rgb(80,80,80));
-  --tc:          light-dark(rgb(30,30,30), rgb(220,220,220));
-  --radius:      0.5rem;
+  --c_primary: #47848F;
+  --c_primary__hover: #3a6b74;
+  --c_input_accent: #47848F;
+  --c_highlight: rgba(71, 132, 143, 0.2);
 }
 ```
 
-Themeable variables (only set what you need to override):
+Key variables:
 
-| Variable | Controls | Default |
-|----------|----------|---------|
-| `--c_primary` | Brand color — buttons, links, focus rings | `rgb(51,102,255)` |
-| `--c_secondary` | Secondary brand color | `rgb(153,51,255)` |
-| `--c_success` | Success state | `rgb(0,136,0)` |
-| `--c_warning` | Warning state | `rgb(255,102,0)` |
-| `--c_danger` | Danger/error state | `rgb(255,0,51)` |
-| `--c_bg` | Page background (light-dark aware) | — |
-| `--c_border` | Borders (light-dark aware) | — |
-| `--tc` | Base text color (light-dark aware) | — |
-| `--tc_muted` | Muted/secondary text | — |
-| `--btn_bg` | Default button background | — |
-| `--radius` | Border radius | `0.25rem` |
-| `--spacer` | Base spacing unit | `1rem` |
-| `--fs_base` | Base font size | `16px` |
-| `--ff_body` | Body font family | — |
-| `--ff_heading` | Heading font family | — |
-| `--ff_mono` | Monospace font family | — |
-| `--animation_ms` | Transition duration | `256ms` |
-| `--container_width` | Max-width for `main`/`.container` | `90rem` |
+| Variable | Controls |
+|----------|----------|
+| `--c_primary` | Buttons, links, active nav, focus rings |
+| `--c_primary__hover` | Hover state for primary elements |
+| `--c_input_accent` | Input focus + toggle active color |
+| `--c_bg` | Page background |
+| `--c_bg__alt` | Nav, sidebar, card backgrounds |
+| `--c_border` | Borders |
+| `--tc` | Base text color |
+| `--radius` | Border radius |
+| `--spacer` | Base spacing unit |
 
-kempo-css docs: https://dustinpoissant.github.io/kempo-css/
-kempo-css llm.txt: https://raw.githubusercontent.com/dustinpoissant/kempo-css/refs/heads/main/llms.txt
-
-### Utility Classes (from kempo-css)
-
-| Need | Class |
-|------|-------|
-| Flex row | `row` |
-| Flex grow | `flex-1`, `flex-2` |
-| Padding x/y | `px`, `py`, `pxh`, `pyh`, `pxq`, `pyq` |
-| Margin x/y | `mx`, `my`, `mxh`, `myh` |
-| Border | `bx`, `by` |
-| Background | `bg-default`, `bg-alt`, `bg-secondary` |
-| Text color | `tc-default`, `tc-primary`, `tc-muted` |
-| Display | `d-f`, `d-b`, `d-n`, `d-g` |
-| Full width | `full` |
-| Text align | `ta-left`, `ta-center`, `ta-right` |
+Full kempo-css reference: https://raw.githubusercontent.com/dustinpoissant/kempo-css/refs/heads/main/llms.txt
 
 ---
 
-## Backend (backend.js)
-Docs: https://dustinpoissant.github.io/kempo-app/#/backend
+## Backend
 
-Runs in Electron's main process. Export a default function:
+Three optional files run in Electron's main process:
+
+| File | When | Context |
+|------|------|---------|
+| `backend.js` | Every startup | `{ ipc, app, Menu }` |
+| `init.js` | Once on first launch | `{ ipc, app, Menu }` |
+| `update.js` | When version changes | `{ ipc, app, Menu, from, to }` |
+
+Startup sequence:
+1. Framework init (JSON DB + SQL DB available)
+2. `init.js` (first launch) or `update.js` (version change)
+3. Schema sync (create/migrate tables from `schema/`)
+4. `backend.js`
+5. Window creation
 
 ```js
+// backend.js
 export default ({ ipc, app, Menu }) => {
-
-  // Custom IPC handler
-  ipc.handle("my-channel", async (event, data) => {
-    const value = await api.jsonDB("settings").get("someKey");
-    return { result: "ok", value };
+  // Custom IPC
+  ipc.handle("my-channel", async (e, data) => {
+    return await api.jsonDB("settings").get("someKey");
   });
 
-  // Deep links — fires when user clicks your-app:// link
+  // Deep links — protocolName:// links
   app.on("open-link", url => {
     const parsed = new URL(url);
     console.log(parsed.pathname, parsed.searchParams);
   });
 
-  // File associations — fires when a registered file type is opened
+  // File associations
   app.on("open-path", filePath => {
-    ipc.emit("file-opened", filePath);
+    console.log("Open file:", filePath);
   });
 
+  // Cleanup
+  app.on("before-quit", () => {
+    api.jsonDB("settings").set("lastSession", Date.now());
+  });
 };
 ```
 
-Call custom IPC from renderer: use Electron's `ipcRenderer` (not exposed by default — if needed, extend `preload.cjs`).
+### Context Menu
+
+Auto-shows native context menu on right-click (Cut/Copy/Paste on inputs, Copy on selected text, Inspect in dev mode).
+
+Add custom items:
+```js
+api.contextMenu.onClick(id => {
+  if(id === "delete") handleDelete();
+});
+
+element.addEventListener("contextmenu", () => {
+  api.contextMenu.show([
+    { id: "rename", label: "Rename" },
+    { id: "delete", label: "Delete" },
+  ]);
+});
+```
+
+### Mac Menu Bar
+
+```js
+export default ({ app, Menu }) => {
+  if(process.platform !== "darwin") return;
+  const menu = Menu.buildFromTemplate([
+    { label: app.getName(), submenu: [{ role: "about" }, { type: "separator" }, { role: "quit" }] },
+    { label: "File", submenu: [{ label: "New Window", accelerator: "CmdOrCtrl+N" }, { role: "close" }] },
+    { label: "Edit", submenu: [{ role: "undo" }, { role: "redo" }, { type: "separator" }, { role: "cut" }, { role: "copy" }, { role: "paste" }, { role: "selectAll" }] },
+  ]);
+  Menu.setApplicationMenu(menu);
+};
+```
 
 ---
 
-## LLM Interact Tools (AI Dev)
-Docs: https://dustinpoissant.github.io/kempo-app/#/ai-dev
+## Window Events
 
-Run the app in dev mode, then use `kempo-interact` to inspect and drive it live:
+| Event | Fired when | `event.detail` |
+|-------|-----------|----------------|
+| `jsondb_change:{table}` | `api.jsonDB("table").set()` completes | `{ key, value }` |
+| `routechange` | Hash route changes | `{ path, params }` |
+| `notification:click` | User clicks notification | `{ id }` |
+| `notification:close` | Notification dismissed | `{ id }` |
+| `notification:reply` | User replies (macOS) | `{ id, reply }` |
+
+---
+
+## Testing
 
 ```sh
-npm run dev   # start app with CDP on port 9222
-
-npm run interact -- structure          # buttons, inputs, links on current page
-npm run interact -- dom                # full page HTML
-npm run interact -- screenshot         # save screenshot.png
-npm run interact -- navigate /settings # navigate to route
-npm run interact -- click "#selector"  # click element
-npm run interact -- click-text "Save"  # click by text content
-npm run interact -- type "#input" "value"
-npm run interact -- eval "await api.jsonDB('settings').get()"
-npm run interact -- eval "window.route"
-npm run interact -- title
-npm run interact -- url
+npm install --save-dev kempo-testing-framework
 ```
 
-Always run `structure` or `dom` first to understand the page before interacting.
+Browser test files (`.browser-test.js`):
+```js
+export const page = "/node_modules/kempo-app/testing/test-page.html";
+
+export const beforeAll = async () => {
+  await import("/modules/kempo-ui/dist/components/Card.js");
+};
+
+export default {
+  "card renders": async ({ pass, fail }) => {
+    const card = document.createElement("k-card");
+    card.label = "Test";
+    document.body.appendChild(card);
+    await card.updateComplete;
+    if(card.shadowRoot.querySelector("slot")) pass();
+    else fail("No slot found");
+    card.remove();
+  }
+};
+```
+
+**IMPORTANT:** No top-level imports with `/framework/` or `/modules/` paths — use dynamic `import()` in `beforeAll`.
+
+Node test files (`.node-test.js`): same test signature, no `page` export needed.
+
+Lifecycle hooks: `beforeAll`, `afterAll`, `beforeEach`, `afterEach` (all optional).
+
+Mock API: `window.__kempoTestDbStore` for direct db access in tests.
+
+Run: `npx kempo-test`
+
+---
+
+## LLM Interact Tools
+
+```sh
+npm run dev                                # start app with CDP
+npx kempo-interact structure               # buttons, inputs, links
+npx kempo-interact dom                     # full page HTML
+npx kempo-interact screenshot              # save screenshot.png
+npx kempo-interact navigate /settings      # navigate to route
+npx kempo-interact click "#selector"       # click element
+npx kempo-interact click-text "Save"       # click by text
+npx kempo-interact type "#input" "value"   # type into input
+npx kempo-interact eval "await api.jsonDB('settings').get()"
+npx kempo-interact title                   # page title
+npx kempo-interact url                     # current URL
+```
+
+Always run `structure` or `dom` first to understand the page.
 
 ---
 
@@ -428,28 +642,19 @@ Always run `structure` or `dom` first to understand the page before interacting.
 ```json
 {
   "name": "my-app",
-  "kempo-app": {
-    "appName": "My App",
-    "appIcon": "media/icon.png"
-  },
-  "scripts": {
-    "start": "kempo-app",
-    "dev": "kempo-app --dev",
-    "interact": "kempo-interact"
-  },
-  "dependencies": {
-    "kempo-app": "latest"
-  }
+  "kempo-app": { "appName": "My App", "appIcon": "media/icon.png" },
+  "scripts": { "start": "kempo-app", "dev": "kempo-app --dev", "interact": "kempo-interact" },
+  "dependencies": { "kempo-app": "latest" }
 }
 ```
 
 **shell.html**
 ```html
-<nav>
-  <a href="#/">Home</a>
-  <a href="#/settings">Settings</a>
+<nav class="bg-alt px bb">
+  <a href="#/" class="nav-link">Home</a>
+  <a href="#/settings" class="nav-link">Settings</a>
 </nav>
-<app-page></app-page>
+<app-page class="flex-1 p"></app-page>
 ```
 
 **pages/index.html**
@@ -474,14 +679,6 @@ import "/modules/kempo-ui/dist/components/ThemeSelect.js";
 
 ## Full Docs
 
-- Overview: https://dustinpoissant.github.io/kempo-app/
-- Routing: https://dustinpoissant.github.io/kempo-app/#/routing
-- Components: https://dustinpoissant.github.io/kempo-app/#/components
-- Icons: https://dustinpoissant.github.io/kempo-app/#/icons
-- Theming: https://dustinpoissant.github.io/kempo-app/#/theming
-- API: https://dustinpoissant.github.io/kempo-app/#/api
-- Database: https://dustinpoissant.github.io/kempo-app/#/database
-- Backend: https://dustinpoissant.github.io/kempo-app/#/backend
-- AI Dev: https://dustinpoissant.github.io/kempo-app/#/ai-dev
-- kempo-ui: https://dustinpoissant.github.io/kempo-ui/
-- kempo-css: https://dustinpoissant.github.io/kempo-css/
+- https://dustinpoissant.github.io/kempo-app/
+- https://dustinpoissant.github.io/kempo-ui/
+- https://dustinpoissant.github.io/kempo-css/

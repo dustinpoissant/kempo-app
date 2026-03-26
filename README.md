@@ -1,632 +1,225 @@
 # kempo-app
 
-An [Electron](https://www.electronjs.org/) desktop app framework built on [kempo-ui](https://github.com/dustinpoissant/kempo-ui) (Lit web components) and [kempo-css](https://github.com/dustinpoissant/kempo-css). Create a few files, run one command, and you have a native desktop app with a custom titlebar, SPA routing, persistent settings, and a full component library — no boilerplate required.
+An [Electron](https://www.electronjs.org/) desktop app framework built on [kempo-ui](https://github.com/dustinpoissant/kempo-ui) and [kempo-css](https://github.com/dustinpoissant/kempo-css). Create a few files, run one command, and you have a native desktop app with a custom titlebar, SPA routing, persistent databases, and a full component library — no boilerplate required.
+
+**[Documentation →](https://dustinpoissant.github.io/kempo-app/)**
 
 ---
 
-## Getting Started
+## Quick Start
 
 ```sh
-mkdir my-app && cd my-app
-npm init -y
 npm install kempo-app
 ```
 
-Then create these files:
+Create `pages/index.html` — the only file required:
 
-**`package.json`** — add configuration fields and scripts:
-```json
-{
-  "name": "my-app",
-  "type": "module",
-  "appName": "My App",
-  "appIcon": "media/icon.png",
-  "protocolName": "my-app",
-  "scripts": {
-    "start": "kempo-app",
-    "dev": "kempo-app --dev",
-    "interact": "kempo-interact"
-  },
-  "dependencies": {
-    "kempo-app": "^0.0.1"
-  }
-}
-```
-
-**`titlebar.html`** — the titlebar (optional, injected first):
-```html
-<app-titlebar class="bg-alt bb">
-  <b slot="left">My App</b>
-  <k-theme-switcher slot="right" class="no-drag"></k-theme-switcher>
-</app-titlebar>
-```
-
-**`app.html`** — the app shell (nav bar + page container):
-```html
-<script type="module">
-  import "/modules/kempo-ui/dist/components/Card.js";
-  import "/modules/kempo-ui/dist/components/Toggle.js";
-  import "/modules/kempo-ui/dist/components/ThemeSwitcher.js";
-</script>
-
-<nav class="bg-alt px bb">
-  <a href="#/" class="nav-link">Home</a>
-  <a href="#/settings" class="nav-link">Settings</a>
-</nav>
-<app-page class="flex-1 py px"></app-page>
-```
-
-**`pages/home.html`** — your home page:
 ```html
 <h1>Hello World</h1>
-<p>Welcome to my app.</p>
 ```
+
+Run it:
 
 ```sh
-npm start
+npx kempo-app
 ```
+
+That's it. You have a desktop app.
 
 ---
 
-## Project Structure
+## Optional Files
 
-```
-my-app/
-  package.json          App config — appName, appIcon, protocolName, scripts
-  app.html              App shell fragment — nav bar, component imports
-  pages/
-    home.html           Loaded for route #/
-    settings.html       Loaded for route #/settings
-    <name>.html         Loaded for route #/<name>
-  media/
-    icon.png            App icon (256×256 or 512×512 PNG)
-  icons/                Custom SVG icons — override any built-in icon here
-  titlebar.html         Optional — injected before app.html (put app-titlebar here)
-  app.js                Optional — ESM module, runs after app.html is injected
-  backend.js            Optional — Node.js code in the main process
-  theme.css             Optional — CSS variable overrides for theming
-```
+Every file below is optional. The framework falls back to sensible defaults when they are absent.
 
----
+| File | Purpose |
+|------|---------|
+| `shell.html` | App shell — nav bar + `<app-page>` where pages render |
+| `titlebar.html` | Custom frameless titlebar with drag, minimize, maximize, close |
+| `theme.css` | Override CSS variables to customize colors, spacing, fonts |
+| `app.js` | ESM module — import kempo-ui components and run startup logic |
+| `backend.js` | Node.js code in Electron's main process (IPC, menus, file system) |
+| `init.js` | Runs once on first launch (seed data, one-time setup) |
+| `update.js` | Runs when `version` in package.json changes (migrations) |
+| `icons/` | Custom SVG icons — override any built-in icon |
+| `media/` | App assets (icon.png, images, etc.) |
+| `schema/` | Define SQL tables as files — auto-created and auto-migrated |
 
-## package.json Configuration
-
-| Field | Description | Default |
-|-------|-------------|---------|
-| `appName` | Display name in titlebar and window title | `name` field, then `"Kempo App"` |
-| `appIcon` | Relative path to app icon PNG | none |
-| `protocolName` | Custom protocol scheme (must be URL-safe) | `"kempo-app"` |
+**[Configuration docs →](https://dustinpoissant.github.io/kempo-app/#/config)**
 
 ---
 
 ## Routing
 
-The router is **convention-based** — no config needed. Hash routes map directly to files in `pages/`:
+Hash routes map directly to files in your `pages/` directory. No config needed.
 
 | URL hash | File loaded |
 |----------|-------------|
-| `#/` | `pages/home.html` |
+| `#/` | `pages/index.html` |
 | `#/settings` | `pages/settings.html` |
 | `#/any-name` | `pages/any-name.html` |
 
-**Query parameters** are also supported and exposed on `window.route`:
-```
-#/settings?tab=appearance
-→ window.route.path    // "/settings"
-→ window.route.params  // { tab: "appearance" }
-```
+To add a new page: create the file, add a link. That's it.
 
-To add a new page: create the file, add a nav link. That's it.
+**[Routing docs →](https://dustinpoissant.github.io/kempo-app/#/routing)**
 
 ---
 
-## titlebar.html — The Titlebar
+## API
 
-`titlebar.html` is an optional HTML fragment injected into the app before `app.html`. Place your `<app-titlebar>` here:
-
-```html
-<app-titlebar class="bg-alt bb">
-  <k-dropdown slot="left" class="no-drag">...</k-dropdown>
-  <b>My App</b>
-  <k-theme-switcher slot="right" class="no-drag"></k-theme-switcher>
-</app-titlebar>
-```
-
-See [`app-titlebar`](#app-components) for full usage.
-
----
-
-## app.html — The App Shell
-
-`app.html` is an HTML fragment (no `<html>`, `<head>`, or `<body>`) injected after `titlebar.html`. It must contain:
-
-- A `<nav>` element with `.nav-link` anchors pointing to hash routes
-- An `<app-page>` element where pages will be loaded
-
-```html
-<nav class="bg-alt px bb">
-  <a href="#/" class="nav-link">Home</a>
-  <a href="#/settings" class="nav-link">Settings</a>
-</nav>
-<app-page class="flex-1 py px"></app-page>
-```
-
-The `active` class is automatically applied to the current nav link.
-
-### Importing Components
-
-`app.html` is also where you import kempo-ui components you want available across all pages:
-
-```html
-<script type="module">
-  import "/modules/kempo-ui/dist/components/Card.js";
-  import "/modules/kempo-ui/dist/components/Toggle.js";
-  import "/modules/kempo-ui/dist/components/ThemeSwitcher.js";
-  import "/modules/kempo-ui/dist/components/Tabs.js";
-  import "/modules/kempo-ui/dist/components/Dialog.js";
-  /* ...any others you need */
-</script>
-```
-
-Available components: `Accordion`, `Card`, `Dialog`, `Dropdown`, `Icon`, `Import`, `Spinner`, `Tabs`, `ThemeSwitcher`, `Toast`, `Table`, `Toggle`, `Tree`, and more. All in `/modules/kempo-ui/dist/components/`.
-
----
-
-## app.js — Optional Renderer Script
-
-`app.js` (in your project root) is an optional ESM module that runs after `titlebar.html` and `app.html` are injected. Use it for app-level JavaScript that doesn't need to be inline in your HTML:
+`api` is a global available everywhere — pages, `app.js`, `backend.js`, `init.js`, and `update.js`.
 
 ```js
-// app.js
-const platform = document.documentElement.dataset.platform;
-console.log("Running on:", platform);
+// JSON Database — file-based key/value store, no setup needed
+const settings = api.jsonDB("settings");
+await settings.set("theme", "dark");
+await settings.get("theme");  // "dark"
 
-const devMode = await window.api.isDev();
-if(devMode) console.log("Dev mode active");
+// SQL Database — requires better-sqlite3
+import DB from "/framework/src/renderer/utils/sqlDB.js";
+const users = new DB("mydb").table("users");
+await users.create({ name: "Alice", email: "alice@example.com" });
+const all = await users.getAll();
+
+// Window controls
+api.window.minimize();
+api.window.maximize();
+api.window.close();
+api.window.new("#/settings");
+
+// Notifications
+await api.notification.show({ title: "Hello", body: "World" });
+
+// Utilities
+await api.getPlatform();  // "mac" | "win" | "linux"
+await api.getAppName();
+await api.isDev();
 ```
 
-This runs once at startup, before the router fires. It has full access to `window.api` and all injected DOM elements.
+**[API docs →](https://dustinpoissant.github.io/kempo-app/#/api)** · **[Database docs →](https://dustinpoissant.github.io/kempo-app/#/database)**
 
 ---
 
-## kempo-ui Components
+## Components
 
-Components are [Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) with a `k-` prefix, built on [Lit](https://lit.dev/). Use them directly in your HTML fragments:
+Built on [kempo-ui](https://dustinpoissant.github.io/kempo-ui/) — a library of Lit-based web components with a `k-` prefix. Import what you need in `app.js`:
 
-```html
-<k-card label="My Section">
-  <p>Content goes here</p>
-</k-card>
-
-<k-toggle id="my-toggle"></k-toggle>
-
-<k-theme-switcher></k-theme-switcher>
-
-<k-icon name="settings"></k-icon>
-```
-
-**`k-toggle`** fires a `toggle` event with the new value:
 ```js
-document.getElementById("my-toggle").addEventListener("toggle", e => {
-  console.log(e.detail.value); // true / false
-});
+import "/modules/kempo-ui/dist/components/Card.js";
+import "/modules/kempo-ui/dist/components/Toggle.js";
+import "/modules/kempo-ui/dist/components/Tabs.js";
 ```
+
+The framework also provides `<app-*>` components automatically (no imports needed):
+
+- `<app-titlebar>` — frameless window titlebar
+- `<app-page>` — router render target
+- `<app-show>` / `<app-hide>` — conditional rendering by platform, theme, dev mode, or setting value
+- `<app-setting-bool>` / `<app-setting-string>` / `<app-setting-number>` — persistent settings inputs
+
+**[Components docs →](https://dustinpoissant.github.io/kempo-app/#/components)**
+
+---
+
+## Backend
+
+Three optional files run in Electron's main process:
+
+```js
+// backend.js — runs every startup
+export default ({ ipc, app, Menu }) => {
+  ipc.handle("my-channel", async (e, data) => { /* ... */ });
+  app.on("open-link", url => { /* deep link handler */ });
+  app.on("open-path", filePath => { /* file association handler */ });
+};
+```
+
+**[Backend docs →](https://dustinpoissant.github.io/kempo-app/#/backend)**
 
 ---
 
 ## Icons
 
-Icons are inline SVGs loaded by `<k-icon name="icon-name">`. The lookup searches these directories in order — first match wins:
-
-1. `/icons/` — your `icons/` directory (custom overrides)
-2. `/framework/icons/` — kempo-app's `icons/` directory (window controls)
-3. `/modules/kempo-ui/icons` — kempo-ui's bundled icon set
-
-### Using kempo-ui Icons
-
-kempo-ui ships hundreds of icons (Google Material Symbols). Use the CLI tools to find and download them:
+SVG icons loaded via `<k-icon name="settings">`. Find and download from Google Material Symbols:
 
 ```sh
-# Search for available icons by keyword
-npx kempo-listicons settings
-npx kempo-listicons home
-npx kempo-listicons arrow
-
-# Download an icon SVG into your icons/ directory
-npx kempo-geticon settings
-npx kempo-geticon home
+npx kempo-icon            # interactive search + download
+npx kempo-listicons arrow # search by keyword
+npx kempo-geticon home    # download → icons/home.svg
 ```
 
-After running `kempo-geticon`, the SVG is saved to `icons/settings.svg` and immediately available as `<k-icon name="settings">`.
-
-### Custom Icons
-
-Place any `.svg` file in your `icons/` directory and reference it by filename (without extension):
-```html
-<k-icon name="my-custom-icon"></k-icon>   <!-- loads icons/my-custom-icon.svg -->
-```
-
-SVGs should have a `viewBox` attribute. `width`, `height`, `fill` are managed automatically.
+**[Icons docs →](https://dustinpoissant.github.io/kempo-app/#/icons)**
 
 ---
 
 ## Theming
 
-Create `theme.css` in your project root to override kempo-css CSS variables. It loads after kempo-css, so anything you set here wins.
+Create `theme.css` to override kempo-css variables. Light/dark mode is handled automatically.
 
-**Changing the primary color:**
 ```css
 :root {
-  --c_primary: rgb(192, 39, 45);
-  --c_primary__hover: rgb(155, 25, 30);
-  --c_input_accent: rgb(192, 39, 45);
-  --c_highlight: rgba(192, 39, 45, 0.2);
+  --c_primary: #47848F;
+  --c_bg: light-dark(#f9f9f9, #333);
+  --radius: 0.5rem;
 }
 ```
 
-**Key variables:**
-
-| Variable | Controls |
-|----------|----------|
-| `--c_primary` | Buttons, links, active nav, focus rings |
-| `--c_primary__hover` | Hover state for primary elements |
-| `--c_secondary` | Secondary buttons |
-| `--c_bg` | Page background |
-| `--c_bg__alt` | Nav/sidebar/card backgrounds |
-| `--c_border` | Borders everywhere |
-| `--c_danger` | Error/destructive states |
-| `--tc` | Base text color |
-| `--tc_primary` | Accent text, active states |
-| `--tc_muted` | Subdued/helper text |
-| `--ff_body` | Body font family |
-| `--fs_base` | Base font size |
-| `--spacer` | Base spacing unit |
-| `--radius` | Border radius |
-| `--animation_ms` | Transition duration |
-
-kempo-css supports light/dark mode automatically via `light-dark()`. Use `<k-theme-switcher>` to let users toggle it.
+**[Theming docs →](https://dustinpoissant.github.io/kempo-app/#/theming)** · **[kempo-css docs →](https://dustinpoissant.github.io/kempo-css/)**
 
 ---
 
-## kempo-css Utility Classes
+## AI-Assisted Development
 
-kempo-css provides utility classes for layout and spacing. Avoid writing custom CSS for things it covers:
-
-| Need | Class |
-|------|-------|
-| Flex row (wrapping) | `row` |
-| Flex grow | `flex-1`, `flex-2` |
-| Padding (all) | `p` |
-| Padding x / y | `px` / `py` |
-| Padding half | `pxh` / `pyh` |
-| Margin x / y | `mx` / `my` |
-| Border top+bottom | `by` |
-| Border left+right | `bx` |
-| Alt background | `bg-alt` |
-| Muted text | `tc-muted` |
-| Primary text | `tc-primary` |
-| Full width | `full` |
-| Hide | `d-n` |
-| Grid | `d-g` |
-
----
-
-## Renderer API (`window.api`)
-
-Available in any page HTML fragment or script:
-
-```js
-// Database — each table is a separate JSON file
-const settings = window.api.jsonDB("settings");       // get a table handle
-await settings.get()                              // { key: value, ... }
-await settings.get("theme")                       // "dark"
-await settings.set("theme", "dark")
-await settings.delete("theme")
-await settings.has("theme")                       // true / false
-await settings.clear()
-
-// Use any table name — each becomes its own JSON file
-const myData = window.api.jsonDB("myData");
-await myData.set("key1", "value1")
-await myData.get()                                // { key1: "value1" }
-
-// SQL Database — requires better-sqlite3 in consumer project
-await window.api.sqlDB.exec("mydb", "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)")
-await window.api.sqlDB.run("mydb", "INSERT INTO users (name) VALUES (?)", ["Alice"])  // { changes, lastInsertRowid }
-await window.api.sqlDB.get("mydb", "SELECT * FROM users WHERE id = ?", [1])           // single row
-await window.api.sqlDB.all("mydb", "SELECT * FROM users")                             // all rows
-await window.api.sqlDB.close("mydb")                                                  // close connection
-
-// Window controls
-window.api.window.minimize()
-window.api.window.maximize()           // toggles maximize/restore
-window.api.window.close()
-
-// Platform detection
-const platform = await window.api.getPlatform() // "mac" | "win" | "linux"
-```
-
-**Data is persisted** to the OS user data directory. JSON tables and SQLite databases share the same `db/` folder:
-- Windows: `%APPDATA%\<appName>\db\*.json` (JSON) / `*.db` (SQLite)
-- macOS: `~/Library/Application Support/<appName>/db/*.json` (JSON) / `*.db` (SQLite)
-
----
-
-## backend.js — Main Process Hook
-
-If `backend.js` exists in your project root, it runs in Electron's main process at startup. Export a default function that receives `{ ipc, app, Menu }`:
-
-```js
-export default ({ ipc, app, Menu }) => {
-  // Custom IPC handler — callable from renderer via window.api (add to preload)
-  ipc.handle("my-channel", async (event, data) => {
-    const stored = await api.jsonDB("settings").get("someKey");
-    return { result: "ok", stored };
-  });
-};
-```
-
-- `ipc` — Electron's `ipcMain`
-- `app` — Electron's `app` instance
-- `Menu` — Electron's `Menu`
-
----
-
-## Opening Files and Links
-
-### Deep Links (Custom URL Protocol)
-
-The framework automatically registers your `protocolName` (from `package.json`) as the system-wide URL handler. If your `protocolName` is `"my-app"`, clicking `my-app://` links anywhere on the system will open your app.
-
-The framework normalizes the platform differences (macOS `open-url`, Windows/Linux `second-instance`, and cold-launch argv) into a single unified event. Handle it in `backend.js`:
-
-```js
-export default ({ ipc, app }) => {
-  app.on("open-link", url => {
-    // url = "my-app://some/path?foo=bar" — works on all platforms
-    const parsed = new URL(url);
-    console.log(parsed.pathname, parsed.searchParams);
-  });
-};
-```
-
-> **Note:** On Windows, `setAsDefaultProtocolClient` only fully works for packaged apps (not during development). On macOS it works in development.
-
-### File Associations
-
-To open specific file types (e.g. `.myext`) your app needs to be registered with the OS. This is done at **install time** via a packager like [electron-builder](https://www.electron.build/), not at runtime:
-
-```json
-// electron-builder config (package.json or electron-builder.yml)
-{
-  "fileAssociations": [
-    {
-      "ext": "myext",
-      "name": "My Document",
-      "description": "My App Document",
-      "role": "Editor"
-    }
-  ]
-}
-```
-
-The framework normalizes the platform differences (macOS `open-file` event, Windows/Linux argv) into a single unified event. Handle it in `backend.js`:
-
-```js
-export default ({ ipc, app }) => {
-  app.on("open-path", filePath => {
-    // filePath = "/Users/alice/documents/file.myext" — works on all platforms
-    console.log("Open file:", filePath);
-  });
-};
-```
-
----
-
-## LLM Interaction Tools
-
-kempo-app ships a `kempo-interact` CLI that lets an LLM (or you) inspect and drive the running app via Chrome DevTools Protocol. Start the app in dev mode first:
+Run in dev mode, then use `kempo-interact` to inspect and drive the app:
 
 ```sh
-npm run dev
+npm run dev                              # start with DevTools + CDP
+npx kempo-interact structure             # page overview
+npx kempo-interact screenshot            # take a screenshot
+npx kempo-interact navigate /settings    # navigate to a route
+npx kempo-interact eval "await api.jsonDB('settings').get()"
 ```
 
-Then in another terminal:
-
-```sh
-# Always start with structure or dom to understand the current state
-npm run interact -- structure          # buttons, inputs, links, selects
-npm run interact -- dom                # full page HTML
-
-# Navigation
-npm run interact -- navigate /settings
-
-# Screenshots
-npm run interact -- screenshot                        # saves screenshot.png
-npm run interact -- screenshot path/to/output.png
-
-# Clicking
-npm run interact -- click "#submit-btn"
-npm run interact -- click-text "Save"
-
-# Typing
-npm run interact -- type "#username" "Alice"
-
-# JavaScript evaluation
-npm run interact -- eval "window.route"
-npm run interact -- eval "await window.api.jsonDB('settings').get()"
-npm run interact -- eval "document.title"
-
-# Info
-npm run interact -- title
-npm run interact -- url
-```
-
-### Creating an LLM Skill for Your App
-
-To give your LLM full context about how to build and debug your specific app, create an `AGENTS.md` file in your project root. This file is automatically read by GitHub Copilot and many other LLM tools as project-level instructions.
-
-**Example `AGENTS.md`:**
-
-```markdown
-# My App — Copilot Instructions
-
-## Project
-This is a kempo-app desktop app. Run `npm run dev` to start it, then use
-`npm run interact -- <command>` to inspect and interact with it.
-
-## Pages
-- Home (#/) — dashboard overview
-- Settings (#/settings) — user preferences
-
-## Interact Commands
-Always run `structure` first to understand the current page before clicking.
-
-    npm run interact -- structure
-    npm run interact -- screenshot
-    npm run interact -- navigate /settings
-    npm run interact -- eval "await window.api.jsonDB('settings').get()"
-
-## Database Keys
-- `theme` — "light" | "dark" | "auto"
-- `username` — string
-
-## component usage
-Pages use k-card, k-toggle, k-theme-switcher from kempo-ui.
-Import new components in app.html before using in pages.
-```
-
-The more context you give the LLM about your specific app's structure, data, and pages, the more effectively it can help you build and debug it.
-
----
-
-## App Icon
-
-Place a PNG icon in `media/icon.png` (256×256 or 512×512 recommended) and reference it in `package.json`:
-
-```json
-"appIcon": "media/icon.png"
-```
-
-Electron uses this for the window icon on Windows (taskbar, Alt+Tab) and Linux. On macOS, the `.icns` format is typically used when packaging for distribution (tools like [electron-builder](https://www.electron.build/) handle the conversion).
-
----
-
-## Context Menu
-
-The framework automatically shows a native right-click context menu with smart defaults — no setup required:
-
-- **Editable inputs** → Cut, Copy, Paste
-- **Selected text** → Copy
-- **Dev mode** → Inspect Element (always appended)
-
-### Adding Custom Items
-
-Call `window.api.contextMenu.show(items)` in a `contextmenu` event handler to add extra items above the defaults. Register a global click handler once with `window.api.contextMenu.onClick(cb)`:
-
-```js
-// Register once — e.g. in your app.html <script> block
-window.api.contextMenu.onClick(id => {
-  if(id === "delete") handleDelete();
-  if(id === "rename") handleRename();
-});
-
-// Per-element extra items
-document.getElementById("my-item").addEventListener("contextmenu", () => {
-  window.api.contextMenu.show([
-    { id: "rename", label: "Rename" },
-    { id: "delete", label: "Delete" },
-  ]);
-});
-```
-
-Item objects accept any [Electron MenuItem](https://www.electronjs.org/docs/latest/api/menu-item) field except `click` — use `onClick` instead. A separator is automatically inserted between your items and the framework defaults when both are present.
+**[AI Dev docs →](https://dustinpoissant.github.io/kempo-app/#/ai-dev)**
 
 ---
 
 ## Testing
 
-kempo-app ships shared test infrastructure so you can write browser tests for your components and pages using [kempo-testing-framework](https://github.com/dustinpoissant/kempo-testing-framework). The framework provides a mock `window.api` and a ready-made test page that replaces the Electron environment with a plain browser setup.
-
-### Setup
-
 ```sh
 npm install --save-dev kempo-testing-framework
+npx kempo-test
 ```
 
-Add a test script to your `package.json`:
+Write `.browser-test.js` files for component tests (run in a real browser with mocked Electron API) and `.node-test.js` files for pure logic tests.
+
+**[Testing docs →](https://dustinpoissant.github.io/kempo-app/#/testing)**
+
+---
+
+## npm Scripts
+
+Add these to your `package.json`:
+
 ```json
 "scripts": {
+  "start": "kempo-app",
+  "dev": "kempo-app --dev",
+  "interact": "kempo-interact",
   "test": "npx kempo-test"
 }
 ```
 
-Create a `tests/` directory and write `.browser-test.js` files (or `.node-test.js` for Node-only tests).
-
-### Writing Browser Tests
-
-Every browser test file exports a `page` pointing to the shared test page, an optional `beforeAll` for setup, and a default object of test functions:
-
-```js
-export const page = "/node_modules/kempo-app/testing/test-page.html";
-
-export const beforeAll = async () => {
-  // Dynamic imports — runs in the browser, not Node
-  await import("/modules/kempo-ui/dist/components/Card.js");
-};
-
-export default {
-  "card renders content": async ({ pass, fail }) => {
-    const card = document.createElement("k-card");
-    card.label = "Test";
-    card.innerHTML = "<p>Hello</p>";
-    document.body.appendChild(card);
-    await card.updateComplete;
-    if(card.shadowRoot.querySelector("slot")) pass();
-    else fail("No slot found");
-    card.remove();
-  }
-};
-```
-
-### What the Test Page Provides
-
-**`testing/test-page.html`** sets up three things a browser test needs to run outside Electron:
-
-1. **Import map** — remaps `/modules/` → `/node_modules/` and `/framework/` → `/node_modules/kempo-app/` so protocol-style imports resolve in a plain browser
-2. **`window.api` mock** (via `testing/mocks.js`) — in-memory database, no-op window controls, platform/appName stubs. Matches the full `preload.cjs` API surface
-3. **`window.kempo` config** — browser-relative paths to kempo-css and icon directories
-
-The mock jsonDB store is exposed as `window.__kempoTestDbStore` for direct access in tests.
-
-### Important: No Top-Level Imports
-
-Test files are parsed by Node.js to extract the `page` export before running in the browser. Top-level `import` statements with `/framework/` or `/modules/` paths will fail in Node. Always use dynamic `import()` inside `beforeAll`:
-
-```js
-// BAD — fails when Node parses the file
-import "/modules/kempo-ui/dist/components/Icon.js";
-
-// GOOD — runs only in the browser
-export const beforeAll = async () => {
-  await import("/modules/kempo-ui/dist/components/Icon.js");
-};
-```
-
-### Running Tests
-
-```sh
-npm test
-```
-
-The test runner discovers all `.browser-test.js` and `.node-test.js` files in `tests/` recursively, runs them, and reports results.
-
 ---
 
-## Architecture Overview
+## Links
 
-- **Custom protocol** — all files served via `<protocolName>://app/`. Three zones: `/framework/` (kempo-app internals), `/modules/` (node_modules), and everything else (your project root).
-- **app.html injection** — fetched at startup and injected into the shell. Scripts inside run after injection.
-- **Pages as fragments** — each page is a plain HTML fragment loaded via `<k-import>`. Scripts in fragments run after the HTML renders.
-- **Frameless window** — custom titlebar handles drag, min/max/close. macOS uses native traffic lights; Windows/Linux use custom SVG buttons.
-- **No build step** — ESM throughout, served directly via the custom protocol. Edit files and reload.
+- [Documentation](https://dustinpoissant.github.io/kempo-app/)
+- [kempo-ui Components](https://dustinpoissant.github.io/kempo-ui/)
+- [kempo-css Styles](https://dustinpoissant.github.io/kempo-css/)
+- [GitHub](https://github.com/dustinpoissant/kempo-app)
+- [npm](https://www.npmjs.com/package/kempo-app)
+
+## License
+
+MIT
