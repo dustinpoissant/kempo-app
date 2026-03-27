@@ -29,6 +29,17 @@
 				<tr class="by"><td style="padding:6px 8px" colspan="2"><strong>Notifications</strong></td></tr>
 				<tr class="by"><td style="padding:6px 8px"><code>api.notification.show(opts)</code></td><td style="padding:6px 8px">Show a native OS notification — returns the notification ID</td></tr>
 				<tr class="by"><td style="padding:6px 8px"><code>api.notification.isSupported()</code></td><td style="padding:6px 8px">Check if notifications are supported on this platform</td></tr>
+				<tr class="by"><td style="padding:6px 8px" colspan="2"><strong>File System</strong></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.fs.readFile(path, encoding?)</code></td><td style="padding:6px 8px">Read a file — defaults to UTF-8</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.fs.writeFile(path, data, encoding?)</code></td><td style="padding:6px 8px">Write a file — defaults to UTF-8</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.fs.appendFile(path, data, encoding?)</code></td><td style="padding:6px 8px">Append to a file</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.fs.readDir(path)</code></td><td style="padding:6px 8px">List directory contents — returns array of filenames</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.fs.mkdir(path, options?)</code></td><td style="padding:6px 8px">Create a directory — pass <code>{ recursive: true }</code> for nested</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.fs.rm(path, options?)</code></td><td style="padding:6px 8px">Remove a file or directory</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.fs.exists(path)</code></td><td style="padding:6px 8px">Check if a path exists — returns <code>true</code> / <code>false</code></td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.fs.stat(path)</code></td><td style="padding:6px 8px">Get file info — size, type, timestamps</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.fs.rename(oldPath, newPath)</code></td><td style="padding:6px 8px">Rename or move a file</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>api.fs.copyFile(src, dest)</code></td><td style="padding:6px 8px">Copy a file</td></tr>
 				<tr class="by"><td style="padding:6px 8px" colspan="2"><strong>Utilities</strong></td></tr>
 				<tr class="by"><td style="padding:6px 8px"><code>api.getPlatform()</code></td><td style="padding:6px 8px">Returns <code>"mac"</code>, <code>"win"</code>, or <code>"linux"</code></td></tr>
 				<tr class="by"><td style="padding:6px 8px"><code>api.getAppName()</code></td><td style="padding:6px 8px">Returns the configured app name</td></tr>
@@ -153,6 +164,73 @@
 	<h5>api.notification.isSupported()</h5>
 	<p>Returns <code>true</code> if the current platform supports notifications.</p>
 	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> supported = <span class="hljs-keyword">await</span> api.<span class="hljs-property">notification</span>.<span class="hljs-title function_">isSupported</span>();<br><span class="hljs-keyword">if</span> (supported) {<br>  api.<span class="hljs-property">notification</span>.<span class="hljs-title function_">show</span>({<br>    <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;Hello&#x27;</span><br>  });<br>}</code></pre>
+
+	<h3>File System</h3>
+	<p>
+		<code>api.fs</code> provides async access to the local file system. All methods use
+		absolute paths and return promises. Encoding defaults to <code>"utf-8"</code> for text
+		operations — pass <code>null</code> to read raw binary data.
+	</p>
+
+	<h5>api.fs.readFile(path, encoding?)</h5>
+	<p>Read a file's contents. Defaults to UTF-8 text. Pass <code>null</code> for binary.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> content = <span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">&#x27;/path/to/file.txt&#x27;</span>);<br><span class="hljs-keyword">const</span> binary = <span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">&#x27;/path/to/image.png&#x27;</span>, <span class="hljs-literal">null</span>);</code></pre>
+
+	<h5>api.fs.writeFile(path, data, encoding?)</h5>
+	<p>Write data to a file, replacing it if it already exists.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">writeFile</span>(<span class="hljs-string">&#x27;/path/to/file.txt&#x27;</span>, <span class="hljs-string">&#x27;Hello, world!&#x27;</span>);</code></pre>
+
+	<h5>api.fs.appendFile(path, data, encoding?)</h5>
+	<p>Append data to the end of a file. Creates the file if it doesn't exist.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">appendFile</span>(<span class="hljs-string">&#x27;/path/to/log.txt&#x27;</span>, <span class="hljs-string">&#x27;New entry\n&#x27;</span>);</code></pre>
+
+	<h5>api.fs.readDir(path)</h5>
+	<p>List the contents of a directory. Returns an array of filenames.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> files = <span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">readDir</span>(<span class="hljs-string">&#x27;/path/to/directory&#x27;</span>);<br><span class="hljs-comment">// [&#x27;file1.txt&#x27;, &#x27;file2.txt&#x27;, &#x27;subfolder&#x27;]</span></code></pre>
+
+	<h5>api.fs.mkdir(path, options?)</h5>
+	<p>Create a directory. Pass <code>{ recursive: true }</code> to create nested directories.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">mkdir</span>(<span class="hljs-string">&#x27;/path/to/new/nested/dir&#x27;</span>, {<br>  <span class="hljs-attr">recursive</span>: <span class="hljs-literal">true</span><br>});</code></pre>
+
+	<h5>api.fs.rm(path, options?)</h5>
+	<p>Remove a file or directory. Pass <code>{ recursive: true, force: true }</code> for directories.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">rm</span>(<span class="hljs-string">&#x27;/path/to/file.txt&#x27;</span>);<br><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">rm</span>(<span class="hljs-string">&#x27;/path/to/directory&#x27;</span>, {<br>  <span class="hljs-attr">recursive</span>: <span class="hljs-literal">true</span>,<br>  <span class="hljs-attr">force</span>: <span class="hljs-literal">true</span><br>});</code></pre>
+
+	<h5>api.fs.exists(path)</h5>
+	<p>Check whether a file or directory exists. Returns <code>true</code> or <code>false</code>.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">if</span> (<span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">exists</span>(<span class="hljs-string">&#x27;/path/to/file.txt&#x27;</span>)) {<br>  <span class="hljs-comment">// file exists</span><br>}</code></pre>
+
+	<h5>api.fs.stat(path)</h5>
+	<p>Get metadata about a file or directory.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> info = <span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">stat</span>(<span class="hljs-string">&#x27;/path/to/file.txt&#x27;</span>);<br><span class="hljs-comment">// { size, isFile, isDirectory, isSymbolicLink, createdAt, modifiedAt, accessedAt }</span></code></pre>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr class="bg-alt">
+					<th style="text-align:left;padding:6px 8px">Property</th>
+					<th style="text-align:left;padding:6px 8px">Type</th>
+					<th style="text-align:left;padding:6px 8px">Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="by"><td style="padding:6px 8px"><code>size</code></td><td style="padding:6px 8px">number</td><td style="padding:6px 8px">File size in bytes</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>isFile</code></td><td style="padding:6px 8px">boolean</td><td style="padding:6px 8px">True if path is a regular file</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>isDirectory</code></td><td style="padding:6px 8px">boolean</td><td style="padding:6px 8px">True if path is a directory</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>isSymbolicLink</code></td><td style="padding:6px 8px">boolean</td><td style="padding:6px 8px">True if path is a symbolic link</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>createdAt</code></td><td style="padding:6px 8px">string</td><td style="padding:6px 8px">ISO 8601 creation timestamp</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>modifiedAt</code></td><td style="padding:6px 8px">string</td><td style="padding:6px 8px">ISO 8601 last-modified timestamp</td></tr>
+				<tr class="by"><td style="padding:6px 8px"><code>accessedAt</code></td><td style="padding:6px 8px">string</td><td style="padding:6px 8px">ISO 8601 last-accessed timestamp</td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<h5>api.fs.rename(oldPath, newPath)</h5>
+	<p>Rename or move a file or directory.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">rename</span>(<span class="hljs-string">&#x27;/path/to/old.txt&#x27;</span>, <span class="hljs-string">&#x27;/path/to/new.txt&#x27;</span>);</code></pre>
+
+	<h5>api.fs.copyFile(src, dest)</h5>
+	<p>Copy a file from one path to another.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">copyFile</span>(<span class="hljs-string">&#x27;/path/to/source.txt&#x27;</span>, <span class="hljs-string">&#x27;/path/to/dest.txt&#x27;</span>);</code></pre>
 
 	<h3>Utilities</h3>
 

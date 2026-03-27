@@ -12,28 +12,39 @@
 	<div class="table-wrapper mb">
 		<table>
 			<thead>
-				<tr class="bg-alt">
-					<th style="text-align:left;padding:6px 8px">Method</th>
-					<th style="text-align:left;padding:6px 8px">Description</th>
+				<tr>
+					<th>Method</th>
+					<th>Description</th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr class="by"><td style="padding:6px 8px" colspan="2"><strong>Database</strong> — <a href="#/database">full docs</a></td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.jsonDB(table)</code></td><td style="padding:6px 8px">Get a <a href="#/database/jsondb">JSON DB</a> table handle — <code>.get()</code>, <code>.set()</code>, <code>.delete()</code>, <code>.has()</code>, <code>.clear()</code></td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.sqlQuery(db, sql)</code></td><td style="padding:6px 8px">Run a <a href="#/database/sqldb">SQL query</a> — SELECT returns rows, everything else returns <code>true</code></td></tr>
-				<tr class="by"><td style="padding:6px 8px" colspan="2"><strong>Window</strong></td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.window.minimize()</code></td><td style="padding:6px 8px">Minimize the window</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.window.maximize()</code></td><td style="padding:6px 8px">Toggle maximize / restore</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.window.close()</code></td><td style="padding:6px 8px">Close the window</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.window.new(options?)</code></td><td style="padding:6px 8px">Open a new window — string route or <code>{ hash, shell, titlebar }</code></td></tr>
-				<tr class="by"><td style="padding:6px 8px" colspan="2"><strong>Notifications</strong></td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.notification.show(opts)</code></td><td style="padding:6px 8px">Show a native OS notification — returns the notification ID</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.notification.isSupported()</code></td><td style="padding:6px 8px">Check if notifications are supported on this platform</td></tr>
-				<tr class="by"><td style="padding:6px 8px" colspan="2"><strong>Utilities</strong></td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.getPlatform()</code></td><td style="padding:6px 8px">Returns <code>"mac"</code>, <code>"win"</code>, or <code>"linux"</code></td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.getAppName()</code></td><td style="padding:6px 8px">Returns the configured app name</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.isDev()</code></td><td style="padding:6px 8px">Returns <code>true</code> if running with <code>--dev</code></td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>api.toggleDevTools()</code></td><td style="padding:6px 8px">Toggle the Chrome DevTools panel</td></tr>
+				<tr><td colspan="2"><strong>Database</strong> — <a href="#/database">full docs</a></td></tr>
+				<tr><td><code>api.jsonDB(table)</code></td><td>Get a <a href="#/database/jsondb">JSON DB</a> table handle — <code>.get()</code>, <code>.set()</code>, <code>.delete()</code>, <code>.has()</code>, <code>.clear()</code></td></tr>
+				<tr><td><code>api.sqlQuery(db, sql)</code></td><td>Run a <a href="#/database/sqldb">SQL query</a> — SELECT returns rows, everything else returns <code>true</code></td></tr>
+				<tr><td colspan="2"><strong>Window</strong></td></tr>
+				<tr><td><code>api.window.minimize()</code></td><td>Minimize the window</td></tr>
+				<tr><td><code>api.window.maximize()</code></td><td>Toggle maximize / restore</td></tr>
+				<tr><td><code>api.window.close()</code></td><td>Close the window</td></tr>
+				<tr><td><code>api.window.new(options?)</code></td><td>Open a new window — string route or <code>{ hash, shell, titlebar }</code></td></tr>
+				<tr><td colspan="2"><strong>Notifications</strong></td></tr>
+				<tr><td><code>api.notification.show(opts)</code></td><td>Show a native OS notification — returns the notification ID</td></tr>
+				<tr><td><code>api.notification.isSupported()</code></td><td>Check if notifications are supported on this platform</td></tr>
+				<tr><td colspan="2"><strong>File System</strong></td></tr>
+				<tr><td><code>api.fs.readFile(path, encoding?)</code></td><td>Read a file — defaults to UTF-8</td></tr>
+				<tr><td><code>api.fs.writeFile(path, data, encoding?)</code></td><td>Write a file — defaults to UTF-8</td></tr>
+				<tr><td><code>api.fs.appendFile(path, data, encoding?)</code></td><td>Append to a file</td></tr>
+				<tr><td><code>api.fs.readDir(path)</code></td><td>List directory contents — returns array of filenames</td></tr>
+				<tr><td><code>api.fs.mkdir(path, options?)</code></td><td>Create a directory — pass <code>{ recursive: true }</code> for nested</td></tr>
+				<tr><td><code>api.fs.rm(path, options?)</code></td><td>Remove a file or directory</td></tr>
+				<tr><td><code>api.fs.exists(path)</code></td><td>Check if a path exists — returns <code>true</code> / <code>false</code></td></tr>
+				<tr><td><code>api.fs.stat(path)</code></td><td>Get file info — size, type, timestamps</td></tr>
+				<tr><td><code>api.fs.rename(oldPath, newPath)</code></td><td>Rename or move a file</td></tr>
+				<tr><td><code>api.fs.copyFile(src, dest)</code></td><td>Copy a file</td></tr>
+				<tr><td colspan="2"><strong>Utilities</strong></td></tr>
+				<tr><td><code>api.getPlatform()</code></td><td>Returns <code>"mac"</code>, <code>"win"</code>, or <code>"linux"</code></td></tr>
+				<tr><td><code>api.getAppName()</code></td><td>Returns the configured app name</td></tr>
+				<tr><td><code>api.isDev()</code></td><td>Returns <code>true</code> if running with <code>--dev</code></td></tr>
+				<tr><td><code>api.toggleDevTools()</code></td><td>Toggle the Chrome DevTools panel</td></tr>
 			</tbody>
 		</table>
 	</div>
@@ -107,20 +118,20 @@
 	<div class="table-wrapper mb">
 		<table>
 			<thead>
-				<tr class="bg-alt">
-					<th style="text-align:left;padding:6px 8px">Option</th>
-					<th style="text-align:left;padding:6px 8px">Type</th>
-					<th style="text-align:left;padding:6px 8px">Description</th>
+				<tr>
+					<th>Option</th>
+					<th>Type</th>
+					<th>Description</th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr class="by"><td style="padding:6px 8px"><code>title</code></td><td style="padding:6px 8px">string</td><td style="padding:6px 8px">Notification title. Defaults to the app name.</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>body</code></td><td style="padding:6px 8px">string</td><td style="padding:6px 8px">Notification body text.</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>icon</code></td><td style="padding:6px 8px">string</td><td style="padding:6px 8px">App-root-relative image path. Defaults to the app icon.</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>silent</code></td><td style="padding:6px 8px">boolean</td><td style="padding:6px 8px">Suppress the OS notification sound.</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>subtitle</code></td><td style="padding:6px 8px">string</td><td style="padding:6px 8px">Secondary line below the title. macOS only.</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>urgency</code></td><td style="padding:6px 8px"><code>"normal"</code> | <code>"critical"</code> | <code>"low"</code></td><td style="padding:6px 8px">Notification priority. Linux only.</td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>timeoutType</code></td><td style="padding:6px 8px"><code>"default"</code> | <code>"never"</code></td><td style="padding:6px 8px">Controls auto-dismiss. Linux and Windows only.</td></tr>
+				<tr><td><code>title</code></td><td>string</td><td>Notification title. Defaults to the app name.</td></tr>
+				<tr><td><code>body</code></td><td>string</td><td>Notification body text.</td></tr>
+				<tr><td><code>icon</code></td><td>string</td><td>App-root-relative image path. Defaults to the app icon.</td></tr>
+				<tr><td><code>silent</code></td><td>boolean</td><td>Suppress the OS notification sound.</td></tr>
+				<tr><td><code>subtitle</code></td><td>string</td><td>Secondary line below the title. macOS only.</td></tr>
+				<tr><td><code>urgency</code></td><td><code>"normal"</code> | <code>"critical"</code> | <code>"low"</code></td><td>Notification priority. Linux only.</td></tr>
+				<tr><td><code>timeoutType</code></td><td><code>"default"</code> | <code>"never"</code></td><td>Controls auto-dismiss. Linux and Windows only.</td></tr>
 			</tbody>
 		</table>
 	</div>
@@ -129,16 +140,16 @@
 	<div class="table-wrapper mb">
 		<table>
 			<thead>
-				<tr class="bg-alt">
-					<th style="text-align:left;padding:6px 8px">Event</th>
-					<th style="text-align:left;padding:6px 8px">Fired when</th>
-					<th style="text-align:left;padding:6px 8px"><code>event.detail</code></th>
+				<tr>
+					<th>Event</th>
+					<th>Fired when</th>
+					<th><code>event.detail</code></th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr class="by"><td style="padding:6px 8px"><code>notification:click</code></td><td style="padding:6px 8px">User clicks the notification</td><td style="padding:6px 8px"><code>{ id }</code></td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>notification:close</code></td><td style="padding:6px 8px">Notification is dismissed</td><td style="padding:6px 8px"><code>{ id }</code></td></tr>
-				<tr class="by"><td style="padding:6px 8px"><code>notification:reply</code></td><td style="padding:6px 8px">User submits inline reply (macOS)</td><td style="padding:6px 8px"><code>{ id, reply }</code></td></tr>
+				<tr><td><code>notification:click</code></td><td>User clicks the notification</td><td><code>{ id }</code></td></tr>
+				<tr><td><code>notification:close</code></td><td>Notification is dismissed</td><td><code>{ id }</code></td></tr>
+				<tr><td><code>notification:reply</code></td><td>User submits inline reply (macOS)</td><td><code>{ id, reply }</code></td></tr>
 			</tbody>
 		</table>
 	</div>
@@ -147,12 +158,79 @@
 			<button id="notify-btn">Send Test Notification</button>
 			<span id="notify-support" class="tc-muted" style="font-size:.875rem"></span>
 		</div>
-		<pre id="notify-output" class="bg-alt" style="padding:8px; border-radius:var(--radius); margin-top:8px; white-space:pre-wrap">Waiting for notification events…</pre>
+		<pre id="notify-output" style="padding:8px; border-radius:var(--radius); margin-top:8px; white-space:pre-wrap">Waiting for notification events…</pre>
 	</div>
 
 	<h5>api.notification.isSupported()</h5>
 	<p>Returns <code>true</code> if the current platform supports notifications.</p>
 	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> supported = <span class="hljs-keyword">await</span> api.<span class="hljs-property">notification</span>.<span class="hljs-title function_">isSupported</span>();<br><span class="hljs-keyword">if</span> (supported) {<br>  api.<span class="hljs-property">notification</span>.<span class="hljs-title function_">show</span>({<br>    <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;Hello&#x27;</span><br>  });<br>}</code></pre>
+
+	<h3>File System</h3>
+	<p>
+		<code>api.fs</code> provides async access to the local file system. All methods use
+		absolute paths and return promises. Encoding defaults to <code>"utf-8"</code> for text
+		operations — pass <code>null</code> to read raw binary data.
+	</p>
+
+	<h5>api.fs.readFile(path, encoding?)</h5>
+	<p>Read a file's contents. Defaults to UTF-8 text. Pass <code>null</code> for binary.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> content = <span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">&#x27;/path/to/file.txt&#x27;</span>);<br><span class="hljs-keyword">const</span> binary = <span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">&#x27;/path/to/image.png&#x27;</span>, <span class="hljs-literal">null</span>);</code></pre>
+
+	<h5>api.fs.writeFile(path, data, encoding?)</h5>
+	<p>Write data to a file, replacing it if it already exists.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">writeFile</span>(<span class="hljs-string">&#x27;/path/to/file.txt&#x27;</span>, <span class="hljs-string">&#x27;Hello, world!&#x27;</span>);</code></pre>
+
+	<h5>api.fs.appendFile(path, data, encoding?)</h5>
+	<p>Append data to the end of a file. Creates the file if it doesn't exist.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">appendFile</span>(<span class="hljs-string">&#x27;/path/to/log.txt&#x27;</span>, <span class="hljs-string">&#x27;New entry\n&#x27;</span>);</code></pre>
+
+	<h5>api.fs.readDir(path)</h5>
+	<p>List the contents of a directory. Returns an array of filenames.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> files = <span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">readDir</span>(<span class="hljs-string">&#x27;/path/to/directory&#x27;</span>);<br><span class="hljs-comment">// [&#x27;file1.txt&#x27;, &#x27;file2.txt&#x27;, &#x27;subfolder&#x27;]</span></code></pre>
+
+	<h5>api.fs.mkdir(path, options?)</h5>
+	<p>Create a directory. Pass <code>{ recursive: true }</code> to create nested directories.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">mkdir</span>(<span class="hljs-string">&#x27;/path/to/new/nested/dir&#x27;</span>, {<br>  <span class="hljs-attr">recursive</span>: <span class="hljs-literal">true</span><br>});</code></pre>
+
+	<h5>api.fs.rm(path, options?)</h5>
+	<p>Remove a file or directory. Pass <code>{ recursive: true, force: true }</code> for directories.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">rm</span>(<span class="hljs-string">&#x27;/path/to/file.txt&#x27;</span>);<br><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">rm</span>(<span class="hljs-string">&#x27;/path/to/directory&#x27;</span>, {<br>  <span class="hljs-attr">recursive</span>: <span class="hljs-literal">true</span>,<br>  <span class="hljs-attr">force</span>: <span class="hljs-literal">true</span><br>});</code></pre>
+
+	<h5>api.fs.exists(path)</h5>
+	<p>Check whether a file or directory exists. Returns <code>true</code> or <code>false</code>.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">if</span> (<span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">exists</span>(<span class="hljs-string">&#x27;/path/to/file.txt&#x27;</span>)) {<br>  <span class="hljs-comment">// file exists</span><br>}</code></pre>
+
+	<h5>api.fs.stat(path)</h5>
+	<p>Get metadata about a file or directory.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> info = <span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">stat</span>(<span class="hljs-string">&#x27;/path/to/file.txt&#x27;</span>);<br><span class="hljs-comment">// { size, isFile, isDirectory, isSymbolicLink, createdAt, modifiedAt, accessedAt }</span></code></pre>
+	<div class="table-wrapper mb">
+		<table>
+			<thead>
+				<tr>
+					<th>Property</th>
+					<th>Type</th>
+					<th>Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr><td><code>size</code></td><td>number</td><td>File size in bytes</td></tr>
+				<tr><td><code>isFile</code></td><td>boolean</td><td>True if path is a regular file</td></tr>
+				<tr><td><code>isDirectory</code></td><td>boolean</td><td>True if path is a directory</td></tr>
+				<tr><td><code>isSymbolicLink</code></td><td>boolean</td><td>True if path is a symbolic link</td></tr>
+				<tr><td><code>createdAt</code></td><td>string</td><td>ISO 8601 creation timestamp</td></tr>
+				<tr><td><code>modifiedAt</code></td><td>string</td><td>ISO 8601 last-modified timestamp</td></tr>
+				<tr><td><code>accessedAt</code></td><td>string</td><td>ISO 8601 last-accessed timestamp</td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<h5>api.fs.rename(oldPath, newPath)</h5>
+	<p>Rename or move a file or directory.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">rename</span>(<span class="hljs-string">&#x27;/path/to/old.txt&#x27;</span>, <span class="hljs-string">&#x27;/path/to/new.txt&#x27;</span>);</code></pre>
+
+	<h5>api.fs.copyFile(src, dest)</h5>
+	<p>Copy a file from one path to another.</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">await</span> api.<span class="hljs-property">fs</span>.<span class="hljs-title function_">copyFile</span>(<span class="hljs-string">&#x27;/path/to/source.txt&#x27;</span>, <span class="hljs-string">&#x27;/path/to/dest.txt&#x27;</span>);</code></pre>
 
 	<h3>Utilities</h3>
 

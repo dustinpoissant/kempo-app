@@ -59,4 +59,18 @@ contextBridge.exposeInMainWorld("api", {
     show: (items) => ipcRenderer.send("contextmenu:extra-items", items),
     onClick: (cb) => ipcRenderer.on("contextmenu:click", (e, id) => cb(id)),
   },
+
+  // File System
+  fs: {
+    readFile: (filePath, encoding) => ipcRenderer.invoke("fs:readFile", filePath, encoding),
+    writeFile: (filePath, data, encoding) => ipcRenderer.invoke("fs:writeFile", filePath, data, encoding),
+    appendFile: (filePath, data, encoding) => ipcRenderer.invoke("fs:appendFile", filePath, data, encoding),
+    readDir: (dirPath) => ipcRenderer.invoke("fs:readDir", dirPath),
+    mkdir: (dirPath, options) => ipcRenderer.invoke("fs:mkdir", dirPath, options),
+    rm: (filePath, options) => ipcRenderer.invoke("fs:rm", filePath, options),
+    exists: (filePath) => ipcRenderer.invoke("fs:exists", filePath),
+    stat: (filePath) => ipcRenderer.invoke("fs:stat", filePath),
+    rename: (oldPath, newPath) => ipcRenderer.invoke("fs:rename", oldPath, newPath),
+    copyFile: (src, dest) => ipcRenderer.invoke("fs:copyFile", src, dest),
+  },
 });

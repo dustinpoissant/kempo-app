@@ -108,4 +108,54 @@ export default {
     if(preloadSource.includes('"api"')) pass();
     else fail('API name "api" not found');
   },
+
+  'preload.cjs exposes fs.readFile': ({ pass, fail }) => {
+    if(preloadSource.includes('"fs:readFile"')) pass();
+    else fail("fs.readFile not found");
+  },
+
+  'preload.cjs exposes fs.writeFile': ({ pass, fail }) => {
+    if(preloadSource.includes('"fs:writeFile"')) pass();
+    else fail("fs.writeFile not found");
+  },
+
+  'preload.cjs exposes fs.appendFile': ({ pass, fail }) => {
+    if(preloadSource.includes('"fs:appendFile"')) pass();
+    else fail("fs.appendFile not found");
+  },
+
+  'preload.cjs exposes fs.readDir': ({ pass, fail }) => {
+    if(preloadSource.includes('"fs:readDir"')) pass();
+    else fail("fs.readDir not found");
+  },
+
+  'preload.cjs exposes fs.mkdir': ({ pass, fail }) => {
+    if(preloadSource.includes('"fs:mkdir"')) pass();
+    else fail("fs.mkdir not found");
+  },
+
+  'preload.cjs exposes fs.rm': ({ pass, fail }) => {
+    if(preloadSource.includes('"fs:rm"')) pass();
+    else fail("fs.rm not found");
+  },
+
+  'preload.cjs exposes fs.exists': ({ pass, fail }) => {
+    if(preloadSource.includes('"fs:exists"')) pass();
+    else fail("fs.exists not found");
+  },
+
+  'preload.cjs exposes fs.stat': ({ pass, fail }) => {
+    if(preloadSource.includes('"fs:stat"')) pass();
+    else fail("fs.stat not found");
+  },
+
+  'preload.cjs exposes fs.rename': ({ pass, fail }) => {
+    if(preloadSource.includes('"fs:rename"')) pass();
+    else fail("fs.rename not found");
+  },
+
+  'preload.cjs exposes fs.copyFile': ({ pass, fail }) => {
+    if(preloadSource.includes('"fs:copyFile"')) pass();
+    else fail("fs.copyFile not found");
+  },
 };

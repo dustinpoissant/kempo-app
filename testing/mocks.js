@@ -45,5 +45,17 @@
       show: () => {},
       onClick: () => {},
     },
+    fs: {
+      readFile: async () => "",
+      writeFile: async () => {},
+      appendFile: async () => {},
+      readDir: async () => [],
+      mkdir: async () => {},
+      rm: async () => {},
+      exists: async () => false,
+      stat: async () => ({ size: 0, isFile: true, isDirectory: false, isSymbolicLink: false, createdAt: new Date().toISOString(), modifiedAt: new Date().toISOString(), accessedAt: new Date().toISOString() }),
+      rename: async () => {},
+      copyFile: async () => {},
+    },
   };
 })();

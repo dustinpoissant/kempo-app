@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, protocol, net, shell, Menu, Notification } from "electron";
 import path from "path";
 import { existsSync, readFileSync, writeFileSync } from "fs";
+import fs from "fs/promises";
 import { pathToFileURL } from "url";
 import { createRequire } from "module";
 import { randomUUID } from "crypto";
@@ -246,6 +247,35 @@ app.whenReady().then(async () => {
   });
 
   /*
+    File System
+  */
+
+  ipcMain.handle("fs:readFile", (e, filePath, encoding) => fs.readFile(filePath, encoding || "utf-8"));
+  ipcMain.handle("fs:writeFile", (e, filePath, data, encoding) => fs.writeFile(filePath, data, encoding || "utf-8"));
+  ipcMain.handle("fs:appendFile", (e, filePath, data, encoding) => fs.appendFile(filePath, data, encoding || "utf-8"));
+  ipcMain.handle("fs:readDir", (e, dirPath) => fs.readdir(dirPath));
+  ipcMain.handle("fs:mkdir", (e, dirPath, options) => fs.mkdir(dirPath, options));
+  ipcMain.handle("fs:rm", (e, filePath, options) => fs.rm(filePath, options));
+  ipcMain.handle("fs:exists", async (e, filePath) => {
+    try { await fs.access(filePath); return true; }
+    catch { return false; }
+  });
+  ipcMain.handle("fs:stat", async (e, filePath) => {
+    const s = await fs.stat(filePath);
+    return {
+      size: s.size,
+      isFile: s.isFile(),
+      isDirectory: s.isDirectory(),
+      isSymbolicLink: s.isSymbolicLink(),
+      createdAt: s.birthtime.toISOString(),
+      modifiedAt: s.mtime.toISOString(),
+      accessedAt: s.atime.toISOString(),
+    };
+  });
+  ipcMain.handle("fs:rename", (e, oldPath, newPath) => fs.rename(oldPath, newPath));
+  ipcMain.handle("fs:copyFile", (e, src, dest) => fs.copyFile(src, dest));
+
+  /*
     Global API — mirrors renderer api so the same code works in both contexts.
     When adding a new method here, always add an identical one to preload.cjs.
   */
@@ -299,6 +329,32 @@ app.whenReady().then(async () => {
     contextMenu: {
       show: () => {},
       onClick: () => {},
+    },
+    fs: {
+      readFile: (filePath, encoding) => fs.readFile(filePath, encoding || "utf-8"),
+      writeFile: (filePath, data, encoding) => fs.writeFile(filePath, data, encoding || "utf-8"),
+      appendFile: (filePath, data, encoding) => fs.appendFile(filePath, data, encoding || "utf-8"),
+      readDir: dirPath => fs.readdir(dirPath),
+      mkdir: (dirPath, options) => fs.mkdir(dirPath, options),
+      rm: (filePath, options) => fs.rm(filePath, options),
+      exists: async filePath => {
+        try { await fs.access(filePath); return true; }
+        catch { return false; }
+      },
+      stat: async filePath => {
+        const s = await fs.stat(filePath);
+        return {
+          size: s.size,
+          isFile: s.isFile(),
+          isDirectory: s.isDirectory(),
+          isSymbolicLink: s.isSymbolicLink(),
+          createdAt: s.birthtime.toISOString(),
+          modifiedAt: s.mtime.toISOString(),
+          accessedAt: s.atime.toISOString(),
+        };
+      },
+      rename: (oldPath, newPath) => fs.rename(oldPath, newPath),
+      copyFile: (src, dest) => fs.copyFile(src, dest),
     },
   };
 
