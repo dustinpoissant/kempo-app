@@ -75,8 +75,13 @@ const baseAPI = {
   },
 };
 
-// Custom API proxy for app/api/*.js files
-const apiProxy = new Proxy(baseAPI, {
+// Expose base API
+contextBridge.exposeInMainWorld("api", baseAPI);
+
+// Add custom API handler after exposure using a getter trap
+// This allows custom functions from api/*.js to be called
+const apiObj = window.api;
+const handler = {
   get: (target, prop) => {
     if(prop in target) return target[prop];
     if(typeof prop === "string" && !prop.startsWith("_")){
@@ -87,6 +92,11 @@ const apiProxy = new Proxy(baseAPI, {
     }
     return undefined;
   }
-});
+};
 
-contextBridge.exposeInMainWorld("api", apiProxy);
+// Create a Proxy after exposure for dynamic API routing
+Object.defineProperty(window, "api", {
+  value: new Proxy(apiObj, handler),
+  writable: false,
+  configurable: false
+});

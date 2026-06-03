@@ -12,9 +12,7 @@ const appArgs = process.argv.slice(2);
 const electronFlags = [];
 if(appArgs.includes("--dev")){
   electronFlags.push("--inspect=5858");
-  if(process.platform !== "win32") {
-    electronFlags.push("--remote-debugging-port=9222");
-  }
+  electronFlags.push("--remote-debugging-port=9222");
 }
 
 const env = { ...process.env, KEMPO_APP_ROOT: process.cwd() };
