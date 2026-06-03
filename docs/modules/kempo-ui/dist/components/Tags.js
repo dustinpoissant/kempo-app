@@ -1,7 +1,12 @@
-import{html,css}from"../lit-all.min.js";import ShadowComponent from"./ShadowComponent.js";export default class Tags extends ShadowComponent{static properties={value:{type:String,reflect:!0},allowedTags:{type:String,reflect:!0,attribute:"allowed-tags"},disallowedTags:{type:String,reflect:!0,attribute:"disallowed-tags"}};constructor(){super(),this.value="",this.allowedTags="",this.disallowedTags=""}firstUpdated(){super.firstUpdated(),this.renderTags()}updated(t){if(super.updated(t),t.has("value")){const a=t.get("value"),e=this.validateTags();e!==this.value?this.value=e:(this.dispatchEvent(new CustomEvent("change",{detail:{oldValue:a,newValue:this.value},bubbles:!0})),this.renderTags())}if(t.has("allowedTags")||t.has("disallowedTags")){const a=t.get("allowedTags")||t.get("disallowedTags"),e=this.allowedTags||this.disallowedTags,s=this.validateTags();if(s!==this.value)this.value=s;else{const s=t.has("allowedTags")?"allowedtagschange":"disallowedtagschange";this.dispatchEvent(new CustomEvent(s,{detail:{oldValue:a,newValue:e},bubbles:!0})),this.renderTags()}}}handleInputChange=()=>{const t=this.shadowRoot.getElementById("tagsInput"),a=t.value.trim();a&&(this.addTag(a),t.value="")};handleInputInput=t=>{if(","===t.data||"insertFromPaste"===t.inputType){const t=this.shadowRoot.getElementById("tagsInput"),a=t.value.split(",").filter(t=>!!t.trim());a.length&&(a.forEach(t=>this.addTag(t.trim())),t.value="")}};async renderTags(){await this.updateComplete;const t=this.shadowRoot.getElementById("tags");t.innerHTML="",this.value&&this.value.split(",").forEach(a=>{const e=new Tag(a.trim(),this);t.appendChild(e)})}addTag(t){const a=new Set(this.value.split(",").filter(t=>!!t.trim()));a.add(t.trim()),this.value=[...a].filter(t=>!!t).join(","),this.dispatchEvent(new CustomEvent("addtag",{detail:{tag:t},bubbles:!0}))}removeTag(t){const a=new Set(this.value.split(",").filter(t=>!!t.trim()));a.delete(t),this.value=[...a].join(","),this.dispatchEvent(new CustomEvent("removetag",{detail:{tag:t},bubbles:!0}))}validateTags(){return this.value.split(",").map(t=>t.trim()).map(t=>{const a=new Set(this.allowedTags.split(",").filter(t=>!!t.trim()));if(a.size)return a.has(t)?t:"";const e=new Set(this.disallowedTags.split(",").filter(t=>!!t.trim()));return e.size&&e.has(t)?"":t}).filter(t=>!!t).join(",")}static styles=css`
+import{html as t,css as e}from"../lit-all.min.js";import a from"./ShadowComponent.js";export default class s extends a{static properties={value:{type:String,reflect:!0},allowedTags:{type:String,reflect:!0,attribute:"allowed-tags"},disallowedTags:{type:String,reflect:!0,attribute:"disallowed-tags"},disabled:{type:Boolean,reflect:!0}};constructor(){super(),this.value="",this.allowedTags="",this.disallowedTags="",this.disabled=!1}firstUpdated(){super.firstUpdated(),this.renderTags()}updated(t){if(super.updated(t),t.has("value")){const e=t.get("value"),a=this.validateTags();a!==this.value?this.value=a:(this.dispatchEvent(new CustomEvent("change",{detail:{oldValue:e,newValue:this.value},bubbles:!0})),this.renderTags())}if(t.has("allowedTags")||t.has("disallowedTags")){const e=t.get("allowedTags")||t.get("disallowedTags"),a=this.allowedTags||this.disallowedTags,s=this.validateTags();if(s!==this.value)this.value=s;else{const s=t.has("allowedTags")?"allowedtagschange":"disallowedtagschange";this.dispatchEvent(new CustomEvent(s,{detail:{oldValue:e,newValue:a},bubbles:!0})),this.renderTags()}}}handleInputChange=()=>{if(this.disabled)return;const t=this.shadowRoot.getElementById("tagsInput"),e=t.value.trim();e&&(this.addTag(e),t.value="")};handleInputInput=t=>{if(!this.disabled&&(","===t.data||"insertFromPaste"===t.inputType)){const t=this.shadowRoot.getElementById("tagsInput"),e=t.value.split(",").filter(t=>!!t.trim());e.length&&(e.forEach(t=>this.addTag(t.trim())),t.value="")}};async renderTags(){await this.updateComplete;const t=this.shadowRoot.getElementById("tags");t.innerHTML="",this.value&&this.value.split(",").forEach(e=>{const a=new i(e.trim(),this);t.appendChild(a)})}addTag(t){const e=new Set(this.value.split(",").filter(t=>!!t.trim()));e.add(t.trim()),this.value=[...e].filter(t=>!!t).join(","),this.dispatchEvent(new CustomEvent("addtag",{detail:{tag:t},bubbles:!0}))}removeTag(t){const e=new Set(this.value.split(",").filter(t=>!!t.trim()));e.delete(t),this.value=[...e].join(","),this.dispatchEvent(new CustomEvent("removetag",{detail:{tag:t},bubbles:!0}))}validateTags(){return this.value.split(",").map(t=>t.trim()).map(t=>{const e=new Set(this.allowedTags.split(",").filter(t=>!!t.trim()));if(e.size)return e.has(t)?t:"";const a=new Set(this.disallowedTags.split(",").filter(t=>!!t.trim()));return a.size&&a.has(t)?"":t}).filter(t=>!!t).join(",")}static styles=e`
 		:host {
 			display: block;
-
+		}
+		:host([disabled]) {
+			opacity: 0.5;
+			cursor: not-allowed;
+			pointer-events: none;
+		}
 		#tagsHolder {
 			display: flex;
 			flex-wrap: wrap;
@@ -40,19 +45,20 @@ import{html,css}from"../lit-all.min.js";import ShadowComponent from"./ShadowComp
 			transition: none;
 			box-shadow: 0 0 0 transparent;
 		}
-	`;render(){return html`
+	`;render(){return t`
 			<label for="tagsInput">
 				<slot></slot>
 				<div id="tagsHolder">
 					<span id="tags"></span>
 					<input 
-						id="tagsInput" 
+						id="tagsInput"
+						?disabled=${this.disabled}
 						@change=${this.handleInputChange}
 						@input=${this.handleInputInput}
 					/>
 				</div>
 			</label>
-		`}}class Tag extends ShadowComponent{constructor(t,a){super(),this.tag=t,this.tagsComponent=a,this.innerHTML=t}handleClick=()=>{this.tagsComponent.removeTag(this.tag)};static styles=css`
+		`}}class i extends a{constructor(t,e){super(),this.tag=t,this.tagsComponent=e,this.innerHTML=t}handleClick=()=>{this.tagsComponent.disabled||this.tagsComponent.removeTag(this.tag)};static styles=e`
 		:host {
 			display: inline-block;
 			width: min-content;
@@ -66,4 +72,4 @@ import{html,css}from"../lit-all.min.js";import ShadowComponent from"./ShadowComp
 		:host(:hover) {
 			text-decoration: line-through;
 		}
-	`;render(){return html`<span @click=${this.handleClick}><slot></slot></span>`}}customElements.define("k-tags",Tags),customElements.define("k-tag",Tag);
+	`;render(){return t`<span @click=${this.handleClick}><slot></slot></span>`}}customElements.define("k-tags",s),customElements.define("k-tag",i);

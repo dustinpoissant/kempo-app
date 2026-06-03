@@ -1,1 +1,0 @@
-const wait=e=>new Promise(i=>new Timeout(i,e)),waitFrmaes=(e=1)=>new Promise(i=>{let n=0;requestAnimationFrame(function t(){n++,n>=e?i():requestAnimationFrame(t)})});

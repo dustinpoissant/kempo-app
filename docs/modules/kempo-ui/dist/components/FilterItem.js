@@ -1,4 +1,4 @@
-import ShadowComponent from"./ShadowComponent.js";import{html,css}from"../lit-all.min.js";export default class FilterItem extends ShadowComponent{render(){return html`<slot></slot>`}static styles=css`
+import t from"./ShadowComponent.js";import{html as o,css as s}from"../lit-all.min.js";export default class e extends t{render(){return o`<slot></slot>`}static styles=s`
 		:host {
 			display: contents;
 		}
@@ -8,4 +8,4 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css}from"../lit-al
 		:host([kb-focus]) ::slotted(a) {
 			background: rgba(128,128,128,.25);
 		}
-	`}customElements.define("k-filter-item",FilterItem);
+	`}customElements.define("k-filter-item",e);

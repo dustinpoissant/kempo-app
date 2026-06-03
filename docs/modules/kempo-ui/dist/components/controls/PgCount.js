@@ -1,0 +1,1 @@
+import t from"./Control.js";import{html as e}from"../../lit-all.min.js";export default class s extends t{static hostEvents=["page-change"];render(){return e`<span>${this.host?.totalPages??1}</span>`}}customElements.define("kc-pg-count",s);

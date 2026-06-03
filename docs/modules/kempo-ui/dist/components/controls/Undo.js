@@ -1,0 +1,1 @@
+import t from"./ButtonControl.js";import{html as o}from"../../lit-all.min.js";import"../Icon.js";export default class e extends t{static requires=["undo"];connectedCallback(){super.connectedCallback(),this.hasAttribute("title")||(this.title="Undo")}handleAction(){this.host?.undo?.()}render(){return o`<slot><k-icon name="undo"></k-icon></slot>`}}customElements.define("kc-undo",e);

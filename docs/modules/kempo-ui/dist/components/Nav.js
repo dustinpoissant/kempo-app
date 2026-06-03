@@ -1,4 +1,4 @@
-import{html,css}from"../lit-all.min.js";import ShadowComponent from"./ShadowComponent.js";export default class Nav extends ShadowComponent{static properties={fixed:{type:Boolean,reflect:!0}};constructor(){super(),this.fixed=!1}render(){return html`<nav><slot></slot></nav>`}static styles=css`
+import{html as t,css as e}from"../lit-all.min.js";import i from"./ShadowComponent.js";export default class o extends i{static properties={fixed:{type:Boolean,reflect:!0}};constructor(){super(),this.fixed=!1}render(){return t`<nav><slot></slot></nav>`}static styles=e`
     :host {
       display: block;
     }
@@ -24,4 +24,4 @@ import{html,css}from"../lit-all.min.js";import ShadowComponent from"./ShadowComp
       padding: var(--spacer) !important;
       text-decoration: none !important;
     }
-  `}customElements.define("k-nav",Nav);
+  `}customElements.define("k-nav",o);
