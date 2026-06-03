@@ -85,6 +85,7 @@ const apiProxy = new Proxy(baseAPI, {
         return result;
       });
     }
+    return undefined;
   }
 });
 
