@@ -74,7 +74,22 @@ const resolvePath = pathname => {
     const parts = modulePath.split("/");
     const pkgName = parts[0].startsWith("@") ? parts.slice(0, 2).join("/") : parts[0];
     const rest = parts.slice(pkgName.split("/").length).join("/");
-    const pkgDir = path.dirname(appRequire.resolve(`${pkgName}/package.json`));
+
+    let pkgDir;
+    try {
+      // Try to resolve package.json (this may fail if exports field restricts it)
+      pkgDir = path.dirname(appRequire.resolve(`${pkgName}/package.json`));
+    } catch {
+      // Fallback: look for the module in node_modules
+      const searchPaths = appRequire.resolve.paths(pkgName);
+      if(searchPaths && searchPaths.length > 0) {
+        pkgDir = path.join(searchPaths[0], pkgName);
+      } else {
+        // Last resort: construct the path assuming it's in node_modules
+        pkgDir = path.join(appRoot, 'node_modules', pkgName);
+      }
+    }
+
     return path.join(pkgDir, rest);
   }
   return path.join(appRoot, pathname);

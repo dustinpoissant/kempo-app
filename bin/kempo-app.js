@@ -14,7 +14,10 @@ if(appArgs.includes("--dev")){
   electronFlags.push("--inspect=5858", "--remote-debugging-port=9222");
 }
 
+const env = { ...process.env, KEMPO_APP_ROOT: process.cwd() };
+delete env.ELECTRON_RUN_AS_NODE;
+
 spawn(electronPath, [...electronFlags, mainScript, ...appArgs], {
   stdio: "inherit",
-  env: { ...process.env, KEMPO_APP_ROOT: process.cwd() },
+  env,
 }).on("exit", code => process.exit(code ?? 0));
