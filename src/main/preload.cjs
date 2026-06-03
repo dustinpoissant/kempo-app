@@ -11,7 +11,7 @@ ipcRenderer.on("notification:reply", (e, id, reply) => {
   window.dispatchEvent(new CustomEvent("notification:reply", { detail: { id, reply } }));
 });
 
-contextBridge.exposeInMainWorld("api", {
+const baseAPI = {
   // JSON Database — returns a table proxy: jsonDB("settings").get("key")
   jsonDB: (table) => ({
     get: (key) => ipcRenderer.invoke("db:get", table, key),
@@ -73,4 +73,19 @@ contextBridge.exposeInMainWorld("api", {
     rename: (oldPath, newPath) => ipcRenderer.invoke("fs:rename", oldPath, newPath),
     copyFile: (src, dest) => ipcRenderer.invoke("fs:copyFile", src, dest),
   },
+};
+
+// Custom API proxy for app/api/*.js files
+const apiProxy = new Proxy(baseAPI, {
+  get: (target, prop) => {
+    if(prop in target) return target[prop];
+    if(typeof prop === "string" && !prop.startsWith("_")){
+      return (...args) => ipcRenderer.invoke(`api:${prop}`, ...args).then(result => {
+        if(result && result.__error) throw new Error(result.message);
+        return result;
+      });
+    }
+  }
 });
+
+contextBridge.exposeInMainWorld("api", apiProxy);

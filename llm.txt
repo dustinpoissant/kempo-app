@@ -502,8 +502,9 @@ Startup sequence:
 1. Framework init (JSON DB + SQL DB available)
 2. `init.js` (first launch) or `update.js` (version change)
 3. Schema sync (create/migrate tables from `schema/`)
-4. `backend.js`
-5. Window creation
+4. Custom API registration (from `api/` directory)
+5. `backend.js`
+6. Window creation
 
 ```js
 // backend.js
@@ -530,6 +531,88 @@ export default ({ ipc, app, Menu }) => {
   });
 };
 ```
+
+### Custom API Routes
+
+Create an `api/` directory to define custom backend functions callable from the frontend. Each `.js` file in `api/` automatically exports a function accessible via `window.api.functionName()`.
+
+**Directory structure:**
+```
+api/
+  runCommand.js     → await window.api.runCommand()
+  getFile.js        → await window.api.getFile()
+  saveData.js       → await window.api.saveData()
+```
+
+**API file format:**
+
+Each file must export a default async function. It receives arguments from the frontend call and returns a value.
+
+```js
+// api/runCommand.js
+import { execSync } from "child_process";
+
+export default async function runCommand(cmd, ...args) {
+  try {
+    const output = execSync(`${cmd} ${args.join(" ")}`, { encoding: "utf8" });
+    return { success: true, output };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+```
+
+```js
+// api/getFile.js
+import { readFileSync } from "fs";
+
+export default async function getFile(filePath) {
+  return readFileSync(filePath, "utf8");
+}
+```
+
+```js
+// api/saveData.js
+import { writeFileSync } from "fs";
+
+export default async function saveData(filePath, content) {
+  writeFileSync(filePath, content, "utf8");
+  return { saved: true };
+}
+```
+
+**Calling from frontend:**
+
+```js
+// pages/index.html or app.js
+const result = await window.api.runCommand("ls", "-la");
+console.log(result);
+
+const fileContent = await window.api.getFile("/path/to/file.txt");
+
+await window.api.saveData("/path/to/file.txt", "new content");
+```
+
+**Error handling:**
+
+If a backend function throws an error, the promise rejects with the error message. Wrap calls in try/catch:
+
+```js
+try {
+  const result = await window.api.runCommand("invalid-cmd");
+} catch (error) {
+  console.error("Backend error:", error.message);
+}
+```
+
+**Key patterns:**
+
+- Files are loaded on startup — restart the app to pick up new files
+- Only `.js` files in `api/` are loaded; subdirectories are ignored
+- API function names are case-sensitive (file `myFunc.js` → `window.api.myFunc()`)
+- Functions can be async or sync (always return a Promise to frontend)
+- Full Node.js access: `fs`, `child_process`, database, CLI tools, etc.
+- Use this for CLI wrappers, file operations, background tasks, anything the frontend can't do
 
 ### Context Menu
 

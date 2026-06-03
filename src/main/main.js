@@ -439,6 +439,38 @@ app.whenReady().then(async () => {
     }
   }
 
+  /*
+    File-Based API System
+  */
+
+  const apiDir = path.join(appRoot, "api");
+  if(existsSync(apiDir)){
+    try {
+      const files = await fs.readdir(apiDir);
+      for(const file of files){
+        if(!file.endsWith(".js")) continue;
+        const apiName = file.slice(0, -3);
+        const apiPath = path.join(apiDir, file);
+        try {
+          const { default: handler } = await import(pathToFileURL(apiPath).href);
+          if(typeof handler === "function"){
+            ipcMain.handle(`api:${apiName}`, async (event, ...args) => {
+              try {
+                return await handler(...args);
+              } catch(e){
+                return { __error: true, message: e.message, stack: e.stack };
+              }
+            });
+          }
+        } catch(e){
+          console.error(`Failed to load API ${apiName}:`, e);
+        }
+      }
+    } catch(e){
+      console.error("Failed to scan api directory:", e);
+    }
+  }
+
   // Emit cold-launch open events after backend hook so listeners are registered
   const initialUrl = process.argv.find(arg => arg.startsWith(`${schemeName}://`));
   if(initialUrl) app.emit("open-link", initialUrl);

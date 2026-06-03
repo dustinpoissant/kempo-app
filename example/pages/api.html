@@ -251,6 +251,37 @@
 	<p>Toggle the Chrome DevTools panel for the current window.</p>
 	<pre><code class="hljs javascript">api.<span class="hljs-title function_">toggleDevTools</span>();</code></pre>
 
+	<h3>Custom API Routes</h3>
+	<p>
+		Define custom backend functions by creating an <code>api/</code> directory in your app root.
+		Each <code>.js</code> file in <code>api/</code> is automatically registered as a callable function.
+		This is the primary way to extend kempo-app with custom backend logic.
+	</p>
+
+	<h5>Creating Custom API Functions</h5>
+	<p>Create an <code>api/</code> directory and add a file for each function:</p>
+	<pre><code class="hljs">api/
+  runCommand.js     → await window.api.runCommand()
+  getFile.js        → await window.api.getFile()
+  saveData.js       → await window.api.saveData()</code></pre>
+
+	<p>Each file must export a default async function:</p>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// api/runCommand.js</span><br><span class="hljs-keyword">import</span> { <span class="hljs-title">execSync</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;child_process&quot;</span>;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">runCommand</span>(<span class="hljs-params">cmd, ...args</span>) {<br>  <span class="hljs-keyword">try</span> {<br>    <span class="hljs-keyword">const</span> output = <span class="hljs-title function_">execSync</span>(<span class="hljs-string">`<span class="hljs-variable">${cmd}</span> <span class="hljs-variable">${args.join(&#x27; &#x27;)}</span>`</span>, { <span class="hljs-attr">encoding</span>: <span class="hljs-string">&quot;utf8&quot;</span> });<br>    <span class="hljs-keyword">return</span> { <span class="hljs-attr">success</span>: <span class="hljs-literal">true</span>, output };<br>  } <span class="hljs-keyword">catch</span> (error) {<br>    <span class="hljs-keyword">return</span> { <span class="hljs-attr">success</span>: <span class="hljs-literal">false</span>, <span class="hljs-attr">error</span>: error.<span class="hljs-property">message</span> };<br>  }<br>}</code></pre>
+
+	<h5>Calling from Frontend</h5>
+	<p>Call custom API functions just like built-in ones:</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> api.<span class="hljs-title function_">runCommand</span>(<span class="hljs-string">&quot;ls&quot;</span>, <span class="hljs-string">&quot;-la&quot;</span>);<br><span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result); <span class="hljs-comment">// { success: true, output: "..." }</span></code></pre>
+
+	<h5>Error Handling</h5>
+	<p>If a custom function throws an error, the promise rejects:</p>
+	<pre><code class="hljs javascript"><span class="hljs-keyword">try</span> {<br>  <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> api.<span class="hljs-title function_">runCommand</span>(<span class="hljs-string">&quot;invalid-cmd&quot;</span>);<br>} <span class="hljs-keyword">catch</span> (error) {<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&quot;Backend error:&quot;</span>, error.<span class="hljs-property">message</span>);<br>}</code></pre>
+
+	<h5>Full Backend Access</h5>
+	<p>Your custom functions have full Node.js access:</p>
+	<pre><code class="hljs javascript"><span class="hljs-comment">// api/getFile.js — read files</span><br><span class="hljs-keyword">import</span> { <span class="hljs-title">readFileSync</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;fs&quot;</span>;<br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-keyword">async</span> <span class="hljs-title function_">function</span>(<span class="hljs-params">filePath</span>) {<br>  <span class="hljs-keyword">return</span> <span class="hljs-title function_">readFileSync</span>(filePath, <span class="hljs-string">&quot;utf8&quot;</span>);<br>}</code></pre>
+
+	<pre><code class="hljs javascript"><span class="hljs-comment">// api/saveData.js — write files</span><br><span class="hljs-keyword">import</span> { <span class="hljs-title">writeFileSync</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;fs&quot;</span>;<br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-keyword">async</span> <span class="hljs-title function_">function</span>(<span class="hljs-params">filePath, content</span>) {<br>  <span class="hljs-title function_">writeFileSync</span>(filePath, content, <span class="hljs-string">&quot;utf8&quot;</span>);<br>  <span class="hljs-keyword">return</span> { <span class="hljs-attr">saved</span>: <span class="hljs-literal">true</span> };<br>}</code></pre>
+
 	<script>
 	(async () => {
 		document.getElementById("platform-display").textContent = await api.getPlatform();
