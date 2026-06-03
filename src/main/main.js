@@ -83,14 +83,17 @@ const resolvePath = pathname => {
       // Fallback: look for the module in node_modules
       const searchPaths = appRequire.resolve.paths(pkgName);
       if(searchPaths && searchPaths.length > 0) {
-        pkgDir = path.join(searchPaths[0], pkgName);
+        // searchPaths contains node_modules directories, use the first one
+        const nodeModulesDir = searchPaths[0];
+        pkgDir = path.join(nodeModulesDir, pkgName);
       } else {
         // Last resort: construct the path assuming it's in node_modules
         pkgDir = path.join(appRoot, 'node_modules', pkgName);
       }
     }
 
-    return path.join(pkgDir, rest);
+    const resolvedPath = path.join(pkgDir, rest);
+    return resolvedPath;
   }
   return path.join(appRoot, pathname);
 };
@@ -185,11 +188,14 @@ app.whenReady().then(async () => {
   protocol.handle(schemeName, async request => {
     try {
       const pathname = decodeURIComponent(new URL(request.url).pathname);
-      const res = await net.fetch(pathToFileURL(resolvePath(pathname)).href, { cache: "no-store" });
+      const resolvedPath = resolvePath(pathname);
+      const fileUrl = pathToFileURL(resolvedPath).href;
+      const res = await net.fetch(fileUrl, { cache: "no-store" });
       const headers = new Headers(res.headers);
       headers.set("Cache-Control", "no-store");
       return new Response(res.body, { status: res.status, headers });
-    } catch {
+    } catch (err) {
+      console.error(`Failed to load ${request.url}:`, err.message);
       return new Response("Not Found", { status: 404 });
     }
   });
