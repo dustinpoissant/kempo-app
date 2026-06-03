@@ -1,4 +1,4 @@
-import{LitElement,html,css}from"../lit-all.min.js";import ShadowComponent from"./ShadowComponent.js";import Icon from"./Icon.js";import drag from"../utils/drag.js";export default class Resize extends ShadowComponent{static properties={resizing:{type:String,reflect:!0},dimention:{type:String,reflect:!0}};constructor(){super(),this.resizing="",this.dimension="",this.startSize={width:0,height:0},this.cleanupFuncs=[]}firstUpdated(){super.firstUpdated(),this.setupDragHandlers()}disconnectedCallback(){super.disconnectedCallback(),this.cleanupFuncs.forEach(e=>e())}dragStartHandler=({element:e})=>{const{width:t,height:i}=this.getBoundingClientRect();this.startSize.width=t,this.startSize.height=i,this.resizing=e.id};dragEndHandler=()=>{this.resizing=""};dragSideHandler=({x:e})=>{this.style.width=this.startSize.width+e+"px"};dragBottomHandler=({y:e})=>{this.style.height=this.startSize.height+e+"px"};dragCornerHandler=({x:e,y:t})=>{this.style.width=this.startSize.width+e+"px",this.style.height=this.startSize.height+t+"px"};setupDragHandlers(){const e=this.shadowRoot.getElementById("side"),t=this.shadowRoot.getElementById("bottom"),i=this.shadowRoot.getElementById("corner");e&&this.cleanupFuncs.push(drag({element:e,startCallback:this.dragStartHandler,endCallback:this.dragEndHandler,callback:this.dragSideHandler,preventScroll:!0})),t&&this.cleanupFuncs.push(drag({element:t,startCallback:this.dragStartHandler,endCallback:this.dragEndHandler,callback:this.dragBottomHandler,preventScroll:!0})),i&&this.cleanupFuncs.push(drag({element:i,startCallback:this.dragStartHandler,endCallback:this.dragEndHandler,callback:this.dragCornerHandler,preventScroll:!0}))}static styles=css`
+import{LitElement as e,html as t,css as i}from"../lit-all.min.js";import s from"./ShadowComponent.js";import r from"./Icon.js";import d from"../utils/drag.js";export default class n extends s{static properties={resizing:{type:String,reflect:!0},dimention:{type:String,reflect:!0},disabled:{type:Boolean,reflect:!0}};constructor(){super(),this.resizing="",this.dimension="",this.disabled=!1,this.startSize={width:0,height:0},this.cleanupFuncs=[]}firstUpdated(){super.firstUpdated(),this.setupDragHandlers()}disconnectedCallback(){super.disconnectedCallback(),this.cleanupFuncs.forEach(e=>e())}dragStartHandler=({element:e})=>{if(this.disabled)return;const{width:t,height:i}=this.getBoundingClientRect();this.startSize.width=t,this.startSize.height=i,this.resizing=e.id};dragEndHandler=()=>{this.resizing=""};dragSideHandler=({x:e})=>{this.disabled||(this.style.width=this.startSize.width+e+"px")};dragBottomHandler=({y:e})=>{this.disabled||(this.style.height=this.startSize.height+e+"px")};dragCornerHandler=({x:e,y:t})=>{this.disabled||(this.style.width=this.startSize.width+e+"px",this.style.height=this.startSize.height+t+"px")};setupDragHandlers(){const e=this.shadowRoot.getElementById("side"),t=this.shadowRoot.getElementById("bottom"),i=this.shadowRoot.getElementById("corner");e&&this.cleanupFuncs.push(d({element:e,startCallback:this.dragStartHandler,endCallback:this.dragEndHandler,callback:this.dragSideHandler,preventScroll:!0})),t&&this.cleanupFuncs.push(d({element:t,startCallback:this.dragStartHandler,endCallback:this.dragEndHandler,callback:this.dragBottomHandler,preventScroll:!0})),i&&this.cleanupFuncs.push(d({element:i,startCallback:this.dragStartHandler,endCallback:this.dragEndHandler,callback:this.dragCornerHandler,preventScroll:!0}))}static styles=i`
 		:host {
 			--handle_size: 1rem;
 
@@ -75,7 +75,17 @@ import{LitElement,html,css}from"../lit-all.min.js";import ShadowComponent from".
 		:host([dimension="width"]) #corner {
 			display: none;
 		}
-	`;render(){return html`
+		/* Disabled: handles can't capture pointer events, so a drag can't
+		   start in the first place; visual cue: handles fade out and the
+		   cursor reverts to default. */
+		:host([disabled]) #side,
+		:host([disabled]) #bottom,
+		:host([disabled]) #corner {
+			pointer-events: none;
+			cursor: default;
+			opacity: 0.4;
+		}
+	`;render(){return t`
 			<div id="main">
 				<slot></slot>
 			</div>
@@ -94,4 +104,4 @@ import{LitElement,html,css}from"../lit-all.min.js";import ShadowComponent from".
 					<path fill="currentColor" d="m12.735 3.0095e-4c-0.77288 0.011702-1.6098 0.36368-2.2773 1.0313l-9.4258 9.4258c-1.1868 1.1868-1.3772 2.908-0.42773 3.8574 0.94943 0.94943 2.6687 0.7571 3.8555-0.42969l9.4258-9.4258c1.1868-1.1868 1.3772-2.906 0.42774-3.8555-0.41537-0.41537-0.977-0.61262-1.5781-0.60352zm0 8.5684c-0.77288 0.011702-1.6098 0.36564-2.2773 1.0332l-0.85744 0.85546c-1.1868 1.1868-1.3772 2.908-0.42773 3.8574 0.94943 0.94943 2.6687 0.7571 3.8555-0.42969l0.85742-0.85742c1.1868-1.1868 1.3772-2.906 0.42773-3.8555-0.41537-0.41537-0.977-0.61262-1.5781-0.60352z" />
 				</svg>
 			</div>
-		`}}customElements.define("k-resize",Resize);
+		`}}customElements.define("k-resize",n);

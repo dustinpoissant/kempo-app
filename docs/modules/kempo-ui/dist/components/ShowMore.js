@@ -1,4 +1,4 @@
-import{LitElement,html,css}from"../lit-all.min.js";import ShadowComponent from"./ShadowComponent.js";import Icon from"./Icon.js";import{boolExists}from"../utils/propConverters.js";export default class ShowMore extends ShadowComponent{static properties={opened:{type:Boolean,converter:boolExists,reflect:!0}};constructor(){super(),this.opened=!1}updated(e){super.updated(e),e.has("opened")&&(this.dispatchEvent(new CustomEvent("change",{detail:{opened:this.opened}})),this.dispatchEvent(new CustomEvent(this.opened?"opened":"closed")))}handleToggleClick=()=>{this.toggle()};more(){this.opened=!0}less(){this.opened=!1}toggle(){this.opened=!this.opened}static styles=css`
+import{LitElement as e,html as o,css as t}from"../lit-all.min.js";import n from"./ShadowComponent.js";import s from"./Icon.js";import{boolExists as d}from"../utils/propConverters.js";export default class i extends n{static properties={opened:{type:Boolean,converter:d,reflect:!0}};constructor(){super(),this.opened=!1}updated(e){super.updated(e),e.has("opened")&&(this.dispatchEvent(new CustomEvent("change",{detail:{opened:this.opened}})),this.dispatchEvent(new CustomEvent(this.opened?"opened":"closed")))}handleToggleClick=()=>{this.toggle()};more(){this.opened=!0}less(){this.opened=!1}toggle(){this.opened=!this.opened}static styles=t`
 		:host {
 			--closed_height: 7rem;
 			
@@ -25,7 +25,7 @@ import{LitElement,html,css}from"../lit-all.min.js";import ShadowComponent from".
 		:host(:not([opened])) #less {
 			display: none;
 		}
-	`;render(){return html`
+	`;render(){return o`
 			<div id="wrapper">
 				<div id="content">
 					<slot></slot>
@@ -39,4 +39,4 @@ import{LitElement,html,css}from"../lit-all.min.js";import ShadowComponent from".
 				</span>
 			</button>
 			</div>
-		`}}customElements.define("k-show-more",ShowMore);
+		`}}customElements.define("k-show-more",i);

@@ -1,0 +1,4 @@
+import t from"./Control.js";import{html as e,css as s}from"../../lit-all.min.js";export default class n extends t{static hostEvents=["change","ready"];static properties={...t.properties,count:{type:Number,state:!0}};constructor(){super(),this.count=0}connectedCallback(){super.connectedCallback(),setTimeout(()=>this.updateCount(),0)}willUpdate(t){super.willUpdate?.(t),this.updateCount()}updateCount(){const t=this.host;if(!t||"function"!=typeof t.getValue)return;const e=t.getValue()||"",s=e.includes("<")?(new DOMParser).parseFromString(e,"text/html").body.innerText||"":e;this.count=s.length}render(){return e`<span class="character-count"><slot name="label">Characters:</slot> ${this.count}</span>`}static styles=[t.styles,s`
+      :host { align-items: center; padding: 0 0.5rem; font-size: 0.875rem; color: var(--tc_muted, #666); }
+      .character-count { display: flex; align-items: center; gap: 0.25rem; }
+    `]}customElements.define("kc-character-count",n);

@@ -1,0 +1,1 @@
+import t from"./ButtonControl.js";import{html as e}from"../../lit-all.min.js";import"../Icon.js";export default class o extends t{static requires=["redo"];connectedCallback(){super.connectedCallback(),this.hasAttribute("title")||(this.title="Redo")}handleAction(){this.host?.redo?.()}render(){return e`<slot><k-icon name="redo"></k-icon></slot>`}}customElements.define("kc-redo",o);

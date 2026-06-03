@@ -1,1 +1,1 @@
-export const boolTrueFalse={fromAttribute:t=>null===t?void 0:"true"===t.toLowerCase(),toAttribute:t=>t?"true":"false"};export const boolExists={fromAttribute:t=>null!==t,toAttribute:t=>t?"":null};
+export const boolTrueFalse={fromAttribute:t=>null===t?void 0:"true"===t.toLowerCase(),toAttribute:t=>t?"true":"false"};export const boolExists={fromAttribute:t=>null!==t,toAttribute:t=>t?"":null};export const commaSeparatedArray=(t=t=>t,o=[])=>({fromAttribute:r=>r?r.split(",").map(o=>t(o.trim())).filter(t=>null!=t):o,toAttribute:t=>t.join(",")});

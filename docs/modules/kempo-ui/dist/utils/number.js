@@ -1,0 +1,1 @@
+export const bound=(t,a,e)=>Math.max(a,Math.min(e,t));export const closest=(t,a)=>a?.length?a.reduce((a,e)=>{const n=Math.abs(e-t),o=Math.abs(a-t);return n<o||n===o&&e>a?e:a}):t;

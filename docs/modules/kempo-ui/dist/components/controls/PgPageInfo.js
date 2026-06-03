@@ -1,0 +1,3 @@
+import s from"./Control.js";import{html as e,css as t}from"../../lit-all.min.js";export default class a extends s{static hostEvents=["page-change"];render(){const s=this.host;return e`<span class="info">Page ${s?.page??1} of ${s?.totalPages??1}</span>`}static styles=[s.styles,t`
+      .info { padding: 0 var(--spacer_q, 0.25rem); white-space: nowrap; }
+    `]}customElements.define("kc-pg-page-info",a);

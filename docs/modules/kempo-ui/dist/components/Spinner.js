@@ -1,4 +1,4 @@
-import{html,css}from"../lit-all.min.js";import ShadowComponent from"./ShadowComponent.js";export default class Spinner extends ShadowComponent{static properties={size:{type:String,reflect:!0},variant:{type:String,reflect:!0}};constructor(){super(),this.size="md",this.variant="spinner"}static styles=css`
+import{html as r,css as n}from"../lit-all.min.js";import s from"./ShadowComponent.js";export default class e extends s{static properties={size:{type:String,reflect:!0},variant:{type:String,reflect:!0}};constructor(){super(),this.size="md",this.variant="spinner"}render(){switch(this.variant){case"dots":return r`<div class="dots"><span></span><span></span><span></span></div>`;case"bars":return r`<div class="bars"><span></span><span></span><span></span><span></span></div>`;case"pulse":return r`<div class="pulse"></div>`;case"ring":return r`<div class="ring"></div>`;default:return r`<div class="spinner"></div>`}}static styles=n`
 		:host {
 			--spinner-size: 2rem;
 			--spinner-border-width: 3px;
@@ -110,4 +110,4 @@ import{html,css}from"../lit-all.min.js";import ShadowComponent from"./ShadowComp
 			75% { border-color: transparent transparent transparent var(--spinner-color); }
 			100% { transform: rotate(360deg); border-color: var(--spinner-color) transparent transparent transparent; }
 		}
-	`;render(){switch(this.variant){case"dots":return html`<div class="dots"><span></span><span></span><span></span></div>`;case"bars":return html`<div class="bars"><span></span><span></span><span></span><span></span></div>`;case"pulse":return html`<div class="pulse"></div>`;case"ring":return html`<div class="ring"></div>`;default:return html`<div class="spinner"></div>`}}}customElements.define("k-spinner",Spinner);
+	`}customElements.define("k-spinner",e);

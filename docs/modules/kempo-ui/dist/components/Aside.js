@@ -1,4 +1,4 @@
-import ShadowComponent from"./ShadowComponent.js";import{html,css,nothing}from"../lit-all.min.js";import{boolTrueFalse}from"../utils/propConverters.js";import"./FocusCapture.js";import"./Icon.js";export default class Aside extends ShadowComponent{static properties={state:{type:String,reflect:!0},side:{type:String,reflect:!0},main:{type:String,reflect:!0},overlayClose:{type:Boolean,reflect:!0,attribute:"overlay-close",converter:boolTrueFalse},escClose:{type:Boolean,reflect:!0,attribute:"esc-close",converter:boolTrueFalse}};constructor(){super(),this.state="offscreen",this.side="left",this.main="overlay",this.overlayClose=!0,this.escClose=!0}overlayClick=()=>{this.overlayClose&&this.hide()};handleKeyDown=e=>{this.escClose&&"Escape"===e.key&&this.hide()};updated(e){if(super.updated(e),e.has("state")){const t=e.get("state");"offscreen"===this.state||"offscreen"!==t&&void 0!==t?"offscreen"===this.state&&void 0!==t&&"offscreen"!==t&&document.removeEventListener("keydown",this.handleKeyDown):document.addEventListener("keydown",this.handleKeyDown),"overlay"===this.main&&("expanded"===this.state?document.body.classList.add("no-scroll"):document.body.classList.remove("no-scroll"));const s="offscreen"===this.state?0:this.getTargetWidth(this.state),a={aside:this,state:this.state,main:this.main,width:s};this.dispatchEvent(new CustomEvent("aside_state_change",{detail:a})),window.dispatchEvent(new CustomEvent("aside_state_change",{detail:a})),this.inert="offscreen"===this.state}}disconnectedCallback(){super.disconnectedCallback(),document.removeEventListener("keydown",this.handleKeyDown),document.body.classList.remove("no-scroll");const e={aside:this,state:"offscreen",main:this.main,width:0};this.dispatchEvent(new CustomEvent("aside_state_change",{detail:e})),window.dispatchEvent(new CustomEvent("aside_state_change",{detail:e}))}expand=()=>this.state="expanded";collapse=()=>this.state="collapsed";hide=()=>this.state="offscreen";toggle=()=>{this.state="expanded"===this.state?"offscreen":"expanded"};getTargetWidth(e){const t=parseFloat(getComputedStyle(document.documentElement).fontSize),s="collapsed"===e?"--collapsed-width":"--width",a=getComputedStyle(this).getPropertyValue(s).trim();return(a?parseFloat(a):"collapsed"===e?3.5:20)*t}render(){const e=html`<aside><slot></slot></aside>`;return"overlay"===this.main?html`
+import e from"./ShadowComponent.js";import{html as t,css as s,nothing as a}from"../lit-all.min.js";import{boolTrueFalse as i}from"../utils/propConverters.js";import"./Dropdown.js";import"./FocusCapture.js";import"./Icon.js";export default class n extends e{static properties={state:{type:String,reflect:!0},side:{type:String,reflect:!0},main:{type:String,reflect:!0},overlayClose:{type:Boolean,reflect:!0,attribute:"overlay-close",converter:i},escClose:{type:Boolean,reflect:!0,attribute:"esc-close",converter:i},persistentId:{type:String,reflect:!0,attribute:"persistent-id"}};constructor(){super(),this.state="offscreen",this.side="left",this.main="overlay",this.overlayClose=!0,this.escClose=!0,this.persistentId=null}overlayClick=()=>{this.overlayClose&&this.hide()};handleKeyDown=e=>{this.escClose&&"Escape"===e.key&&this.hide()};updated(e){if(super.updated(e),e.has("persistentId")&&this.persistentId&&window?.localStorage){const e=window.localStorage.getItem(`aside-persistent-id-${this.persistentId}`);e&&(this.state=e)}if(e.has("state")){const t=e.get("state");"offscreen"===this.state||"offscreen"!==t&&void 0!==t?"offscreen"===this.state&&void 0!==t&&"offscreen"!==t&&document.removeEventListener("keydown",this.handleKeyDown):document.addEventListener("keydown",this.handleKeyDown),"overlay"===this.main&&("expanded"===this.state?document.body.classList.add("no-scroll"):document.body.classList.remove("no-scroll"));const s="offscreen"===this.state?0:this.getTargetWidth(this.state),a={aside:this,state:this.state,main:this.main,width:s};this.dispatchEvent(new CustomEvent("aside_state_change",{detail:a})),window.dispatchEvent(new CustomEvent("aside_state_change",{detail:a})),this.inert="offscreen"===this.state,this.persistentId&&window?.localStorage&&window.localStorage.setItem(`aside-persistent-id-${this.persistentId}`,this.state)}}disconnectedCallback(){super.disconnectedCallback(),document.removeEventListener("keydown",this.handleKeyDown),document.body.classList.remove("no-scroll");const e={aside:this,state:"offscreen",main:this.main,width:0};this.dispatchEvent(new CustomEvent("aside_state_change",{detail:e})),window.dispatchEvent(new CustomEvent("aside_state_change",{detail:e}))}expand=()=>this.state="expanded";collapse=()=>this.state="collapsed";hide=()=>this.state="offscreen";toggle=()=>{this.state="expanded"===this.state?"offscreen":"expanded"};getTargetWidth(e){const t=parseFloat(getComputedStyle(document.documentElement).fontSize),s="collapsed"===e?"--collapsed-width":"--width",a=getComputedStyle(this).getPropertyValue(s).trim();return(a?parseFloat(a):"collapsed"===e?3.5:20)*t}render(){const e=t`<aside><slot></slot></aside>`;return"overlay"===this.main?t`
 				<k-focus-capture>
 					<div id="container">
 						<button id="overlay-btn" @click=${this.overlayClick}>
@@ -7,7 +7,7 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css,nothing}from".
 						${e}
 					</div>
 				</k-focus-capture>
-			`:e}static styles=css`
+			`:e}static styles=s`
 		:host {
 			--bg: var(--c_bg);
 			--border: var(--c_border);
@@ -90,6 +90,8 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css,nothing}from".
 			left: var(--spacer_h);
 		}
 		aside {
+			display: flex;
+			flex-direction: column;
 			position: fixed;
 			top: 0;
 			left: 0;
@@ -119,10 +121,10 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css,nothing}from".
 		}
 		:host([main="push"][state="collapsed"]) aside {
 			width: var(--collapsed-width);
-			transform: translateX(0);
+			transform: none;
 		}
 		:host([main="push"][state="expanded"]) aside {
-			transform: translateX(0);
+			transform: none;
 		}
 		:host([main="overlay"]) aside {
 			width: var(--width);
@@ -131,20 +133,20 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css,nothing}from".
 			transform: translateX(-100%);
 		}
 		:host([main="overlay"][state="expanded"]) aside {
-			transform: translateX(0);
+			transform: none;
 		}
 		:host([main="overlay"][side="right"]) aside {
 			transform: translateX(100%);
 		}
 		:host([main="overlay"][side="right"][state="expanded"]) aside {
-			transform: translateX(0);
+			transform: none;
 		}
-	`}customElements.define("k-aside",Aside);class AsideItem extends ShadowComponent{static properties={icon:{type:String},href:{type:String},active:{type:Boolean,reflect:!0},collapsed:{type:Boolean,reflect:!0},"no-expand":{type:Boolean,attribute:"no-expand"},"hide-when-collapsed":{type:Boolean,attribute:"hide-when-collapsed"}};constructor(){super(),this.icon="",this.href="#",this.active=!1,this.collapsed=!1,this["no-expand"]=!1,this["hide-when-collapsed"]=!1}connectedCallback(){super.connectedCallback(),this.aside=this.closest("k-aside"),this.aside&&(this.collapsed="collapsed"===this.aside.state,this.aside.addEventListener("aside_state_change",this.handleStateChange))}disconnectedCallback(){super.disconnectedCallback(),this.aside&&this.aside.removeEventListener("aside_state_change",this.handleStateChange)}handleStateChange=e=>{const{state:t}=e.detail;"collapsed"===t?this.collapsed=!0:"expanded"===t&&(this.collapsed=!1)};handleClick=e=>{this.collapsed&&!this["no-expand"]&&this.aside&&(e.preventDefault(),this.aside.expand())};render(){return html`
+	`}customElements.define("k-aside",n);class o extends e{static properties={icon:{type:String},href:{type:String},active:{type:Boolean,reflect:!0},collapsed:{type:Boolean,reflect:!0},"no-expand":{type:Boolean,attribute:"no-expand"},"hide-when-collapsed":{type:Boolean,attribute:"hide-when-collapsed"}};constructor(){super(),this.icon="",this.href="#",this.active=!1,this.collapsed=!1,this["no-expand"]=!1,this["hide-when-collapsed"]=!1}connectedCallback(){super.connectedCallback(),this.aside=this.closest("k-aside"),this.inMenu=!!this.closest("k-aside-menu"),this.aside&&!this.inMenu&&(this.collapsed="collapsed"===this.aside.state,this.aside.addEventListener("aside_state_change",this.handleStateChange))}disconnectedCallback(){super.disconnectedCallback(),this.aside&&this.aside.removeEventListener("aside_state_change",this.handleStateChange)}handleStateChange=e=>{const{state:t}=e.detail;"collapsed"===t?this.collapsed=!0:"expanded"===t&&(this.collapsed=!1)};handleClick=e=>{this.collapsed&&!this["no-expand"]&&this.aside&&(e.preventDefault(),this.aside.expand())};render(){return t`
 			<a href="${this.href}" class="item ${this.active?"active bg-primary":""}" @click=${this.handleClick}>
-				${this.icon?html`<k-icon name="${this.icon}"></k-icon>`:this.collapsed?html`<k-icon name="dot"></k-icon>`:nothing}
-				${this.collapsed?nothing:html`<span class="label"><slot></slot></span>`}
+				${this.icon?t`<k-icon name="${this.icon}"></k-icon>`:this.collapsed?t`<k-icon name="dot"></k-icon>`:a}
+				${this.collapsed?a:t`<span class="label"><slot></slot></span>`}
 			</a>
-		`}static styles=css`
+		`}static styles=s`
 		:host {
 			display: block;
 		}
@@ -181,7 +183,7 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css,nothing}from".
 			overflow: hidden;
 			text-overflow: ellipsis;
 		}
-	`}class AsideLabel extends ShadowComponent{static properties={collapsed:{type:Boolean,reflect:!0}};constructor(){super(),this.collapsed=!1}connectedCallback(){super.connectedCallback(),this.aside=this.closest("k-aside"),this.aside&&(this.collapsed="collapsed"===this.aside.state,this.aside.addEventListener("aside_state_change",this.handleStateChange))}disconnectedCallback(){super.disconnectedCallback(),this.aside&&this.aside.removeEventListener("aside_state_change",this.handleStateChange)}handleStateChange=e=>{const{state:t}=e.detail;"collapsed"===t?this.collapsed=!0:"expanded"===t&&(this.collapsed=!1)};render(){return this.collapsed?html`<hr>`:html`<div class="label"><slot></slot></div>`}static styles=css`
+	`}class r extends e{static properties={collapsed:{type:Boolean,reflect:!0}};constructor(){super(),this.collapsed=!1}connectedCallback(){super.connectedCallback(),this.aside=this.closest("k-aside"),this.aside&&(this.collapsed="collapsed"===this.aside.state,this.aside.addEventListener("aside_state_change",this.handleStateChange))}disconnectedCallback(){super.disconnectedCallback(),this.aside&&this.aside.removeEventListener("aside_state_change",this.handleStateChange)}handleStateChange=e=>{const{state:t}=e.detail;"collapsed"===t?this.collapsed=!0:"expanded"===t&&(this.collapsed=!1)};render(){return this.collapsed?t`<hr>`:t`<div class="label"><slot></slot></div>`}static styles=s`
 		:host {
 			display: block;
 			margin: var(--spacer_h) 0;
@@ -206,18 +208,25 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css,nothing}from".
 		:host([collapsed]) hr {
 			margin: var(--spacer_h) 0;
 		}
-	`}class AsideMenu extends ShadowComponent{static properties={icon:{type:String},label:{type:String},open:{type:Boolean,reflect:!0},collapsed:{type:Boolean,reflect:!0},"no-expand":{type:Boolean,attribute:"no-expand"},"hide-when-collapsed":{type:Boolean,attribute:"hide-when-collapsed"}};constructor(){super(),this.icon="",this.label="",this.open=!1,this.collapsed=!1,this["no-expand"]=!1,this["hide-when-collapsed"]=!1}connectedCallback(){super.connectedCallback(),this.aside=this.closest("k-aside"),this.aside&&(this.collapsed="collapsed"===this.aside.state,this.aside.addEventListener("aside_state_change",this.handleStateChange))}disconnectedCallback(){super.disconnectedCallback(),this.aside&&this.aside.removeEventListener("aside_state_change",this.handleStateChange)}handleStateChange=e=>{const{state:t}=e.detail;"collapsed"===t?(this.collapsed=!0,this.open=!1):"expanded"===t&&(this.collapsed=!1)};toggleMenu=()=>{this.collapsed&&!this["no-expand"]&&this.aside?this.aside.expand():this.collapsed||(this.open=!this.open)};render(){return html`
+	`}class d extends e{static properties={icon:{type:String},label:{type:String},open:{type:Boolean,reflect:!0},collapsed:{type:Boolean,reflect:!0},side:{type:String},"no-expand":{type:Boolean,attribute:"no-expand"},"hide-when-collapsed":{type:Boolean,attribute:"hide-when-collapsed"}};constructor(){super(),this.icon="",this.label="",this.open=!1,this.collapsed=!1,this.side="left",this["no-expand"]=!1,this["hide-when-collapsed"]=!1}connectedCallback(){super.connectedCallback(),this.aside=this.closest("k-aside"),this.aside&&(this.collapsed="collapsed"===this.aside.state,this.side=this.aside.side||"left",this.aside.addEventListener("aside_state_change",this.handleStateChange))}disconnectedCallback(){super.disconnectedCallback(),this.aside&&this.aside.removeEventListener("aside_state_change",this.handleStateChange)}handleStateChange=e=>{const{state:t}=e.detail;"collapsed"===t?(this.collapsed=!0,this.open=!1):"expanded"===t&&(this.collapsed=!1),this.side=this.aside?.side||"left"};toggleMenu=()=>{this.collapsed||(this.open=!this.open)};handleCollapsedClick=()=>{this.open=!0,this.aside?.expand()};render(){if(this.collapsed){const e="right"===this.side?"left down":"right down";return t`
+				<k-dropdown open-direction=${e} hover>
+					<button slot="trigger" class="no-btn collapsed-trigger" @click=${this.handleCollapsedClick}>
+						${this.icon?t`<k-icon name="${this.icon}"></k-icon>`:t`<k-icon name="dot"></k-icon>`}
+					</button>
+					<slot></slot>
+				</k-dropdown>
+			`}return t`
 			<div class="menu-container">
 				<button class="no-btn menu-header ${this.open?"open":""}" @click=${this.toggleMenu}>
-					${this.icon?html`<k-icon name="${this.icon}"></k-icon>`:this.collapsed?html`<k-icon name="dot"></k-icon>`:nothing}
-					${this.collapsed?nothing:html`<span class="label">${this.label}</span>`}
-					${this.collapsed?nothing:html`<k-icon class="chevron" name="chevron" direction="${this.open?"down":"right"}"></k-icon>`}
+					${this.icon?t`<k-icon name="${this.icon}"></k-icon>`:a}
+					<span class="label">${this.label}</span>
+					<k-icon class="chevron" name="chevron" direction="${this.open?"down":"right"}"></k-icon>
 				</button>
-				<div class="menu-content ${this.open&&!this.collapsed?"open":""}">
+				<div class="menu-content ${this.open?"open":""}">
 					<slot></slot>
 				</div>
 			</div>
-		`}static styles=css`
+		`}static styles=s`
 		:host {
 			display: block;
 		}
@@ -240,11 +249,28 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css,nothing}from".
 			white-space: nowrap;
 			transition: background var(--animation_ms);
 		}
-		:host([collapsed]) .menu-header {
-			width: auto;
-		}
 		.menu-header:hover {
 			background: var(--c_bg_hover);
+		}
+		.collapsed-trigger {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: var(--spacer_h);
+			color: var(--tc);
+			background: transparent;
+			border: none;
+			appearance: none;
+			border-radius: var(--radius);
+			margin: 0 var(--spacer_h);
+			cursor: pointer;
+			transition: background var(--animation_ms);
+		}
+		.collapsed-trigger:hover {
+			background: var(--c_bg_hover);
+		}
+		k-dropdown {
+			display: block;
 		}
 		k-icon {
 			flex-shrink: 0;
@@ -264,28 +290,25 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css,nothing}from".
 			transition: max-height var(--animation_ms);
 			padding-left: calc(var(--spacer_h) * 2);
 		}
-		:host([collapsed]) .menu-content {
-			padding-left: 0;
-		}
 		.menu-content.open {
 			max-height: 500px;
 		}
 		::slotted(*) {
 			margin: 0.25rem 0;
 		}
-	`}class AsideSpacer extends ShadowComponent{render(){return html`<div></div>`}static styles=css`
+	`}class l extends e{render(){return t`<div></div>`}static styles=s`
 		:host {
 			display: block;
 			flex: 1;
 		}
-	`}class AsideToggle extends ShadowComponent{static properties={collapsed:{type:Boolean,reflect:!0},direction:{type:String}};constructor(){super(),this.collapsed=!1,this.direction="left"}connectedCallback(){super.connectedCallback(),this.aside=this.closest("k-aside"),this.aside&&(this.collapsed="collapsed"===this.aside.state,this.updateDirection(),this.aside.addEventListener("aside_state_change",this.handleStateChange))}disconnectedCallback(){super.disconnectedCallback(),this.aside&&this.aside.removeEventListener("aside_state_change",this.handleStateChange)}handleStateChange=e=>{const{state:t}=e.detail;"collapsed"===t?this.collapsed=!0:"expanded"===t&&(this.collapsed=!1),this.updateDirection()};handleClick=()=>{this.aside&&(this.aside.state="collapsed"===this.aside.state?"expanded":"collapsed")};updateDirection=()=>{const e="right"===this.aside?.side;this.direction=this.collapsed!==e?"right":"left"};render(){return html`
+	`}class c extends e{static properties={collapsed:{type:Boolean,reflect:!0},direction:{type:String}};constructor(){super(),this.collapsed=!1,this.direction="left"}connectedCallback(){super.connectedCallback(),this.aside=this.closest("k-aside"),this.aside&&(this.collapsed="collapsed"===this.aside.state,this.updateDirection(),this.aside.addEventListener("aside_state_change",this.handleStateChange))}disconnectedCallback(){super.disconnectedCallback(),this.aside&&this.aside.removeEventListener("aside_state_change",this.handleStateChange)}handleStateChange=e=>{const{state:t}=e.detail;"collapsed"===t?this.collapsed=!0:"expanded"===t&&(this.collapsed=!1),this.updateDirection()};handleClick=()=>{this.aside&&(this.aside.state="collapsed"===this.aside.state?"expanded":"collapsed")};updateDirection=()=>{const e="right"===this.aside?.side;this.direction=this.collapsed!==e?"right":"left"};render(){return t`
 			<div id="header">
 				<slot></slot>
 				<button id="toggle" @click=${this.handleClick}>
 					<k-icon name="arrow-line" direction=${this.direction}></k-icon>
 				</button>
 			</div>
-		`}static styles=css`
+		`}static styles=s`
 		:host {
 			display: block;
 		}
@@ -311,6 +334,7 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css,nothing}from".
 			width: 2rem;
 			height: 2rem;
 			border: none;
+			appearance: none;
 			background: transparent;
 			color: var(--c_text);
 			cursor: pointer;
@@ -323,4 +347,4 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css,nothing}from".
 		#toggle:hover {
 			background: var(--c_bg_hover);
 		}
-	`}customElements.define("k-aside-item",AsideItem),customElements.define("k-aside-label",AsideLabel),customElements.define("k-aside-menu",AsideMenu),customElements.define("k-aside-spacer",AsideSpacer),customElements.define("k-aside-toggle",AsideToggle);
+	`}customElements.define("k-aside-item",o),customElements.define("k-aside-label",r),customElements.define("k-aside-menu",d),customElements.define("k-aside-spacer",l),customElements.define("k-aside-toggle",c);

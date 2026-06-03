@@ -1,0 +1,1 @@
+export default class t extends HTMLElement{static get observedAttributes(){return["value"]}get value(){return this.getAttribute("value")??this.textContent.trim()}set value(t){this.setAttribute("value",t)}get label(){return this.textContent.trim()}}customElements.define("k-option",t);

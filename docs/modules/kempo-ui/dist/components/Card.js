@@ -1,4 +1,4 @@
-import ShadowComponent from"./ShadowComponent.js";import{html,css}from"../lit-all.min.js";export default class Card extends ShadowComponent{static properties={label:{type:String,reflect:!0}};constructor(){super(),this.label=null}static styles=css`
+import r from"./ShadowComponent.js";import{html as a,css as e}from"../lit-all.min.js";export default class o extends r{static properties={label:{type:String,reflect:!0}};constructor(){super(),this.label=null}static styles=e`
 		:host {
 			display: block;
 		}
@@ -29,9 +29,9 @@ import ShadowComponent from"./ShadowComponent.js";import{html,css}from"../lit-al
 		:host(:not([label])) #label {
 			display: none;
 		}
-	`;render(){return html`
+	`;render(){return a`
 			<div id="card">
 				<div id="label">${this.label}</div>
 				<slot></slot>
 			</div>
-		`}}window.customElements.define("k-card",Card);
+		`}}window.customElements.define("k-card",o);

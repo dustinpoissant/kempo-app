@@ -1,0 +1,1 @@
+import{marked as r}from"./marked.esm.js";export default function e(e,m={}){return r.parse(e||"",{gfm:!0,breaks:!1,...m})}
