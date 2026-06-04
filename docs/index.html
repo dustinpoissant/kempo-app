@@ -83,7 +83,15 @@
     <a href="#/testing" class="nav-link"><k-icon name="labs"></k-icon> Testing</a>
     <a href="#/ai-dev" class="nav-link"><k-icon name="ai"></k-icon> AI Dev</a>
     <div class="flex-1"></div>
-    <k-theme-switcher></k-theme-switcher>
+    <k-theme-switcher
+      class="mh"
+      style="
+        --padding: 0.5rem;
+        --c_active: var(--c_primary);
+        --tc_active: var(--tc_on_primary);
+        --c_inactive__hover: rgba(255, 255, 255, 0.1);
+      "
+    ></k-theme-switcher>
   </nav>
   <div id="page-container"></div>
   <script type="module">
