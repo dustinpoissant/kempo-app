@@ -31,12 +31,12 @@
   "homepage": "https://github.com/dustinpoissant/kempo-app#readme",
   "dependencies": {
     "chrome-remote-interface": "^0.34.0",
-    "electron": "^41.0.1",
+    "electron": "^42.4.1",
     "kempo-ui": "^0.4.21"
   },
   "devDependencies": {
     "highlight.js": "^11.11.1",
     "js-beautify": "^1.15.4",
-    "kempo-testing-framework": "^1.4.5"
+    "kempo-testing-framework": "^1.4.7"
   }
 }
