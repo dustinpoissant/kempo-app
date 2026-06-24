@@ -7,6 +7,10 @@ body { overflow: hidden; }
 /* Full-height column layout for the app shell */
 body { display: flex; flex-direction: column; height: 100vh; }
 
+/* contain:layout makes app-page the containing block for position:fixed descendants
+   (e.g. modals/fullscreen overlays), so they're bounded below the titlebar instead
+   of covering it — see data-overlay-root attribute set in AppPage.js */
 app-page {
 	overflow: auto;
+	contain: layout;
 }
