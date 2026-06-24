@@ -17,6 +17,10 @@ class AppPage extends LightComponent {
     super();
     this.src = "";
     this.persistScroll = true;
+    // Marks this as the mount point for portaled overlays (e.g. kempo-ui's
+    // PhotoViewer.open()) so they're contained below the titlebar instead of
+    // covering it. Paired with `contain: layout` on app-page in app.css.
+    this.setAttribute("data-overlay-root", "");
   }
 
   willUpdate(changed) {
