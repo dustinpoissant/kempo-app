@@ -7,10 +7,30 @@ body { overflow: hidden; }
 /* Full-height column layout for the app shell */
 body { display: flex; flex-direction: column; height: 100vh; }
 
-/* contain:layout makes app-page the containing block for position:fixed descendants
-   (e.g. modals/fullscreen overlays), so they're bounded below the titlebar instead
-   of covering it — see data-overlay-root attribute set in AppPage.js */
+/* app-page itself never scrolls — it's a fixed-size box (titlebar's sibling,
+   sized via flex:1/min-height:0) that exists purely to be the containing block
+   for position:fixed descendants (contain:layout), via data-overlay-root set in
+   AppPage.js. This way a fullscreen overlay (e.g. PhotoViewer) always covers
+   exactly the visible area below the titlebar, regardless of how far the actual
+   page content (k-import, below) has been scrolled — no scroll-position math
+   needed. k-import is the real scroll container. */
 app-page {
-	overflow: auto;
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
 	contain: layout;
+}
+
+k-import {
+	display: block;
+	height: 100%;
+	overflow: auto;
+}
+
+/* PhotoViewer (and similar) toggle `no-scroll` on document.body and on their
+   nearest [data-overlay-root] when opening fullscreen. body.no-scroll is handled
+   by kempo-css; this defines what it means here, since app-page itself doesn't
+   scroll — k-import does. */
+app-page.no-scroll k-import {
+	overflow: hidden;
 }
