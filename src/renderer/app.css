@@ -4,6 +4,15 @@
 html { scrollbar-gutter: auto; }
 body { overflow: hidden; }
 
+/* Exposed for app pages to size content correctly — `100vh` measures the whole
+   window including the titlebar, so anything sized to plain 100vh inside
+   app-page will always overflow by exactly this much. Use
+   calc(100vh - var(--app-titlebar-height, 0px)) instead. Must match
+   AppTitlebar.js's :host height. */
+:root {
+	--app-titlebar-height: 36px;
+}
+
 /* Full-height column layout for the app shell */
 body { display: flex; flex-direction: column; height: 100vh; }
 
