@@ -36,7 +36,8 @@ class AppTitlebar extends ShadowComponent {
       font-size: 13px;
       user-select: none;
       -webkit-app-region: drag;
-      z-index: 1;
+      position: relative;
+      z-index: 9999;
     }
     ::slotted(.no-drag) {
       -webkit-app-region: no-drag;
