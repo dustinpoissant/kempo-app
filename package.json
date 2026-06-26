@@ -32,7 +32,7 @@
   "dependencies": {
     "chrome-remote-interface": "^0.34.0",
     "electron": "^42.4.1",
-    "kempo-ui": "^0.4.26"
+    "kempo-ui": "^0.4.28"
   },
   "devDependencies": {
     "highlight.js": "^11.11.1",
