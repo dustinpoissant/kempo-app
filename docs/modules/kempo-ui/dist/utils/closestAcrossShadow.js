@@ -1,0 +1,1 @@
+export const closestAcrossShadow=(o,t)=>{let s=o;for(;s;){const o=s.closest?.(t);if(o)return o;const e=s.getRootNode();s=e instanceof ShadowRoot?e.host:null}return null};export default closestAcrossShadow;
