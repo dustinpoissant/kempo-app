@@ -107,6 +107,14 @@ Consumer's `package.json` should include:
 | `npm run dev` | Run with DevTools + CDP on port 9222 + Node inspector on 5858 |
 | `npm run interact -- <cmd>` | Interact with the running app (requires dev mode) |
 
+## Remote Debugging (CDP)
+
+`npm run dev` exposes the **Chrome DevTools Protocol on port `9222`** and a **Node inspector on port `5858`**.
+
+- List targets: `curl http://localhost:9222/json/list` — the renderer target's `title` is the app's `appName`.
+- Drive it with any CDP client (chrome-remote-interface, Puppeteer `puppeteer.connect`, raw WebSocket) via the target's `webSocketDebuggerUrl`, or use the higher-level `npm run interact` wrapper below.
+- **`preload.cjs` changes take effect on a renderer reload** (the preload re-runs on every page load) — no full restart needed. Main-process changes (`main.js`, `backend.js`, `api/*.js`) require restarting the app.
+
 ## Interacting With the Running App
 
 When `npm run dev` is running, use `npm run interact` to control the app:
@@ -354,7 +362,7 @@ export default ({ ipc, app, Menu }) => {
 
 ## kempo-ui Components
 
-Full kempo-ui reference: https://github.com/dustinpoissant/kempo-ui/blob/main/llm.txt
+Full kempo-ui reference: https://github.com/dustinpoissant/kempo-ui/blob/main/llms.txt
 
 All components are web components with `k-` prefix. Registered in app.js:
 - `k-card` — bordered card with optional label

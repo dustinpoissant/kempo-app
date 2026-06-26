@@ -7,7 +7,7 @@ Docs: https://dustinpoissant.github.io/kempo-app/
 
 This project uses kempo-ui (components) and kempo-css (styles/utilities). Before writing any code, fetch and read both of these files:
 
-- kempo-ui: https://raw.githubusercontent.com/dustinpoissant/kempo-ui/refs/heads/main/llm.txt
+- kempo-ui: https://raw.githubusercontent.com/dustinpoissant/kempo-ui/refs/heads/main/llms.txt
 - kempo-css: https://raw.githubusercontent.com/dustinpoissant/kempo-css/refs/heads/main/llms.txt
 
 NEVER create a custom component if kempo-ui already has one. NEVER write custom CSS for something kempo-css covers. Always check both files first.
@@ -433,7 +433,7 @@ import "/modules/kempo-ui/dist/components/Toast.js";
 import "/modules/kempo-ui/dist/components/Table.js";
 ```
 
-Full kempo-ui reference: https://raw.githubusercontent.com/dustinpoissant/kempo-ui/refs/heads/main/llm.txt
+Full kempo-ui reference: https://raw.githubusercontent.com/dustinpoissant/kempo-ui/refs/heads/main/llms.txt
 
 ---
 
@@ -698,6 +698,14 @@ Mock API: `window.__kempoTestDbStore` for direct db access in tests.
 Run: `npx kempo-test`
 
 ---
+
+## Remote Debugging (CDP)
+
+`npm run dev` exposes the Chrome DevTools Protocol on **port 9222** and a Node inspector on **port 5858**.
+
+- List targets: `curl http://localhost:9222/json/list` (the renderer target's `title` is your `appName`).
+- Connect any CDP client (chrome-remote-interface, Puppeteer `connect`, raw WebSocket) to the target's `webSocketDebuggerUrl`, or use the `npx kempo-interact` wrapper below.
+- `preload.cjs` changes take effect on a renderer **reload** (preload re-runs per page load); main-process changes (`main.js`, `backend.js`, `api/*.js`) need a full restart.
 
 ## LLM Interact Tools
 

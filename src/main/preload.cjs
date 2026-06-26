@@ -73,30 +73,17 @@ const baseAPI = {
     rename: (oldPath, newPath) => ipcRenderer.invoke("fs:rename", oldPath, newPath),
     copyFile: (src, dest) => ipcRenderer.invoke("fs:copyFile", src, dest),
   },
+
+  // Dynamic router for file-based custom api/*.js handlers:
+  //   window.api.call("scanImages", ...args)
+  // (Renderers can wrap this in a Proxy for window.api.scanImages(...) ergonomics.)
+  call: (name, ...args) => ipcRenderer.invoke(`api:${name}`, ...args).then(result => {
+    if(result && result.__error) throw new Error(result.message);
+    return result;
+  }),
 };
 
-// Expose base API
+// Expose the base API (including call()). Note: with contextIsolation the preload's
+// window.api is undefined, so we must put everything on baseAPI *before* exposing —
+// we can't read it back to wrap it in a Proxy afterward.
 contextBridge.exposeInMainWorld("api", baseAPI);
-
-// Add custom API handler after exposure using a getter trap
-// This allows custom functions from api/*.js to be called
-const apiObj = window.api;
-const handler = {
-  get: (target, prop) => {
-    if(prop in target) return target[prop];
-    if(typeof prop === "string" && !prop.startsWith("_")){
-      return (...args) => ipcRenderer.invoke(`api:${prop}`, ...args).then(result => {
-        if(result && result.__error) throw new Error(result.message);
-        return result;
-      });
-    }
-    return undefined;
-  }
-};
-
-// Create a Proxy after exposure for dynamic API routing
-Object.defineProperty(window, "api", {
-  value: new Proxy(apiObj, handler),
-  writable: false,
-  configurable: false
-});
