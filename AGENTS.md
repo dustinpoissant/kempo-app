@@ -97,6 +97,8 @@ Consumer's `package.json` should include:
 "scripts": {
   "start": "kempo-app",
   "dev": "kempo-app --dev",
+  "package": "kempo-app --package",
+  "make": "kempo-app --make",
   "interact": "kempo-interact"
 }
 ```
@@ -105,7 +107,50 @@ Consumer's `package.json` should include:
 |---------|-------------|
 | `npm start` | Run the app |
 | `npm run dev` | Run with DevTools + CDP on port 9222 + Node inspector on 5858 |
+| `npm run package` | Package the app for the host OS/arch into `dist/win-unpacked/` (no installer) |
+| `npm run make` | Build an installer for the host OS into `dist/` (NSIS wizard on Windows, plain dir elsewhere) |
 | `npm run interact -- <cmd>` | Interact with the running app (requires dev mode) |
+
+## Packaging (`--package` / `--make`)
+
+Both are powered by **`electron-builder`**, host OS/arch only — no cross-compiling.
+`--package` produces a runnable `dist/win-unpacked/` folder; `--make` additionally
+builds a real installer wizard — NSIS on win32 (install-location page, Install
+button, Start Menu + optional Desktop shortcut), or a plain dir everywhere else for
+now (Mac/Linux installer targets need extra system tooling we don't assume is
+installed).
+
+None of this touches the consumer's `package.json` on disk — `runBuild()` in
+`bin/kempo-app.js` passes everything `electron-builder` needs straight through its
+API instead:
+- `main` → injected into the *packaged copy's* `package.json` via `extraMetadata`
+  (dev/start run kempo-app's own `main.js` directly via `KEMPO_APP_ROOT`, so there's
+  never a real consumer entry script otherwise — but the copy still needs `main` to
+  exist for the package to be loadable).
+- `electronVersion` → kempo-app's own resolved Electron version, passed directly,
+  which skips `electron-builder`'s devDependencies-presence lookup entirely.
+- `npmRebuild: false` → native deps here (better-sqlite3, sharp, opencv-js,
+  onnxruntime via `@huggingface/transformers`, ...) already ship Electron-ABI-matched
+  prebuilt binaries; rebuilding needs node-gyp/build tools we don't assume installed.
+- `asar: false` → those same native deps' sibling DLLs aren't caught by asar's
+  default unpack (`*.node` files only), which breaks `dlopen` at runtime.
+
+**Icon embedding**: `electron-builder`'s own icon/sign step (`win.signAndEditExecutable`)
+shells out to `app-builder.exe`'s `rcedit` subcommand, which — even with no signing
+certificate configured — downloads a `winCodeSign` bundle containing two mac-only
+`.dylib` *symlinks* unrelated to what it actually needs on Windows. Creating those
+symlinks needs a Windows privilege standard (non-elevated, non-Developer-Mode)
+accounts don't have, which crashes the whole build. We disable that step
+(`signAndEditExecutable: false`) and instead embed the icon ourselves in an
+`afterPack` hook: convert the consumer's PNG via `app-builder.exe`'s `icon` subcommand
+(confirmed standalone-safe, no `winCodeSign` involved — only its `rcedit` subcommand
+pulls that in) and embed it with the standalone `rcedit` npm package, which bundles
+its own `rcedit.exe` with no such download. Best-effort: if it fails, the `.exe` just
+keeps Electron's default icon rather than breaking the build.
+
+`src/main/main.js`'s `appRoot` falls back to `app.getAppPath()` (not `process.cwd()`)
+when `app.isPackaged`, since a packaged app's cwd is wherever the OS launched the
+`.exe` from, not the app directory.
 
 ## Remote Debugging (CDP)
 

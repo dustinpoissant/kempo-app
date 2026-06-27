@@ -10,7 +10,11 @@ import syncSchemas, { primaryKey } from "./schema.js";
 import { getSqlDB, query, sqlDBs } from "./sqlQuery.js";
 
 const isDev = process.argv.includes("--dev");
-const appRoot = process.env.KEMPO_APP_ROOT || process.cwd();
+// process.cwd() is only reliable for dev/start, where kempo-app's CLI sets
+// KEMPO_APP_ROOT explicitly. A packaged app has no such wrapper and its cwd is
+// wherever the OS launched the .exe from, not the app directory — app.getAppPath()
+// is the one that's always correct there.
+const appRoot = process.env.KEMPO_APP_ROOT || (app.isPackaged ? app.getAppPath() : process.cwd());
 const frameworkRoot = path.join(import.meta.dirname, "..", "..");
 const appRequire = createRequire(path.join(appRoot, "package.json"));
 
