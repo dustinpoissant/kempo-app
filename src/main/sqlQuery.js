@@ -2,7 +2,11 @@ import { app } from "electron";
 import path from "path";
 import { createRequire } from "module";
 
-const appRoot = process.env.KEMPO_APP_ROOT || process.cwd();
+// Same resolution as main.js: process.cwd() is only reliable for dev/start, where
+// kempo-app's CLI sets KEMPO_APP_ROOT explicitly. A packaged app's cwd is wherever
+// the OS launched the .exe from, not the app directory — app.getAppPath() is the
+// one that's always correct there.
+const appRoot = process.env.KEMPO_APP_ROOT || (app.isPackaged ? app.getAppPath() : process.cwd());
 const appRequire = createRequire(path.join(appRoot, "package.json"));
 const sqlDBs = new Map();
 
