@@ -49,7 +49,12 @@ if(appArgs.includes("--make")){
   if(process.platform === "linux" && linuxTargets.length === 1){
     console.warn(`Skipping deb: package.json needs both "author" (with an email) and "homepage" (or "repository") — building AppImage only.`);
   }
-  const target = { win32: "nsis", linux: linuxTargets, darwin: "dir" }[process.platform];
+  // dmg: the standard drag-to-Applications installer window. Unsigned (no Apple
+  // Developer cert assumed), so Gatekeeper will flag it as from an unidentified
+  // developer on first launch — right-click → Open (or System Settings → Privacy &
+  // Security → Open Anyway) clears it. That's a one-time consumer-side step, not a
+  // build failure.
+  const target = { win32: "nsis", linux: linuxTargets, darwin: "dmg" }[process.platform];
   await runBuild(target);
   process.exit(0);
 }
@@ -91,7 +96,11 @@ async function runBuild(target){
   // /Developer Mode), even though we were never going to sign anything anyway.
   process.env.CSC_IDENTITY_AUTO_DISCOVERY = "false";
 
-  if(process.platform === "linux") await rebuildNativeModulesForElectron(appRoot, electronVersion);
+  // Same ABI-mismatch risk as Linux (see below) — "npm install" fetches whatever
+  // prebuild matches the Node that ran it, not necessarily Electron's. Windows is the
+  // one platform left alone here: a working C/C++ toolchain (MSVC Build Tools) isn't a
+  // safe assumption there the way Xcode Command Line Tools more often is on macOS.
+  if(process.platform !== "win32") await rebuildNativeModulesForElectron(appRoot, electronVersion);
 
   await build({
     targets: hostPlatform.createTarget(target),
@@ -144,11 +153,11 @@ async function runBuild(target){
 // N-API/electron prebuilds) installs whatever prebuild matches the Node that ran
 // "npm install" — there's usually no prebuild published for Electron's own,
 // embedder-specific ABI number, so npmRebuild:false's "the prebuilt binary already
-// matches Electron" assumption silently doesn't hold on Linux (it happens to hold on
-// Windows here only because of leftover build state, not anything guaranteed). Fix it
-// by recompiling those modules against Electron's headers before packaging — Linux
-// dev/CI boxes are a much safer bet for having a C++ toolchain than a Windows
-// consumer's machine, which is why this isn't done unconditionally for npmRebuild.
+// matches Electron" assumption silently doesn't hold on Linux or macOS (it happens to
+// hold on Windows here only because of leftover build state, not anything guaranteed).
+// Fix it by recompiling those modules against Electron's headers before packaging —
+// Linux/macOS dev/CI boxes are a much safer bet for having a C++ toolchain than a
+// Windows consumer's machine, which is why this isn't done unconditionally for npmRebuild.
 async function rebuildNativeModulesForElectron(appRoot, electronVersion){
   const fs = require("fs");
   const nativeModuleDirs = [];
