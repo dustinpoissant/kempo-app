@@ -36,7 +36,7 @@
     "chrome-remote-interface": "^0.34.0",
     "electron": "^42.4.1",
     "electron-builder": "^25.1.8",
-    "kempo-ui": "^0.4.28",
+    "kempo-ui": "^0.4.31",
     "rcedit": "^5.0.2"
   },
   "devDependencies": {
