@@ -165,7 +165,7 @@ import{html as e,css as t}from"../lit-all.min.js";import o from"./ShadowComponen
 				<slot name="trigger"></slot>
 				${this.submenu?e`<k-icon name="chevron"></k-icon>`:""}
 			</div>
-			<div id="menu" role="menu" @click=${this.handleMenuClick}>
+			<div id="menu" part="menu" role="menu" @click=${this.handleMenuClick}>
 				<slot @slotchange=${this.handleSlotChange}></slot>
 			</div>
 		`}}customElements.define("k-dropdown",s);
