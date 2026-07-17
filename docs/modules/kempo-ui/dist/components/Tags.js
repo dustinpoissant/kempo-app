@@ -93,12 +93,13 @@ import{html as t,css as e}from"../lit-all.min.js";import s from"./ShadowComponen
 		`}}class r extends s{constructor(t,e){super(),this.tag=t,this.tagsComponent=e,this.innerHTML=t}handleClick=()=>{this.tagsComponent.disabled||this.tagsComponent.removeTag(this.tag)};static styles=e`
 		:host {
 			display: inline-block;
-			width: min-content;
+			max-width: 100%;
 			margin: var(--spacer_q);
 			padding: var(--spacer_q) var(--spacer_h);
 			border: 1px solid var(--c_border);
 			border-radius: var(--radius);
 			cursor: pointer;
+			box-sizing: border-box;
 		}
 
 		:host(:hover) {
