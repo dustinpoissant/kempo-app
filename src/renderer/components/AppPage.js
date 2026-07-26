@@ -17,9 +17,17 @@ class AppPage extends LightComponent {
     super();
     this.src = "";
     this.persistScroll = true;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
     // Marks this as the mount point for portaled overlays (e.g. kempo-ui's
     // PhotoViewer.open()) so they're contained below the titlebar instead of
     // covering it. Paired with `contain: layout` on app-page in app.css.
+    // Set here rather than in the constructor: custom element constructors may
+    // not set attributes or add children — doing so makes document.createElement
+    // (and therefore native HTML parsing) throw internally and silently fall back
+    // to an undefined HTMLUnknownElement instead of a real upgraded instance.
     this.setAttribute("data-overlay-root", "");
   }
 
