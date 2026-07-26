@@ -7,7 +7,12 @@
   <script>
     window.kempo = {
       pathToStylesheet: '/modules/kempo-css/dist/kempo.min.css',
-      pathsToIcons: ['/icons', '/framework/icons', '/modules/kempo-ui/icons']
+      pathsToIcons: ['/icons', '/framework/icons', '/modules/kempo-ui/icons'],
+      // Keeps kempo-ui's fixed-position overlays (Toast, Dialog, PhotoViewer) out of the
+      // titlebar — app-page marks itself as this mount point (see AppPage.js) and
+      // establishes the containing block for them via `contain: layout` in app.css.
+      // Resolved lazily on first use, so it's safe to set before app-page even exists.
+      overlayRoot: '[data-overlay-root]'
     };
   </script>
   <link rel="stylesheet" href="/modules/kempo-css/dist/kempo.min.css">
