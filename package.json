@@ -1,6 +1,6 @@
 {
   "name": "kempo-app",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "description": "A framework for building Electron apps using kempo-ui",
   "type": "module",
   "main": "src/main/main.js",
