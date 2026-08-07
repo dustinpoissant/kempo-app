@@ -29,11 +29,11 @@ const pkg = JSON.parse(readFileSync(path.join(process.cwd(), "package.json"), "u
 const authorEmail = typeof pkg.author === "string" ? pkg.author.match(/<(.+?)>/)?.[1] : pkg.author?.email;
 const homepage = pkg.homepage || pkg.repository?.url?.replace(/^git\+/, "").replace(/\.git$/, "");
 
-if(appArgs.includes("--package")){
+if(appArgs.includes("--build-standalone")){
   await runBuild("dir");
   process.exit(0);
 }
-if(appArgs.includes("--make")){
+if(appArgs.includes("--build-installer")){
   // nsis: a real installer wizard (install location page, Start Menu + optional
   // Desktop shortcut) on win32. AppImage + deb on Linux: AppImage is a single
   // portable file that runs on most distros without installing anything, deb covers

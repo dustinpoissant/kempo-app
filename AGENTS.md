@@ -97,8 +97,8 @@ Consumer's `package.json` should include:
 "scripts": {
   "start": "kempo-app",
   "dev": "kempo-app --dev",
-  "package": "kempo-app --package",
-  "make": "kempo-app --make",
+  "buildStandalone": "kempo-app --build-standalone",
+  "buildInstaller": "kempo-app --build-installer",
   "interact": "kempo-interact"
 }
 ```
@@ -107,15 +107,15 @@ Consumer's `package.json` should include:
 |---------|-------------|
 | `npm start` | Run the app |
 | `npm run dev` | Run with DevTools + CDP on port 9222 + Node inspector on 5858 |
-| `npm run package` | Package the app for the host OS/arch into `dist/win-unpacked/` (no installer) |
-| `npm run make` | Build an installer for the host OS into `dist/` (NSIS wizard on Windows, plain dir elsewhere) |
+| `npm run buildStandalone` | Package the app for the host OS/arch into `dist/win-unpacked/` (no installer) |
+| `npm run buildInstaller` | Build an installer for the host OS into `dist/` (NSIS wizard on Windows, plain dir elsewhere) |
 | `npm run interact -- <cmd>` | Interact with the running app (requires dev mode) |
 
-## Packaging (`--package` / `--make`)
+## Packaging (`--build-standalone` / `--build-installer`)
 
 Both are powered by **`electron-builder`**, host OS/arch only — no cross-compiling.
-`--package` produces a runnable `dist/win-unpacked/` folder; `--make` additionally
-builds a real installer wizard — NSIS on win32 (install-location page, Install
+`--build-standalone` produces a runnable `dist/win-unpacked/` folder; `--build-installer`
+additionally builds a real installer wizard — NSIS on win32 (install-location page, Install
 button, Start Menu + optional Desktop shortcut), or a plain dir everywhere else for
 now (Mac/Linux installer targets need extra system tooling we don't assume is
 installed).

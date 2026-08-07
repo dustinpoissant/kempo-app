@@ -14,8 +14,8 @@
   "scripts": {
     "start": "cd example && node ../bin/kempo-app.js",
     "dev": "cd example && node ../bin/kempo-app.js --dev",
-    "package": "cd example && node ../bin/kempo-app.js --package",
-    "make": "cd example && node ../bin/kempo-app.js --make",
+    "buildStandalone": "cd example && node ../bin/kempo-app.js --build-standalone",
+    "buildInstaller": "cd example && node ../bin/kempo-app.js --build-installer",
     "interact": "node scripts/interact.js",
     "test": "npx kempo-test",
     "build:docs": "node scripts/build-docs.js",
