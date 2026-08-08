@@ -110,6 +110,25 @@ async function runBuild(target){
       productName: appName,
       electronVersion,
       directories: { output: path.join(appRoot, "dist") },
+      // electron-builder's own default publish policy is "onTagOrDraft" — in CI, with a
+      // draft GitHub release matching the current tag, it silently tries to upload the
+      // build to that release ITSELF, then hard-fails if GH_TOKEN/GITHUB_TOKEN isn't set
+      // (which it never is here — kempo-app has no config surface for publish creds).
+      // Consumers wanting their own CI to publish an installer (e.g. via `gh release
+      // upload` after this returns) get an unexpected, unexplained crash unless this is
+      // switched off. There's no kempo-app config for a consumer to opt back into
+      // electron-builder's own publishing, since it can't be configured with credentials
+      // anyway — publishing is entirely the calling script's responsibility.
+      // MUST be [] here, not the string "never": electron-builder only short-circuits
+      // "never" in its *policy* handling (whether to upload). config.publish itself gets
+      // treated as a raw provider list regardless of policy — a bare string is wrapped as
+      // [it] and "never" is looked up as a provider name, crashing with "Cannot find
+      // module 'electron-publisher-never'" the moment an installer target's afterPack
+      // hook tries to resolve a publish config for app-update.yml generation (which
+      // happens unconditionally for nsis/dmg, independent of publish policy). An empty
+      // array resolves to zero configs with no provider lookup at all — confirmed via
+      // app-builder-lib/out/publish/PublishManager.js's resolvePublishConfigurations.
+      publish: [],
       // homepage is injected the same way main is — deb/rpm need it resolvable, but
       // a consumer with only "repository" set (and not "homepage" itself) shouldn't
       // have to add a second, mostly-redundant field just to get deb/rpm building.
