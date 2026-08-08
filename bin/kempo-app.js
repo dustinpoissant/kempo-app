@@ -105,30 +105,27 @@ async function runBuild(target){
   await build({
     targets: hostPlatform.createTarget(target),
     projectDir: appRoot,
+    // Top-level, sibling of `config` — NOT config.publish. electron-builder's build()
+    // options extend two separate interfaces: PackagerOptions (config, targets, ...) and
+    // PublishOptions (this `publish` policy). This one controls PublishManager.isPublish;
+    // left unset, CI detection defaults it to "onTagOrDraft", which — regardless of
+    // config.publish — still auto-resolves a github publish config for the update-info
+    // file (app-update.yml/latest-mac.yml) via repository auto-detection ("file should be
+    // generated regardless of publish state", per electron-builder's own source comment)
+    // and then tries to actually upload it, hard-crashing with "GitHub Personal Access
+    // Token is not set" the moment GH_TOKEN/GITHUB_TOKEN is absent (which it always is
+    // here — kempo-app has no config surface for publish creds; publishing an installer,
+    // e.g. via `gh release upload` after this returns, is entirely the calling script's
+    // responsibility). "never" as a *policy* value here is valid and short-circuits all of
+    // this; it is NOT the same as (and must not be confused with) passing config.publish
+    // as the raw string "never", which electron-builder instead misreads as a *provider
+    // name* and crashes trying to `require("electron-publisher-never")`.
+    publish: "never",
     config: {
       appId,
       productName: appName,
       electronVersion,
       directories: { output: path.join(appRoot, "dist") },
-      // electron-builder's own default publish policy is "onTagOrDraft" — in CI, with a
-      // draft GitHub release matching the current tag, it silently tries to upload the
-      // build to that release ITSELF, then hard-fails if GH_TOKEN/GITHUB_TOKEN isn't set
-      // (which it never is here — kempo-app has no config surface for publish creds).
-      // Consumers wanting their own CI to publish an installer (e.g. via `gh release
-      // upload` after this returns) get an unexpected, unexplained crash unless this is
-      // switched off. There's no kempo-app config for a consumer to opt back into
-      // electron-builder's own publishing, since it can't be configured with credentials
-      // anyway — publishing is entirely the calling script's responsibility.
-      // MUST be [] here, not the string "never": electron-builder only short-circuits
-      // "never" in its *policy* handling (whether to upload). config.publish itself gets
-      // treated as a raw provider list regardless of policy — a bare string is wrapped as
-      // [it] and "never" is looked up as a provider name, crashing with "Cannot find
-      // module 'electron-publisher-never'" the moment an installer target's afterPack
-      // hook tries to resolve a publish config for app-update.yml generation (which
-      // happens unconditionally for nsis/dmg, independent of publish policy). An empty
-      // array resolves to zero configs with no provider lookup at all — confirmed via
-      // app-builder-lib/out/publish/PublishManager.js's resolvePublishConfigurations.
-      publish: [],
       // homepage is injected the same way main is — deb/rpm need it resolvable, but
       // a consumer with only "repository" set (and not "homepage" itself) shouldn't
       // have to add a second, mostly-redundant field just to get deb/rpm building.
