@@ -15,9 +15,14 @@ const typeMap = {
 
 const sqlType = field => typeMap[field.type] || "TEXT";
 
-const columnDef = (name, field, isPrimary) => {
+// isSinglePrimary: true only when this column is the table's ONE AND ONLY primary-key column
+// (the common case) — it gets PRIMARY KEY inlined, and AUTOINCREMENT if it's an integer, same
+// as SQLite only allows autoincrement on a single-column integer key. A column that's part of
+// a *composite* key (see primaryKeys below) is never isSinglePrimary — it's just a plain NOT
+// NULL column here, and the key itself is added as a separate table-level constraint instead.
+const columnDef = (name, field, isSinglePrimary) => {
   let def = `${name} ${sqlType(field)}`;
-  if(isPrimary){
+  if(isSinglePrimary){
     def += " PRIMARY KEY";
     if(field.type === "integer") def += " AUTOINCREMENT";
     return def;
@@ -31,10 +36,14 @@ const columnDef = (name, field, isPrimary) => {
   return def;
 };
 
-const primaryKey = schema => {
-  const entry = Object.entries(schema).find(([, f]) => f.primary);
-  return entry ? entry[0] : null;
-};
+// Every column marked `primary: true` — one column is the common case (an inline PRIMARY KEY),
+// more than one means a composite key (e.g. a join table keyed by two ids together), added as
+// a table-level `PRIMARY KEY (a, b)` constraint instead of on any single column.
+const primaryKeys = schema => Object.entries(schema).filter(([, f]) => f.primary).map(([name]) => name);
+
+// Back-compat single-key accessor — the first primary column, or null. Prefer primaryKeys for
+// anything that needs to handle composite keys correctly.
+const primaryKey = schema => primaryKeys(schema)[0] ?? null;
 
 /*
   Version Tracking
@@ -59,16 +68,28 @@ const setTableVersion = (db, tableName, version) => {
 
 const syncTable = (db, tableName, schema) => {
   const columns = Object.entries(schema);
-  const pk = primaryKey(schema);
+  const pks = primaryKeys(schema);
   const existing = db.pragma(`table_info(${tableName})`);
 
   if(!existing.length){
-    const defs = pk
-      ? columns.map(([name, field]) => columnDef(name, field, name === pk))
-      : ["id INTEGER PRIMARY KEY AUTOINCREMENT", ...columns.map(([name, field]) => columnDef(name, field))];
+    let defs;
+    if(pks.length === 0){
+      defs = ["id INTEGER PRIMARY KEY AUTOINCREMENT", ...columns.map(([name, field]) => columnDef(name, field))];
+    } else if(pks.length === 1){
+      defs = columns.map(([name, field]) => columnDef(name, field, name === pks[0]));
+    } else {
+      // Composite key: no single column gets an inline PRIMARY KEY (SQLite only allows that on
+      // one column), so it's added as its own table-level constraint instead.
+      defs = [...columns.map(([name, field]) => columnDef(name, field, false)), `PRIMARY KEY (${pks.join(", ")})`];
+    }
     db.exec(`CREATE TABLE ${tableName} (${defs.join(", ")})`);
 
-    const indexed = columns.filter(([name, field]) => field.index && name !== pk);
+    // A lone primary key column already has its own index (that's what PRIMARY KEY means) —
+    // an `index: true` on it would just duplicate that. A *composite* key's own index is
+    // ordered by all of its columns together though, which doesn't help a lookup on just one
+    // of the non-leading columns alone — so those can still ask for their own separate index.
+    const soleKey = pks.length === 1 ? pks[0] : null;
+    const indexed = columns.filter(([name, field]) => field.index && name !== soleKey);
     for(const [name] of indexed){
       db.exec(`CREATE INDEX idx_${tableName}_${name} ON ${tableName} (${name})`);
     }
@@ -145,4 +166,4 @@ export default async (getSqlDB, schemaDir) => {
   return schemaMap;
 };
 
-export { syncTable, loadSchemas, columnDef, sqlType, primaryKey, ensureMetaTable, getTableVersion, setTableVersion, migrateTable };
+export { syncTable, loadSchemas, columnDef, sqlType, primaryKey, primaryKeys, ensureMetaTable, getTableVersion, setTableVersion, migrateTable };

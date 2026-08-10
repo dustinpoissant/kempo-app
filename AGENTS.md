@@ -197,10 +197,22 @@ await myData.set("key1", "value1")
 await myData.get()                                // { key1: "value1" }
 
 // SQL Database — requires better-sqlite3 in consumer project
-// SELECT returns array of rows; anything else returns true; throws on error
+// params bind into `?` placeholders — always prefer this over baking values into the sql text
+// yourself (no escaping needed, and it can't be broken by a value that happens to contain a
+// quote). SELECT returns array of rows; anything else returns { changes, lastInsertRowid };
+// throws on error.
 await api.sqlQuery("mydb", "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)")
-await api.sqlQuery("mydb", "INSERT INTO users (name) VALUES ('Alice')")  // true
-await api.sqlQuery("mydb", "SELECT * FROM users")                        // [{ id, name }, ...]
+await api.sqlQuery("mydb", "INSERT INTO users (name) VALUES (?)", ["Alice"])  // { changes: 1, lastInsertRowid: 1 }
+await api.sqlQuery("mydb", "SELECT * FROM users WHERE name = ?", ["Alice"])   // [{ id, name }, ...]
+
+// Runs a batch of { sql, params } statements as one all-or-nothing transaction — if any
+// statement throws, every statement in the batch is rolled back, not just the one that failed.
+// Returns an array of per-statement results, same shape sqlQuery() would give for each one.
+await api.sqlTransaction("mydb", [
+  { sql: "DELETE FROM tags WHERE path = ?", params: [path] },
+  { sql: "INSERT INTO tags (path, tag) VALUES (?, ?)", params: [path, "cat"] },
+  { sql: "INSERT INTO tags (path, tag) VALUES (?, ?)", params: [path, "dog"] },
+])
 
 // Window controls
 api.window.minimize()
@@ -334,12 +346,26 @@ export default {
 export const version = 1;
 ```
 
+Mark more than one column `primary: true` for a **composite primary key** — the row's identity is those columns together, e.g. a table keyed by (path, tag) where the same path can have many tags but never the same tag twice:
+
+```js
+// schema/myapp/tags.js — composite key, no auto-generated id
+export default {
+  path: { type: "text", primary: true, required: true },
+  tag: { type: "text", primary: true, required: true },
+};
+
+export const version = 1;
+```
+
+A composite key never gets AUTOINCREMENT (SQLite only allows that on a single integer column) — inserting a duplicate combination fails instead.
+
 ### Column Options
 
 | Option | Description |
 |--------|-------------|
 | `type` | `"text"`, `"integer"`, `"real"`, or `"blob"` (defaults to `"text"`) |
-| `primary` | Makes this the primary key (integer PKs get AUTOINCREMENT) |
+| `primary` | Part of the primary key. One column = a normal primary key (integer gets AUTOINCREMENT). More than one column marked `primary: true` = a composite key across all of them together |
 | `required` | Adds `NOT NULL` constraint |
 | `unique` | Adds `UNIQUE` constraint |
 | `default` | Default value for the column |

@@ -25,8 +25,13 @@ const baseAPI = {
   }),
 
   // SQL — requires better-sqlite3 in consumer project
-  // SELECT returns array of rows; anything else returns true; throws on error
-  sqlQuery: (dbName, sql) => ipcRenderer.invoke("sqlDB:query", dbName, sql),
+  // params bind into `?` placeholders in sql — always prefer this over baking values into the
+  // sql text. SELECT returns array of rows; anything else returns { changes, lastInsertRowid };
+  // throws on error.
+  sqlQuery: (dbName, sql, params) => ipcRenderer.invoke("sqlDB:query", dbName, sql, params),
+  // Runs a batch of { sql, params } statements as one all-or-nothing transaction. Returns an
+  // array of per-statement results, same shape sqlQuery() would give for each one.
+  sqlTransaction: (dbName, statements) => ipcRenderer.invoke("sqlDB:transaction", dbName, statements),
 
   // Window controls
   window: {

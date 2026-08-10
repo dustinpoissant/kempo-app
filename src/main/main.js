@@ -7,7 +7,7 @@ import { createRequire } from "module";
 import { randomUUID } from "crypto";
 import Database from "./database.js";
 import syncSchemas, { primaryKey } from "./schema.js";
-import { getSqlDB, query, sqlDBs } from "./sqlQuery.js";
+import { getSqlDB, query, transaction, sqlDBs } from "./sqlQuery.js";
 
 const isDev = process.argv.includes("--dev");
 // process.cwd() is only reliable for dev/start, where kempo-app's CLI sets
@@ -218,7 +218,8 @@ app.whenReady().then(async () => {
     SQL Database
   */
 
-  ipcMain.handle("sqlDB:query", (e, dbName, sql) => query(dbName, sql));
+  ipcMain.handle("sqlDB:query", (e, dbName, sql, params) => query(dbName, sql, params));
+  ipcMain.handle("sqlDB:transaction", (e, dbName, statements) => transaction(dbName, statements));
 
   app.on("before-quit", () => {
     for(const instance of sqlDBs.values()) instance.close();
@@ -315,7 +316,8 @@ app.whenReady().then(async () => {
       has: async (key) => db.has(table, key),
       clear: async () => db.clear(table),
     }),
-    sqlQuery: async (dbName, sql) => query(dbName, sql),
+    sqlQuery: async (dbName, sql, params) => query(dbName, sql, params),
+    sqlTransaction: async (dbName, statements) => transaction(dbName, statements),
     window: {
       minimize: () => BrowserWindow.getFocusedWindow()?.minimize(),
       maximize: () => {

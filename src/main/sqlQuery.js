@@ -25,11 +25,29 @@ export const getSqlDB = name => {
   return instance;
 };
 
-export const query = (dbName, sql) => {
+// params bind into `?` placeholders in sql — always prefer this over building sql with the
+// values already baked in as text. SELECT returns the matched rows; anything else returns
+// { changes, lastInsertRowid } so callers can tell what happened (e.g. read back a new row's id).
+export const query = (dbName, sql, params = []) => {
   const db = getSqlDB(dbName);
-  if(sql.trim().toUpperCase().startsWith("SELECT")) return db.prepare(sql).all();
-  db.prepare(sql).run();
-  return true;
+  const stmt = db.prepare(sql);
+  if(sql.trim().toUpperCase().startsWith("SELECT")) return stmt.all(...params);
+  const info = stmt.run(...params);
+  return { changes: info.changes, lastInsertRowid: info.lastInsertRowid };
+};
+
+// Runs a batch of { sql, params } statements as one all-or-nothing unit: if any statement
+// throws, every statement in the batch is rolled back, not just the one that failed. Returns
+// an array of per-statement results, same shape query() would give for each one.
+export const transaction = (dbName, statements) => {
+  const db = getSqlDB(dbName);
+  const run = db.transaction(stmts => stmts.map(({ sql, params = [] }) => {
+    const stmt = db.prepare(sql);
+    if(sql.trim().toUpperCase().startsWith("SELECT")) return stmt.all(...params);
+    const info = stmt.run(...params);
+    return { changes: info.changes, lastInsertRowid: info.lastInsertRowid };
+  }));
+  return run(statements);
 };
 
 export { sqlDBs };
