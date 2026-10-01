@@ -29,7 +29,12 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Trusted publishing needs npm >=11.5.1; Node 22.x still bundles 10.9.x. Without this, OIDC
+      # publish auth is silently unavailable and the registry returns a 404 rather than an auth error.
+      - run: npm install -g npm@latest
 
       - run: npm ci
 
@@ -56,12 +61,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup .npmrc
-        run: |
-          echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > ~/.npmrc
-          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
-          echo "always-auth=true" >> ~/.npmrc
-
       - run: npm publish --access public
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
