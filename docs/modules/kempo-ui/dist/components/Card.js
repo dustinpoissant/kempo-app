@@ -1,12 +1,17 @@
-import r from"./ShadowComponent.js";import{html as a,css as e}from"../lit-all.min.js";export default class o extends r{static properties={label:{type:String,reflect:!0}};constructor(){super(),this.label=null}static styles=e`
+import a from"./ShadowComponent.js";import{html as r,css as e}from"../lit-all.min.js";export default class i extends a{static properties={label:{type:String,reflect:!0}};constructor(){super(),this.label=null}static styles=e`
 		:host {
 			display: block;
 		}
+		/*
+			Padding and the trailing margin are themeable, matching --aside_padding on Aside. A card
+			used as a tile in a grid wants its media flush to the border and its own gap handling,
+			neither of which is reachable from outside a shadow root otherwise.
+		*/
 		#card {
 			border: 1px solid var(--c_border);
 			border-radius: var(--radius);
-			margin-bottom: var(--spacer);
-			padding: var(--spacer);
+			margin-bottom: var(--card_margin, var(--spacer));
+			padding: var(--card_padding, var(--spacer));
 			position: relative;
 			background-color: var(--c_bg);
 		}
@@ -29,9 +34,9 @@ import r from"./ShadowComponent.js";import{html as a,css as e}from"../lit-all.mi
 		:host(:not([label])) #label {
 			display: none;
 		}
-	`;render(){return a`
+	`;render(){return r`
 			<div id="card">
 				<div id="label">${this.label}</div>
 				<slot></slot>
 			</div>
-		`}}window.customElements.define("k-card",o);
+		`}}window.customElements.define("k-card",i);
