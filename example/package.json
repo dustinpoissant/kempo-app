@@ -14,8 +14,8 @@
     "interact": "kempo-interact"
   },
   "dependencies": {
-    "better-sqlite3": "^12.8.0",
+    "better-sqlite3": "^13.0.3",
     "kempo-app": "file:..",
-    "kempo-ui": "^0.1.6"
+    "kempo-ui": "^0.4.56"
   }
 }

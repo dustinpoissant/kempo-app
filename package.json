@@ -32,16 +32,16 @@
   },
   "homepage": "https://github.com/dustinpoissant/kempo-app#readme",
   "dependencies": {
-    "app-builder-bin": "5.0.0-alpha.10",
+    "app-builder-bin": "5.0.0-alpha.13",
     "chrome-remote-interface": "^0.34.0",
-    "electron": "^42.4.1",
-    "electron-builder": "^25.1.8",
-    "kempo-ui": "^0.4.38",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
+    "kempo-ui": "^0.4.56",
     "rcedit": "^5.0.2"
   },
   "devDependencies": {
     "highlight.js": "^11.11.1",
-    "js-beautify": "^1.15.4",
+    "js-beautify": "^2.0.3",
     "kempo-testing-framework": "^1.4.7"
   }
 }
