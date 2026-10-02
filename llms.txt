@@ -666,9 +666,10 @@ export default ({ app, Menu }) => {
 npm install --save-dev kempo-testing-framework
 ```
 
-Browser test files (`.browser-test.js`):
+Browser test files (`.browser-test.js`). `page` is resolved relative to the test file's own
+directory (a leading slash is NOT root-relative), so from a file directly under `tests/`:
 ```js
-export const page = "/node_modules/kempo-app/testing/test-page.html";
+export const page = "../node_modules/kempo-app/testing/test-page.html";
 
 export const beforeAll = async () => {
   await import("/modules/kempo-ui/dist/components/Card.js");

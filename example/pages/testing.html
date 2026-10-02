@@ -20,7 +20,9 @@
 	<h3>The Test Page</h3>
 	<p>
 		kempo-app provides a ready-made test page at
-		<code>/node_modules/kempo-app/testing/test-page.html</code>.
+		<code>node_modules/kempo-app/testing/test-page.html</code>. The <code>page</code> export is
+		resolved relative to the test file's own directory (not the project root), so from a file
+		directly under <code>tests/</code> that's <code>../node_modules/kempo-app/testing/test-page.html</code>.
 		It mocks the Electron environment so your components work in a plain browser:
 	</p>
 	<div class="table-wrapper mb">
@@ -45,7 +47,7 @@
 		to point at the shared test page, use <code>beforeAll</code> for dynamic imports, and export
 		a default object of test functions:
 	</p>
-	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> page = <span class="hljs-string">"/node_modules/kempo-app/testing/test-page.html"</span>;
+	<pre><code class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> page = <span class="hljs-string">"../node_modules/kempo-app/testing/test-page.html"</span>;
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-title function_">beforeAll</span> = <span class="hljs-keyword">async</span> () =&gt; {
   <span class="hljs-keyword">await</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">"/modules/kempo-ui/dist/components/Card.js"</span>);

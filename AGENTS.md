@@ -506,10 +506,10 @@ The framework ships a test page and mock utilities so that both the framework it
 3. Create a `tests/` directory
 4. Write `.browser-test.js` files (or `.node-test.js` for Node tests)
 
-Browser test files reference the shared test page, which mocks the Electron `api` global and sets up import maps:
+Browser test files reference the shared test page, which mocks the Electron `api` global and sets up import maps. The runner resolves `page` via `path.join(testFileDir, page)` — a leading slash is **not** root-relative there, it's just concatenated onto the test file's own directory, so this has to be a relative path from wherever the test file lives (e.g. `../node_modules/...` for a file directly under `tests/`):
 
 ```js
-export const page = "/node_modules/kempo-app/testing/test-page.html";
+export const page = "../node_modules/kempo-app/testing/test-page.html";
 
 export const beforeAll = async () => {
   // Dynamic imports — do NOT use top-level imports for /framework/ or /modules/ paths
